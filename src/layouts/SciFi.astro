@@ -1,0 +1,20 @@
+---
+// src/layouts/SciFiLayout.astro
+const { title, description } = Astro.props;
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+---
+<html>
+  <BaseHead title={title} description={description} />
+  <head>/* 这里可以放专属的酷炫特效脚本 */</head>
+  <body class="sci-fi-theme">
+    <Header />
+    <main>
+      <h1>{title}</h1>
+      <slot /> </main>
+  </body>
+</html>
+
+<style>
+  .sci-fi-theme { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; }
+</style>

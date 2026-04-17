@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+// 1. 引入你所有的皮肤组件
+import SciFiLayout from '../../../layouts/SciFi.astro';
+import ClassicalLayout from '../../../layouts/Classical.astro';
+import BlogPost from '../../../layouts/BlogPost.astro'; // 默认皮肤
+
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('analog_ic');
+  return allPosts.map((post) => {
+    const [project, article] = post.id.split('/');
+    return {
+      params: { project, article },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+// 2. 核心逻辑：根据 Markdown 里的 layoutType 选择组件
+const layoutMap: Record<string, any> = {
+    'SciFi': SciFiLayout,
+    'Classical': ClassicalLayout,
+    'Blog': BlogPost
+};
+const SelectedLayout = layoutMap[post.data.layoutType] || BlogPost;
+---
+
+
+<SelectedLayout {...post.data}>
+  <Content />
+</SelectedLayout>

@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+// 1. 获取所有 Analog IC 文章
+const allPosts = await getCollection('analog_ic');
+
+// 2. 核心逻辑：利用 Map 去重，提取独立的项目入口
+const projectsMap = new Map();
+allPosts.forEach((post) => {
+  // 如果 map 中还没有这个 projectId，就把它和对应的 projectName 存进去
+  if (!projectsMap.has(post.data.projectId)) {
+    projectsMap.set(post.data.projectId, post.data.projectName);
+  }
+});
+
+// 将 Map 转换为数组，方便下方用 map() 遍历渲染
+const uniqueProjects = Array.from(projectsMap.entries());
+---
+
+<html lang="zh-CN">
+  <head>
+    <BaseHead title="Analog IC 知识库" description="Analog IC 学习路线与项目归档" />
+  </head>
+  <body>
+    <Header />
+    <main style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+      <h1 style="text-align: center; color: #ff5d01;">Analog IC 知识库</h1>
+      <p style="text-align: center;">请在下方选择进入具体的项目版块：</p>
+
+      <ul style="display: flex; gap: 2rem; list-style: none; padding: 0;">
+        {uniqueProjects.map(([projectId, projectName]) => (
+          <li style="border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; width: 100%;">
+            <a href={`/analog_ic/${projectId}/`} style="text-decoration: none; color: #333;">
+              <h2>{projectName}</h2>
+              <p>点击进入该项目，查看仿真附件与所有子模块博客 ➡️</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </main>
+    <Footer />
+  </body>
+</html>

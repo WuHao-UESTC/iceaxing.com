@@ -1,0 +1,17 @@
+---
+const { title, description } = Astro.props;
+import Header from '../components/Header.astro';
+---
+<html>
+  <head>/* 这里可以放专属的酷炫特效脚本 */</head>
+  <body class="classical-theme">
+    <Header />
+    <main>
+      <h1>{title}</h1>
+      <slot /> </main>
+  </body>
+</html>
+
+<style>
+  .classical-theme { background: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; }
+</style>
