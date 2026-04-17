@@ -2,20 +2,19 @@
 
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
-import { defineConfig, fontProviders } from 'astro/config';
+import { defineConfig, fontProviders, passthroughImageService } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://iceaxing.com',
 	integrations: [mdx(), sitemap()],
 
-	// 如果你之前安装了 sharp 想要修复图片问题，建议顺便加上这个配置：
+
+	// 🌟 关键：强制 Astro 生成直接的静态图片链接
 	image: {
-		service: {
-		entrypoint: 'astro/assets/services/sharp'
-		}
+		service: passthroughImageService(),
 	},
-	
+
 	fonts: [
 		{
 			provider: fontProviders.local(),
