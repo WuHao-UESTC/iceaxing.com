@@ -8,6 +8,14 @@ import { defineConfig, fontProviders } from 'astro/config';
 export default defineConfig({
 	site: 'https://iceaxing.com',
 	integrations: [mdx(), sitemap()],
+
+	// 如果你之前安装了 sharp 想要修复图片问题，建议顺便加上这个配置：
+	image: {
+		service: {
+		entrypoint: 'astro/assets/services/sharp'
+		}
+	},
+	
 	fonts: [
 		{
 			provider: fontProviders.local(),
