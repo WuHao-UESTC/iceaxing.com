@@ -1,0 +1,42 @@
+---
+// src/pages/log/[log].astro
+import { getCollection, render } from 'astro:content';
+import SciFiLayout from '../../layouts/SciFi.astro';
+import ClassicalLayout from '../../layouts/Classical.astro';
+import BlogPost from '../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+	const allLogs = await getCollection('log');
+	return allLogs.map((log) => ({
+		params: { log: log.id },
+		props: { log },
+	}));
+}
+
+const { log } = Astro.props;
+const { Content } = await render(log);
+
+const layoutMap: Record<string, any> = {
+	'SciFi': SciFiLayout,
+	'Classical': ClassicalLayout,
+	'Blog': BlogPost
+};
+
+const SelectedLayout = layoutMap[log.data.layoutType] || BlogPost;
+---
+
+<SelectedLayout {...log.data}>
+  <nav class="breadcrumb">
+    <a href="/log/">← 返回日志列表</a>
+  </nav>
+  
+  <article class="prose">
+    <Content />
+  </article>
+</SelectedLayout>
+
+<style>
+  .breadcrumb { margin-bottom: 2rem; }
+  .breadcrumb a { color: #ff5d01; text-decoration: none; font-size: 0.9rem; }
+  .prose { line-height: 1.8; }
+</style>

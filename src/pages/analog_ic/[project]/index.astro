@@ -1,69 +1,105 @@
 ---
 import { getCollection } from 'astro:content';
-import BaseHead from '../../../components/BaseHead.astro';
-import Header from '../../../components/Header.astro';
-import Footer from '../../../components/Footer.astro';
 
-// 核心引擎：告诉 Astro 需要生成哪些项目的专属页面
+import Base from '../../../layouts/Base.astro';
+import DownloadCard from '../../../components/DownloadCard.astro';
+import FormatDate from '../../../components/FormattedDate.astro';
+
 export async function getStaticPaths() {
   const allPosts = await getCollection('analog_ic');
-  
-  // 提取所有不重复的 projectId
   const uniqueProjectIds = [...new Set(allPosts.map((post) => post.data.projectId))];
-
-  // 遍历这些 projectId，为每一个生成独立的页面
+  
   return uniqueProjectIds.map((projectId) => {
-    // 过滤出属于当前项目的所有子博客文章（如 bandgap, current_mirror）
     const projectPosts = allPosts.filter((post) => post.data.projectId === projectId);
-    
     return {
-      params: { project: projectId }, // 生成网址后缀
+      params: { project: projectId },
       props: { 
-        posts: projectPosts, // 把过滤好的文章列表传给页面
-        projectName: projectPosts[0].data.projectName // 顺便提取项目美化名称
+        posts: projectPosts, 
+        projectName: projectPosts[0].data.projectName 
       },
     };
   });
 }
 
-// 接收 getStaticPaths 传过来的数据
 const { project } = Astro.params;
 const { posts, projectName } = Astro.props;
 ---
 
-<html lang="zh-CN">
-  <head>
-    <BaseHead title={`${projectName} - 项目总览`} description={`关于 ${projectName} 的所有内容`} />
-  </head>
-  <body>
-    <Header />
-    <main style="max-width: 800px; margin: 0 auto; padding: 2rem;">
-      <h1>{projectName} 项目总览</h1>
-      
-      <div style="background-color: #f4f4f5; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
-        <h3>📁 项目资源下载</h3>
-        <p>
-          <a href="/assets/files/dummy-file.zip" download>⬇️ 下载完整的 Cadence 仿真压缩包 (.tar.gz)</a>
-        </p>
-      </div>
+<Base title={`${projectName} `} description={`关于 ${projectName} 的所有内容`}>
+  <div class="project-container">
+    <h1 class="project-title">{projectName} </h1>
+    
+    <DownloadCard 
+      title={`${projectName} 完整仿真资源包 (.tar.gz)`} 
+      fileUrl={`/assets/files/${project}-pack.zip`} 
+    />
 
-      <h2>具体技术博客 (Modules)</h2>
-      <ul>
+    <section class="module-section">
+      <h2 class="section-subtitle">Modules</h2>
+      <ul class="article-list">
         {posts.map((post) => {
-          // Astro 默认的 slug 包含了文件夹名（如 two-stage-ota/bandgap）
-          // 我们只需要最后的文件名作为第三级路由
           const articleSlug = post.id.split('/')[1]; 
           return (
-            <li style="margin-bottom: 1rem;">
-              <a href={`/analog_ic/${project}/${articleSlug}/`}>
+            <li class="article-item">
+              <a href={`/analog_ic/${project}/${articleSlug}/`} class="article-link">
                 <h3>{post.data.title}</h3>
                 <p>{post.data.description}</p>
+                <p><FormatDate date={post.data.pubDate} /></p>
               </a>
             </li>
           );
         })}
       </ul>
-    </main>
-    <Footer />
-  </body>
-</html>
+    </section>
+  </div>
+</Base>
+
+<style>
+  /* 🌟 优化 1：全部分离为独立 style 代码段 */
+  .project-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem 0;
+  }
+  .project-title {
+    font-size: 2.2rem;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+  }
+  .section-subtitle {
+    font-size: 1.5rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .article-list {
+    list-style: none;
+    padding: 0;
+  }
+  .article-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+  .article-item:hover {
+    background-color: #fff8f5; /* 悬浮时的淡橙色背景 */
+  }
+  .article-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .article-link h3 {
+    margin: 0 0 0.5rem 0;
+    color: #ff5d01;
+    font-size: 1.25rem;
+  }
+  .article-link p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+  }
+</style>

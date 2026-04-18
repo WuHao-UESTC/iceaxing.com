@@ -7,4 +7,4 @@ projectName: 'Two-stage OTA'
 layoutType: 'Classical'
 ---
 
-<h1>这是一篇关于电流镜电路的设计笔记</h1>
+<h4>这是一篇关于电流镜电路的设计笔记</h4>

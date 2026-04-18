@@ -1,0 +1,42 @@
+---
+// src/pages/log/index.astro
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+
+const allLogs = (await getCollection('log')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title="开发日志" description="ICEAXING 的技术演进历程">
+  <section class="log-container">
+    <h1 class="page-title">📅 开发日志</h1>
+    <ul class="log-list">
+      {allLogs.map((log) => (
+        <li class="log-item">
+          <a href={`/log/${log.id}/`}>
+            <span class="date"><FormattedDate date={log.data.pubDate} /></span>
+            <h2 class="title">{log.data.title}</h2>
+            <p class="desc">{log.data.description}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .log-container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
+  .log-list { list-style: none; padding: 0; }
+  .log-item { 
+    border-bottom: 1px solid #eee; 
+    padding: 1.5rem 0;
+    transition: transform 0.2s ease;
+  }
+  .log-item:hover { transform: translateX(10px); }
+  .log-item a { text-decoration: none; color: inherit; }
+  .date { font-size: 0.9rem; color: #ff5d01; font-family: var(--font-atkinson); }
+  .title { margin: 0.5rem 0; font-size: 1.5rem; }
+  .desc { font-size: 0.95rem; color: #666; }
+</style>

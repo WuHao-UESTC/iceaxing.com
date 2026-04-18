@@ -1,0 +1,34 @@
+---
+// 定义组件的“接口”，告诉外界使用我时需要传入标题和文件路径
+interface Props {
+  title: string;
+  fileUrl: string;
+}
+
+const { title, fileUrl } = Astro.props;
+---
+
+<div class="download-card">
+  <p>
+    <a href={fileUrl} download>📁 {title}</a>
+  </p>
+</div>
+
+<style>
+  .download-card {
+    background-color: #f4f4f5;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 5px solid #ff5d01; /* 加上你的品牌橙色 */
+  }
+  .download-card a {
+    color: #ff5d01;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+  .download-card a:hover {
+    text-decoration: underline;
+  }
+</style>
