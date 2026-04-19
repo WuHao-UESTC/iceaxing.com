@@ -1,0 +1,57 @@
+---
+// src/components/ArticleCard.astro
+import FormatDate from './FormattedDate.astro';
+
+// 1. 定义这个卡片需要接收哪些“快递”（数据属性）
+export interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  href: string; // 跳转链接
+  category: string; // 文章分类
+}
+
+// 2. 签收属性
+const { title, description, pubDate, href, category } = Astro.props;
+---
+
+<li class={`article-item ${category}`}>
+  <a href={href} class={`article-link ${category}`}>
+    <h3>{title}</h3>
+    <p>{description}</p>
+    <p><FormatDate date={pubDate} /></p>
+  </a>
+</li>
+
+<style>
+  /* 样式区：把你原来 index.astro 里针对文章卡片的 CSS 剪切过来 */
+  .article-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+  }
+  .article-item:hover {
+    background-color: #fff8f5; /* 悬浮时的淡橙色背景 */
+  }
+  .article-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .article-link h3 {
+    margin: 0 0 0.5rem 0;
+    color: #ff5d01;
+    font-size: 1.25rem;
+  }
+  .article-link p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* Analog IC 专属样式 */
+
+</style>

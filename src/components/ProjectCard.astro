@@ -1,0 +1,60 @@
+---
+// src/components/ProjectCard.astro
+
+export interface Props {
+  name: string;
+  description: string;
+  href: string;
+  category: string;
+}
+
+const { name, description, href, category } = Astro.props;
+---
+
+<a href={href} class={`project-card ${category}`}>
+  <h2>{name}</h2>
+  <p class={`project-desc ${category}`}>{description}</p>
+  <span class={`enter-btn ${category}`}>进入项目 &rarr;</span>
+</a>
+
+<style>
+  /* 🧱 基础样式（所有卡片共用的骨架） */
+  .project-card {
+    display: block;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    margin-bottom: 1rem;
+    color: inherit;
+  }
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .project-card h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+  .project-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+  }
+
+  /* ---------------------------------- */
+  /* 🌟 Analog IC 的专属皮肤 (橙色系) */
+  /* ---------------------------------- */
+  .project-card.analog_ic:hover {
+    background-color: #fff8f5;
+    border-color: #ff5d01;
+  }
+  .project-card.analog_ic h2 {
+    color: #1a1a1a;
+  }
+  .project-card.analog_ic .enter-btn {
+    color: #ff5d01;
+  }
+
+</style>

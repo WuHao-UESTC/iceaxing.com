@@ -1,17 +1,31 @@
 ---
 import { getCollection } from 'astro:content';
-// 🌟 优化 1：引入我们之前构思的公共基座
-import Base from '../../layouts/Base.astro';
+import Base from '../../layouts/Base.astro';  //引入公共布局组件
+import ProjectCard from '../../components/ProjectCard.astro';
 
-const allPosts = await getCollection('analog_ic');
+const allPosts = await getCollection('analog_ic');  //获取所有项目博客
+const uniqueProjectIds = [...new Set(allPosts.map((post) => post.data.projectId))]; //获取所有唯一的项目 ID
 
-const projectsMap = new Map();
-allPosts.forEach((post) => {
-  if (!projectsMap.has(post.data.projectId)) {
-    projectsMap.set(post.data.projectId, post.data.projectName);
-  }
+/******************************************************
+ * uniqueProjects提取并传输的参量
+ * 项目 ID project.id
+ * 项目名称 project.name  
+ * 项目描述 project.description
+ ******************************************************/
+const uniqueProjects = uniqueProjectIds.map((projectId) => {
+  // 过滤出所有与当前项目 ID 相关的博客
+  const projectPosts = allPosts.filter((post) => post.data.projectId === projectId);
+  // 找出一篇带有 projectName 或 projectDesc的intro.md文件
+  const introPost = projectPosts.find((post) => post.data.projectName || post.data.projectDesc);
+
+  return {
+    id: projectId,
+    // 如果找到了且有名字，就用这个漂亮的名字；否则，用底层的 projectId 兜底（防崩溃）
+    name: (introPost && introPost.data.projectName) ? introPost.data.projectName : projectId,
+    // 如果找到了描述就用，没有就给默认文本
+    description: (introPost && introPost.data.projectDesc) ? introPost.data.projectDesc : "点击进入该项目，查看详情与仿真附件..."
+  };
 });
-const uniqueProjects = Array.from(projectsMap.entries());
 ---
 
 <Base title="Analog IC 知识库" description="Analog IC 学习路线与项目归档">
@@ -20,13 +34,13 @@ const uniqueProjects = Array.from(projectsMap.entries());
     <p class="hub-subtitle">请在下方选择进入具体的项目版块：</p>
 
     <ul class="project-list">
-      {uniqueProjects.map(([projectId, projectName]) => (
-        <li class="project-card">
-          <a href={`/analog_ic/${projectId}/`}>
-            <h2>{projectName}</h2>
-            <p>点击进入该项目，查看仿真附件与所有子模块博客 ➡️</p>
-          </a>
-        </li>
+      {uniqueProjects.map((project) => (
+        <ProjectCard
+          name={project.name}
+          description={project.description}
+          href={`/analog_ic/${project.id}/`}
+          category="analog_ic"
+        />
       ))}
     </ul>
   </div>
