@@ -40,15 +40,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { _type } = body;
+    let notificationResult: object | undefined;
 
     switch (_type) {
       case 'blog':
         revalidatePath('/', 'layout');
         revalidatePath('/en', 'layout');
 
-        // Send new-post notification whenever a blog post is published/re-published.
-        // (We guard against stale re-publishes inside sendNewPostNotification.)
-        let notificationResult: object | undefined;
         if (body._id) {
           try {
             notificationResult = await sendNewPostNotification(body._id);
