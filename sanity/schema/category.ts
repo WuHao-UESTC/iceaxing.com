@@ -1,0 +1,43 @@
+// sanity/schema/category.ts
+import { defineField, defineType } from 'sanity';
+
+export default defineType({
+  name: 'category',
+  title: '分类',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'title',
+      title: '标题',
+      type: 'string',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'URL 标识',
+      type: 'slug',
+      options: { source: 'title', maxLength: 96 },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'description',
+      title: '描述',
+      type: 'text',
+    }),
+    defineField({
+      name: 'order',
+      title: '排序',
+      type: 'number',
+      initialValue: 0,
+    }),
+    defineField({
+      name: 'icon',
+      title: '图标',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+  ],
+  orderings: [
+    { title: '排序', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] },
+  ],
+});

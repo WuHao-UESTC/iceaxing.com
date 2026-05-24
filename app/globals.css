@@ -1,26 +1,80 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ═══ KaTeX 公式基础样式 ═══ */
+@import 'katex/dist/katex.min.css';
+
+/* ═══ 代码高亮主题 ═══ */
+@import 'highlight.js/styles/github-dark.css';
+
+/* ═══ 文章正文通用排版（配合 CSS 变量实现主题切换） ═══ */
+.blog-body {
+  line-height: var(--blog-line-height, 1.8);
+  font-family: var(--blog-font-body, inherit);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.blog-body h1, .blog-body h2, .blog-body h3 {
+  font-family: var(--blog-font-heading, inherit);
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.blog-body h1 { font-size: 1.75rem; }
+.blog-body h2 { font-size: 1.5rem; }
+.blog-body h3 { font-size: 1.25rem; }
+
+.blog-body p {
+  line-height: var(--blog-line-height, 1.8);
+  margin-bottom: 1rem;
+}
+
+.blog-body a {
+  color: var(--blog-link-color, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.blog-body blockquote {
+  border-left: 3px solid var(--blog-blockquote-border, #e4e4e7);
+  padding-left: 1rem;
+  color: var(--blog-blockquote-color, #71717a);
+  margin: 1.5rem 0;
+}
+
+.blog-body ul, .blog-body ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.blog-body li {
+  margin-bottom: 0.25rem;
+}
+
+.blog-body pre {
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.blog-body img {
+  border-radius: 0.5rem;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Terminal 主题专用 */
+.theme-terminal .blog-body h1::before { content: '# '; color: #71717a; }
+.theme-terminal .blog-body h2::before { content: '## '; color: #71717a; }
+.theme-terminal .blog-body h3::before { content: '### '; color: #71717a; }
+.theme-terminal .blog-body code {
+  background: #1a1a1a;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
 }

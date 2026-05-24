@@ -9,12 +9,29 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@giscus/react": "^3.1.0",
+    "@portabletext/react": "^6.2.0",
+    "@react-email/components": "^0.5.7",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.26.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "feed": "^5.2.1",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.17.0",
+    "markmap-lib": "^0.18.12",
+    "markmap-view": "^0.18.12",
     "next": "16.2.6",
+    "next-intl": "^4.12.0",
+    "next-sanity": "^12.4.5",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "resend": "^6.12.3",
+    "sanity": "^5.26.0",
+    "styled-components": "^6.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/katex": "^0.16.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

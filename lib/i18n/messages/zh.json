@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "categories": "分类",
+    "log": "日志",
+    "about": "关于",
+    "friends": "友链",
+    "profile": "个人简介",
+    "search": "搜索",
+    "subscribe": "订阅",
+    "rss": "RSS",
+    "home": "首页",
+    "menuAriaLabel": "菜单"
+  },
+  "home": {
+    "title": "庄园正在建设中……",
+    "subtitle": "欢迎来到 iceaxing 的数字花园",
+    "imageAlt": "庄园建设中",
+    "metaTitle": "iceaxing — 数字花园",
+    "metaDescription": "欢迎来到 iceaxing 的个人博客，一个记录技术思考与创作的数字花园。"
+  },
+  "search": {
+    "placeholder": "搜索文章...",
+    "ariaLabel": "搜索文章",
+    "triggerLabel": "搜索 (Ctrl+K)",
+    "loading": "搜索中...",
+    "noResults": "没有找到相关文章",
+    "allCategories": "全部分类"
+  },
+  "error": {
+    "title": "内容暂时不可用",
+    "description": "请稍后重试",
+    "retry": "重试"
+  },
+  "notFound": {
+    "metaTitle": "页面未找到",
+    "heading": "这里什么都没有……",
+    "description": "你似乎走到了一个不存在的地方",
+    "backToHome": "← 返回首页"
+  },
+  "common": {
+    "backToHome": "← 返回首页",
+    "backToLog": "← 返回日志",
+    "home": "首页",
+    "log": "日志",
+    "notFound": "未找到",
+    "updatedAt": "最后更新于",
+    "posts": "文章",
+    "collections": "合集",
+    "postCountUnit": "篇文章",
+    "emptyPosts": "这里还没有文章，敬请期待",
+    "emptyCollections": "这个合集中还没有文章",
+    "emptyFriends": "暂未添加好友链接",
+    "emptyProfile": "个人简介尚未创建",
+    "emptyProjects": "这个分类下还没有项目"
+  },
+  "log": {
+    "title": "日志",
+    "metaDescription": "网站更新日志与开发记录。",
+    "legendContent": "内容更新",
+    "legendSite": "网站维护",
+    "legendOther": "其他",
+    "categoryContent": "内容更新",
+    "categorySite": "网站维护",
+    "categoryOther": "其他"
+  },
+  "about": {
+    "title": "关于",
+    "metaDescription": "关于 iceaxing 和这个博客的故事。"
+  },
+  "friends": {
+    "title": "友链",
+    "metaDescription": "常去的博客和有趣的人们。"
+  },
+  "profile": {
+    "title": "个人简介",
+    "metaDescription": "关于 iceaxing 的技术栈、项目经历和兴趣爱好。"
+  },
+  "subscribe": {
+    "title": "订阅更新通知",
+    "placeholder": "your@email.com",
+    "submit": "订阅",
+    "submitting": "提交中...",
+    "close": "关闭",
+    "success": "订阅成功！请检查邮箱确认",
+    "error": "订阅失败，请稍后重试",
+    "networkError": "网络错误，请稍后重试"
+  },
+  "pdf": {
+    "download": "下载 PDF",
+    "defaultTitle": "PDF"
+  }
+}

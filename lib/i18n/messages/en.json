@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "categories": "Categories",
+    "log": "Log",
+    "about": "About",
+    "friends": "Friends",
+    "profile": "Profile",
+    "search": "Search",
+    "subscribe": "Subscribe",
+    "rss": "RSS",
+    "home": "Home",
+    "menuAriaLabel": "Menu"
+  },
+  "home": {
+    "title": "Manor Under Construction...",
+    "subtitle": "Welcome to iceaxing's digital garden",
+    "imageAlt": "Manor under construction",
+    "metaTitle": "iceaxing — Digital Garden",
+    "metaDescription": "Welcome to iceaxing's personal blog, a digital garden for tech thoughts and creations."
+  },
+  "search": {
+    "placeholder": "Search articles...",
+    "ariaLabel": "Search articles",
+    "triggerLabel": "Search (Ctrl+K)",
+    "loading": "Searching...",
+    "noResults": "No articles found",
+    "allCategories": "All Categories"
+  },
+  "error": {
+    "title": "Content temporarily unavailable",
+    "description": "Please try again later",
+    "retry": "Retry"
+  },
+  "notFound": {
+    "metaTitle": "Page Not Found",
+    "heading": "Nothing here...",
+    "description": "You seem to have reached a place that doesn't exist",
+    "backToHome": "← Back to Home"
+  },
+  "common": {
+    "backToHome": "← Back to Home",
+    "backToLog": "← Back to Log",
+    "home": "Home",
+    "log": "Log",
+    "notFound": "Not Found",
+    "updatedAt": "Last updated on",
+    "posts": "Posts",
+    "collections": "Collections",
+    "postCountUnit": "posts",
+    "emptyPosts": "No posts yet, stay tuned",
+    "emptyCollections": "No posts in this collection",
+    "emptyFriends": "No friend links yet",
+    "emptyProfile": "Profile not created yet",
+    "emptyProjects": "No projects in this category"
+  },
+  "log": {
+    "title": "Log",
+    "metaDescription": "Website update log and development records.",
+    "legendContent": "Content Update",
+    "legendSite": "Site Maintenance",
+    "legendOther": "Other",
+    "categoryContent": "Content Update",
+    "categorySite": "Site Maintenance",
+    "categoryOther": "Other"
+  },
+  "about": {
+    "title": "About",
+    "metaDescription": "About iceaxing and the story behind this blog."
+  },
+  "friends": {
+    "title": "Friends",
+    "metaDescription": "Frequently visited blogs and interesting people."
+  },
+  "profile": {
+    "title": "Profile",
+    "metaDescription": "About iceaxing's tech stack, projects, and interests."
+  },
+  "subscribe": {
+    "title": "Subscribe for updates",
+    "placeholder": "your@email.com",
+    "submit": "Subscribe",
+    "submitting": "Submitting...",
+    "close": "Close",
+    "success": "Subscribed! Please check your email to confirm",
+    "error": "Subscription failed, please try again later",
+    "networkError": "Network error, please try again later"
+  },
+  "pdf": {
+    "download": "Download PDF",
+    "defaultTitle": "PDF"
+  }
+}

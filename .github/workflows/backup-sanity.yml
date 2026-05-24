@@ -1,0 +1,28 @@
+name: Weekly Sanity Backup
+
+on:
+  schedule:
+    - cron: '17 7 * * 1'  # Every Monday at UTC 7:17 (off the hour to avoid spike congestion)
+  workflow_dispatch:       # Allow manual trigger for emergency backups
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Export Sanity dataset
+        run: |
+          npx sanity@3 dataset export production backup/$(date +%Y-%m-%d).tar.gz --overwrite
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+      - name: Commit backup
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'backup: Sanity dataset export'
+          file_pattern: 'backup/*.tar.gz'
