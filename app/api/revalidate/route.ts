@@ -221,25 +221,32 @@ async function sendNewPostNotification(blogId: string): Promise<DebugInfo> {
   if (matchedContacts.length === 0) return debug;
   debug.recipients = matchedContacts.map((c) => c.email);
 
-  // Send emails in parallel
-  const results = await Promise.allSettled(
-    matchedContacts.map((c) =>
-      resend.emails.send({
-        from: 'notify@iceaxing.com',
-        to: c.email,
-        subject: postLocale === 'en'
-          ? `iceaxing — New Post: ${post.title}`
-          : `iceaxing 新文章: ${post.title}`,
-        react: NewPostNotificationEmail({
-          postTitle: post.title,
-          postUrl,
-          category: post.category.title,
-          project: post.project.title,
-          locale: postLocale,
+  // Send emails sequentially to avoid Resend rate limit (5 req/s on free tier)
+  const results: PromiseSettledResult<unknown>[] = [];
+  for (const c of matchedContacts) {
+    results.push(
+      await Promise.allSettled([
+        resend.emails.send({
+          from: 'notify@iceaxing.com',
+          to: c.email,
+          subject: postLocale === 'en'
+            ? `iceaxing — New Post: ${post.title}`
+            : `iceaxing 新文章: ${post.title}`,
+          react: NewPostNotificationEmail({
+            postTitle: post.title,
+            postUrl,
+            category: post.category.title,
+            project: post.project.title,
+            locale: postLocale,
+          }),
         }),
-      })
-    )
-  );
+      ]).then((r) => r[0])
+    );
+    // 250ms delay between sends to stay under rate limit
+    if (matchedContacts.length > 1) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
 
   for (const r of results) {
     if (r.status === 'fulfilled') {
