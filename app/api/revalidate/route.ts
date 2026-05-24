@@ -221,6 +221,9 @@ async function sendNewPostNotification(blogId: string): Promise<DebugInfo> {
   if (matchedContacts.length === 0) return debug;
   debug.recipients = matchedContacts.map((c) => c.email);
 
+  // Wait 1s for rate-limit window to clear from contacts.get() calls above
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   // Send emails sequentially to avoid Resend rate limit (5 req/s on free tier)
   const results: PromiseSettledResult<unknown>[] = [];
   for (const c of matchedContacts) {
