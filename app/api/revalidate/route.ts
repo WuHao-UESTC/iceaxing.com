@@ -48,11 +48,13 @@ export async function POST(request: NextRequest) {
 
         // Send new-post notification whenever a blog post is published/re-published.
         // (We guard against stale re-publishes inside sendNewPostNotification.)
+        let notificationResult: object | undefined;
         if (body._id) {
           try {
-            await sendNewPostNotification(body._id);
+            notificationResult = await sendNewPostNotification(body._id);
           } catch (err) {
             console.error('[revalidate] Notification error:', err);
+            notificationResult = { error: String(err) };
           }
         }
         break;
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    return NextResponse.json({ revalidated: true, now: Date.now() });
+    return NextResponse.json({ revalidated: true, now: Date.now(), ...(notificationResult ? { notification: notificationResult } : {}) });
   } catch (error) {
     console.error('[revalidate] Error:', error);
     return NextResponse.json(
@@ -97,10 +99,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function sendNewPostNotification(blogId: string) {
+type DebugInfo = {
+  stage: string;
+  contactsFound?: number;
+  recipients?: string[];
+  matched?: string[];
+  skipped?: string[];
+  errors?: string[];
+  emailIds?: string[];
+};
+
+async function sendNewPostNotification(blogId: string): Promise<DebugInfo> {
+  const debug: DebugInfo = { stage: 'start', errors: [], matched: [], skipped: [], emailIds: [], recipients: [] };
+
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[revalidate] RESEND_API_KEY not set, skipping notification');
-    return;
+    return { stage: 'no_api_key' };
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
@@ -119,9 +132,10 @@ async function sendNewPostNotification(blogId: string) {
 
   if (!post?.title || !post?.category?.slug || !post?.category?.title
       || !post?.project?.slug || !post?.project?.title || !post?.slug) {
-    console.warn('[revalidate] Post not found or missing refs for notification:', blogId);
-    return;
+    return { stage: 'post_not_found_or_missing_refs' };
   }
+
+  debug.stage = 'post_fetched';
 
   const postUrl = post.collection?.slug
     ? `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.collection.slug}/${post.slug}`
@@ -147,7 +161,7 @@ async function sendNewPostNotification(blogId: string) {
       after ? { after, limit: 100 } : { limit: 100 }
     );
     if (listResponse.error) {
-      console.error('[revalidate] contacts.list error:', listResponse.error);
+      debug.errors!.push(`contacts.list: ${JSON.stringify(listResponse.error)}`);
       break;
     }
     const data = listResponse.data?.data;
@@ -158,9 +172,10 @@ async function sendNewPostNotification(blogId: string) {
     after = data?.[data.length - 1]?.id;
   }
 
-  console.log(`[revalidate] Fetched ${allContacts.length} contacts`);
+  debug.contactsFound = allContacts.length;
+  debug.stage = 'contacts_fetched';
 
-  if (allContacts.length === 0) return;
+  if (allContacts.length === 0) return debug;
 
   // Filter contacts by subscription preferences
   const matchedContacts: { id: string; email: string }[] = [];
@@ -168,7 +183,7 @@ async function sendNewPostNotification(blogId: string) {
     try {
       const getResult = await resend.contacts.get(contact.id);
       if (getResult.error) {
-        console.log(`[revalidate] contacts.get error for ${contact.email}, fail-open`);
+        debug.errors!.push(`contacts.get(${contact.email}): ${JSON.stringify(getResult.error)}`);
         matchedContacts.push(contact);
         continue;
       }
@@ -181,11 +196,9 @@ async function sendNewPostNotification(blogId: string) {
           ? subsProp.value
           : undefined;
 
-      console.log(`[revalidate] Contact ${contact.email}: subs="${subs}", cat:${postCatSlug} proj:${postProjSlug} col:${postColSlug}`);
-
       if (subs === undefined || subs === '') {
         matchedContacts.push(contact);
-        console.log(`[revalidate]   → matched (legacy/all)`);
+        debug.matched!.push(`${contact.email} (legacy)`);
       } else {
         const prefSet = new Set(subs.split(','));
         if (
@@ -194,23 +207,21 @@ async function sendNewPostNotification(blogId: string) {
           (postColSlug && prefSet.has(`collection:${postProjSlug}/${postColSlug}`))
         ) {
           matchedContacts.push(contact);
-          console.log(`[revalidate]   → matched (preference)`);
+          debug.matched!.push(`${contact.email} (pref:${subs})`);
         } else {
-          console.log(`[revalidate]   → skipped (no match)`);
+          debug.skipped!.push(`${contact.email} subs=${subs} vs cat=${postCatSlug} proj=${postProjSlug} col=${postColSlug}`);
         }
       }
     } catch (err) {
-      console.log(`[revalidate] contacts.get threw for ${contact.email}, fail-open:`, String(err));
+      debug.errors!.push(`contacts.get throw ${contact.email}: ${String(err)}`);
       matchedContacts.push(contact);
     }
   }
 
-  console.log(`[revalidate] Matched ${matchedContacts.length}/${allContacts.length} contacts`);
+  debug.stage = matchedContacts.length > 0 ? 'sending' : 'no_matches';
 
-  if (matchedContacts.length === 0) {
-    console.log('[revalidate] No matching subscribers for this post');
-    return;
-  }
+  if (matchedContacts.length === 0) return debug;
+  debug.recipients = matchedContacts.map((c) => c.email);
 
   // Send emails in parallel
   const results = await Promise.allSettled(
@@ -237,20 +248,16 @@ async function sendNewPostNotification(blogId: string) {
       const v = r.value as Record<string, unknown>;
       const data = v?.data as Record<string, unknown> | undefined;
       if (data?.id) {
-        console.log(`[revalidate] Email sent: ${data.id}`);
+        debug.emailIds!.push(data.id as string);
       }
       if (v?.error) {
-        console.error(`[revalidate] Email error:`, v.error);
+        debug.errors!.push(`email send error: ${JSON.stringify(v.error)}`);
       }
+    } else {
+      debug.errors!.push(`email send rejected: ${String(r.reason)}`);
     }
   }
 
-  const failed = results.filter((r) => {
-    if (r.status === 'rejected') return true;
-    if (r.status === 'fulfilled' && (r.value as { error?: unknown })?.error) return true;
-    return false;
-  }).length;
-  if (failed > 0) {
-    console.warn(`[revalidate] ${failed}/${results.length} notification emails failed`);
-  }
+  debug.stage = 'done';
+  return debug;
 }
