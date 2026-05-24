@@ -158,6 +158,8 @@ async function sendNewPostNotification(blogId: string) {
     after = data?.[data.length - 1]?.id;
   }
 
+  console.log(`[revalidate] Fetched ${allContacts.length} contacts`);
+
   if (allContacts.length === 0) return;
 
   // Filter contacts by subscription preferences
@@ -166,7 +168,7 @@ async function sendNewPostNotification(blogId: string) {
     try {
       const getResult = await resend.contacts.get(contact.id);
       if (getResult.error) {
-        // If we can't read properties, include the contact (fail-open)
+        console.log(`[revalidate] contacts.get error for ${contact.email}, fail-open`);
         matchedContacts.push(contact);
         continue;
       }
@@ -179,9 +181,11 @@ async function sendNewPostNotification(blogId: string) {
           ? subsProp.value
           : undefined;
 
+      console.log(`[revalidate] Contact ${contact.email}: subs="${subs}", cat:${postCatSlug} proj:${postProjSlug} col:${postColSlug}`);
+
       if (subs === undefined || subs === '') {
-        // Legacy subscriber or "all content" — include
         matchedContacts.push(contact);
+        console.log(`[revalidate]   → matched (legacy/all)`);
       } else {
         const prefSet = new Set(subs.split(','));
         if (
@@ -190,13 +194,18 @@ async function sendNewPostNotification(blogId: string) {
           (postColSlug && prefSet.has(`collection:${postProjSlug}/${postColSlug}`))
         ) {
           matchedContacts.push(contact);
+          console.log(`[revalidate]   → matched (preference)`);
+        } else {
+          console.log(`[revalidate]   → skipped (no match)`);
         }
       }
-    } catch {
-      // Fail-open: include contact if we can't read preferences
+    } catch (err) {
+      console.log(`[revalidate] contacts.get threw for ${contact.email}, fail-open:`, String(err));
       matchedContacts.push(contact);
     }
   }
+
+  console.log(`[revalidate] Matched ${matchedContacts.length}/${allContacts.length} contacts`);
 
   if (matchedContacts.length === 0) {
     console.log('[revalidate] No matching subscribers for this post');
@@ -222,6 +231,15 @@ async function sendNewPostNotification(blogId: string) {
       })
     )
   );
+
+  for (const r of results) {
+    if (r.status === 'fulfilled' && (r.value as { id?: string })?.id) {
+      console.log(`[revalidate] Email sent: ${(r.value as { id: string }).id}`);
+    }
+    if (r.status === 'fulfilled' && (r.value as { error?: unknown })?.error) {
+      console.error(`[revalidate] Email error:`, (r.value as { error: unknown }).error);
+    }
+  }
 
   const failed = results.filter((r) => {
     if (r.status === 'rejected') return true;
