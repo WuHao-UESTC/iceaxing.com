@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
         revalidatePath('/', 'layout');
         revalidatePath('/en', 'layout');
 
-        // Send new-post notification if this is a first publish
-        if (body._id && body._createdAt && body._createdAt === body._updatedAt) {
+        // Send new-post notification whenever a blog post is published/re-published.
+        // (We guard against stale re-publishes inside sendNewPostNotification.)
+        if (body._id) {
           try {
             await sendNewPostNotification(body._id);
           } catch (err) {
@@ -108,6 +109,7 @@ async function sendNewPostNotification(blogId: string) {
     groq`*[_id == $id][0]{
       title,
       language,
+      publishedAt,
       "slug": slug.current,
       "project": project->{"slug": slug.current, title},
       "category": project->category->{"slug": slug.current, title},
@@ -120,6 +122,17 @@ async function sendNewPostNotification(blogId: string) {
       || !post?.project?.slug || !post?.project?.title || !post?.slug) {
     console.warn('[revalidate] Post not found or missing refs for notification:', blogId);
     return;
+  }
+
+  // Guard: skip if the post was published more than 30 minutes ago.
+  // This prevents duplicate emails when re-publishing old content.
+  if (post.publishedAt) {
+    const publishedMs = Date.parse(post.publishedAt);
+    const nowMs = Date.now();
+    if (!isNaN(publishedMs) && nowMs - publishedMs > 30 * 60 * 1000) {
+      console.log('[revalidate] Post published >30 min ago, skipping notification');
+      return;
+    }
   }
 
   const postUrl = post.collection?.slug
