@@ -9,6 +9,7 @@ import type {
   CollectionDoc,
   FriendDoc,
   ProfileDoc,
+  SubscriptionOption,
 } from './types';
 
 // ═══ Category ═══
@@ -225,4 +226,33 @@ export async function getCollectionsByProject(projectSlug: string): Promise<Coll
     }`,
     { projectSlug }
   );
+}
+
+// ═══ Subscription Options ═══
+
+export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
+  const categories = await client.fetch(
+    groq`*[_type == "category"] | order(order) {
+      "type": "category",
+      "slug": slug.current,
+      title
+    }`
+  );
+  const projects = await client.fetch(
+    groq`*[_type == "project"] | order(order) {
+      "type": "project",
+      "slug": slug.current,
+      title,
+      "parentSlug": category->slug.current
+    }`
+  );
+  const collections = await client.fetch(
+    groq`*[_type == "collection"] | order(order) {
+      "type": "collection",
+      "slug": slug.current,
+      title,
+      "parentSlug": project->slug.current
+    }`
+  );
+  return [...categories, ...projects, ...collections] as SubscriptionOption[];
 }

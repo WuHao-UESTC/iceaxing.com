@@ -12,6 +12,7 @@
     "@giscus/react": "^3.1.0",
     "@portabletext/react": "^6.2.0",
     "@react-email/components": "^0.5.7",
+    "@react-email/render": "^2.0.8",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^5.26.0",
     "@tailwindcss/typography": "^0.5.19",

@@ -83,7 +83,11 @@
     "close": "关闭",
     "success": "订阅成功！请检查邮箱确认",
     "error": "订阅失败，请稍后重试",
-    "networkError": "网络错误，请稍后重试"
+    "networkError": "网络错误，请稍后重试",
+    "preferencesLabel": "订阅范围（可选）",
+    "preferencesHint": "可选，不选则订阅全部内容",
+    "loadingOptions": "加载选项中...",
+    "emptyOptions": "暂无可选分类"
   },
   "pdf": {
     "download": "下载 PDF",

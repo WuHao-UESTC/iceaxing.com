@@ -51,7 +51,7 @@ export function SubscribeDialog() {
             role="dialog"
             aria-modal="true"
             aria-labelledby={headingId}
-            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-sm
+            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-md
                         bg-white rounded-xl shadow-2xl border p-6"
             onClick={(e) => e.stopPropagation()}
           >

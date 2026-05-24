@@ -14,37 +14,56 @@ interface Props {
   postUrl: string;
   category: string;
   project: string;
+  locale?: 'zh' | 'en';
 }
+
+const content = {
+  zh: {
+    preview: (title: string) => `iceaxing 有新文章：${title}`,
+    heading: 'iceaxing 更新通知',
+    intro: '你在 iceaxing 订阅的内容有更新：',
+    article: (title: string) => `新文章：《${title}》`,
+    readNow: '立即阅读',
+    footer: '不想再收到此类通知？点击邮件底部的退订链接即可。',
+  },
+  en: {
+    preview: (title: string) => `iceaxing — New Post: ${title}`,
+    heading: 'iceaxing Update',
+    intro: 'New content from your iceaxing subscription:',
+    article: (title: string) => `"${title}"`,
+    readNow: 'Read Now',
+    footer: "Don't want these notifications? Click the unsubscribe link at the bottom of this email.",
+  },
+};
 
 export function NewPostNotificationEmail({
   postTitle,
   postUrl,
   category,
   project,
+  locale = 'zh',
 }: Props) {
+  const m = content[locale];
+
   return (
-    <Html lang="zh">
+    <Html lang={locale}>
       <Head />
-      <Preview>iceaxing 有新文章：{postTitle}</Preview>
+      <Preview>{m.preview(postTitle)}</Preview>
       <Body style={bodyStyle}>
         <Container>
-          <Text style={headingStyle}>iceaxing 更新通知</Text>
+          <Text style={headingStyle}>{m.heading}</Text>
+          <Text style={textStyle}>{m.intro}</Text>
           <Text style={textStyle}>
-            你在 iceaxing 订阅的内容有更新：
+            {category} &gt; {project}
           </Text>
           <Text style={textStyle}>
-            分类：{category} &gt; {project}
-          </Text>
-          <Text style={textStyle}>
-            新文章：《{postTitle}》
+            {m.article(postTitle)}
           </Text>
           <Link href={postUrl} style={buttonStyle}>
-            立即阅读
+            {m.readNow}
           </Link>
           <Hr style={hrStyle} />
-          <Text style={footerStyle}>
-            不想再收到此类通知？点击邮件底部的退订链接即可。
-          </Text>
+          <Text style={footerStyle}>{m.footer}</Text>
         </Container>
       </Body>
     </Html>

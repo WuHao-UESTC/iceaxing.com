@@ -4763,12 +4763,15 @@ export function checkRateLimit(
 
 1. **Rate Check**：调用 `checkRateLimit()` 校验该 IP 是否在窗口内超限，超限返回 429。这一步防止恶意脚本批量提交垃圾邮箱。
 2. **Validate Email**：检查邮箱格式（`includes('@')`）。Resend 服务端会做完整校验，但前端过滤可以减少无效 API 调用。
-3. **Resend `contacts.create()`**：将邮箱写入 Resend 联系人列表。Resend v6 中 `audienceId` 参数已废弃，改用 Segments 体系（可选，不传则加入默认列表）。
-4. **Double Opt-In**：Resend 默认开启双重确认——用户提交邮箱后，会自动收到一封 Resend 发的确认邮件。只有点击确认链接后，联系人才变为 "subscribed" 状态。开发者无需额外实现。
+3. **Extract Subscription Preferences**：从请求体中解析 `subscriptions: string[]` 数组，过滤非字符串元素后 join 为逗号分隔字符串（如 `"category:tech,project:blog"`）。
+4. **Resend `contacts.create()`**：将邮箱和订阅偏好写入 Resend 联系人列表。`properties.subscriptions` 存储偏好字符串；`segments` 将联系人归入指定分组。Resend v6 中 `audienceId` 参数已废弃。
+5. **Duplicate Handling**：若邮箱已存在（422），走 `contacts.update()` 更新其偏好设置，而非报错——允许用户修改订阅范围。
+6. **Send Confirmation Email**：使用 `@react-email/components` 渲染的自定义确认邮件模板，根据用户语言发送中文或英文版本。邮件中列出已选择的订阅范围。
+7. **Double Opt-In**：Resend 默认开启双重确认——用户提交邮箱后，SDK 会自动发送确认邮件。只有点击确认链接后，联系人才变为 "subscribed" 状态。
 
 > **为什么用 Resend 而不是自建订阅表**：自建需要处理邮件发送、退订链接、确认流程、状态管理——每一项都是坑。Resend 的 free tier 每月 1000 封邮件，个人博客足够；contacts.create() 自动处理 double opt-in 和 GDPR 合规，省下大量开发时间。
 
-**[文件用途]** `app/api/subscribe/route.ts`——订阅接口的 POST handler，处理邮箱提交、Rate Limit 校验、调用 Resend 创建联系人。
+**[文件用途]** `app/api/subscribe/route.ts`——订阅接口的 POST handler，处理邮箱提交、Rate Limit 校验、调用 Resend 创建联系人并存储订阅偏好。
 
 ```bash
 npm install resend@^6
@@ -4779,6 +4782,7 @@ npm install resend@^6
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { ConfirmSubscriptionEmail } from '@/lib/email/templates/confirm-subscription';
 
 export async function POST(request: NextRequest) {
   if (!process.env.RESEND_API_KEY) {
@@ -4789,8 +4793,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const segmentId = process.env.RESEND_SEGMENT_ID;
+  if (!segmentId) {
+    console.error('[subscribe] RESEND_SEGMENT_ID is not configured');
+    return NextResponse.json(
+      { success: false, message: '订阅服务暂未配置' },
+      { status: 500 }
+    );
+  }
+
   // Rate limit: 每 IP 每分钟最多 3 次
-  // x-forwarded-for may contain multiple IPs; take the first (client IP)
   const forwarded = request.headers.get('x-forwarded-for') || 'unknown';
   const ip = forwarded.split(',')[0].trim();
   if (!checkRateLimit(ip, 3, 60_000)) {
@@ -4811,22 +4823,69 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const locale: 'zh' | 'en' = body.locale === 'en' ? 'en' : 'zh';
+    const subscriptions: string[] =
+      Array.isArray(body.subscriptions) ? body.subscriptions.filter((s: unknown) => typeof s === 'string') : [];
+    const subscriptionValue = subscriptions.join(',');
+
     const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.contacts.create({ email });
+
+    // Create or update contact
+    const createResult = await resend.contacts.create({
+      email,
+      segments: [{ id: segmentId }],
+      properties: { subscriptions: subscriptionValue },
+    });
+
+    if (createResult.error) {
+      const err = createResult.error as { statusCode?: number; message?: string };
+      // Duplicate contact — update their subscription preferences
+      if (err.statusCode === 422 && err.message?.includes('already')) {
+        const updateResult = await resend.contacts.update({
+          email,
+          properties: { subscriptions: subscriptionValue },
+        });
+        if (updateResult.error) {
+          console.error('[subscribe] contacts.update error:', updateResult.error);
+          return NextResponse.json(
+            { success: false, message: '订阅更新失败，请稍后重试' },
+            { status: 500 }
+          );
+        }
+      } else {
+        console.error('[subscribe] contacts.create error:', err);
+        return NextResponse.json(
+          { success: false, message: '订阅失败，请稍后重试' },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Send confirmation email (non-fatal: contact already created/updated)
+    const sendResult = await resend.emails.send({
+      from: 'notify@iceaxing.com',
+      to: email,
+      subject: locale === 'en'
+        ? 'iceaxing — Subscription Confirmed'
+        : 'iceaxing — 订阅确认',
+      react: ConfirmSubscriptionEmail({
+        email,
+        locale,
+        subscriptionCount: subscriptions.length,
+        isAllContent: subscriptions.length === 0,
+      }),
+    });
+    if (sendResult.error) {
+      console.error('[subscribe] Failed to send confirmation email:', sendResult.error);
+    }
 
     return NextResponse.json({
       success: true,
-      message: '请查收确认邮件以完成订阅',
+      message: locale === 'en'
+        ? 'Please check your email to confirm your subscription'
+        : '请查收确认邮件以完成订阅',
     });
   } catch (error: unknown) {
-    // Resend throws on duplicate email — treat as already subscribed (409)
-    const err = error as { statusCode?: number; message?: string };
-    if (err.statusCode === 422 && err.message?.includes('already')) {
-      return NextResponse.json(
-        { success: false, message: '该邮箱已订阅或已收到确认邮件' },
-        { status: 409 }
-      );
-    }
     console.error('[subscribe] Error:', error);
     return NextResponse.json(
       { success: false, message: '订阅失败，请稍后重试' },
@@ -4840,16 +4899,18 @@ export async function POST(request: NextRequest) {
 
 | 行 | 说明 |
 |------|------|
-| `if (!process.env.RESEND_API_KEY)` | **安全检查**：API Key 缺失时提前返回 500 并记录日志，避免 SDK 在缺失 Key 时抛出未定义行为。不将内部错误信息暴露给客户端 |
-| `const forwarded = request.headers.get('x-forwarded-for') \|\| 'unknown'` | 从请求头获取客户端 IP 链。Vercel 代理后原始 IP 在 `x-forwarded-for` 中 |
-| `const ip = forwarded.split(',')[0].trim()` | **关键处理**：`x-forwarded-for` 可能包含多个 IP（如 `"1.2.3.4, 5.6.7.8"`），只取第一个（客户端真实 IP），并 trim 去除空格 |
+| `if (!process.env.RESEND_API_KEY)` | **安全检查**：API Key 缺失时提前返回 500 并记录日志，避免 SDK 在缺失 Key 时抛出未定义行为 |
+| `if (!segmentId)` | **安全检查**：Segment ID 缺失时同样返回 500。联系人必须加入指定 Segment 以区分来源 |
+| `const ip = forwarded.split(',')[0].trim()` | **关键处理**：`x-forwarded-for` 可能包含多个 IP，只取第一个（客户端真实 IP） |
 | `if (!checkRateLimit(ip, 3, 60_000))` | 调用限流工具：同一 IP 每分钟最多 3 次订阅请求 |
-| `typeof body.email === 'string' ? body.email.trim() : ''` | **类型守卫 + trim**：先确保 email 字段是字符串类型，再 trim 去除首尾空白。防止 `body.email` 为 `null`、`undefined` 或非字符串时 `trim()` 抛错 |
-| `if (!email \|\| !email.includes('@'))` | 基础邮箱格式校验，拦截空值和明显非邮箱的输入 |
-| `const resend = new Resend(process.env.RESEND_API_KEY)` | 在处理函数内创建 SDK 实例（而非模块级），TS 类型推断 `API_KEY` 非空（前面已 guard） |
-| `await resend.contacts.create({ email })` | 核心操作：调用 Resend API 创建联系人。SDK 自动处理 double opt-in 邮件发送 |
-| `err.statusCode === 422 && err.message?.includes('already')` | **AND 条件判断重复邮箱**：Resend 对已存在邮箱返回 422，但 422 也可能因其他原因触发（格式错误等），用 AND 组合确保精准匹配 "already subscribed" 情况 → 返回 409 |
-| `console.error('[subscribe] Error:', error)` | 记录完整错误到服务端日志，便于排查。客户端只收到通用错误信息，不泄露内部细节 |
+| `typeof body.email === 'string' ? body.email.trim() : ''` | **类型守卫 + trim**：确保 email 是字符串后再 trim，防止 `null`/`undefined` 时 `trim()` 抛错 |
+| `const locale = body.locale === 'en' ? 'en' : 'zh'` | 从请求体获取用户当前浏览语言，用于发送对应语言的确认邮件 |
+| `Array.isArray(body.subscriptions) ? body.subscriptions.filter(...)` | **类型守卫**：过滤数组中非字符串元素，防止恶意注入异常数据 |
+| `const subscriptionValue = subscriptions.join(',')` | 将订阅偏好序列化为逗号分隔字符串（如 `"category:tech,project:blog"`），存储在 Resend contact 的 `properties` 字段 |
+| `resend.contacts.create({ segments: [{ id: segmentId }], properties: {...} })` | 核心操作：创建联系人并加入 Segment。`properties.subscriptions` 存储分类偏好 |
+| `err.statusCode === 422 && err.message?.includes('already')` | **AND 条件判断重复邮箱**：重复邮箱返回 422 → 走 `contacts.update()` 更新其偏好设置，而非报错 |
+| `resend.emails.send({ react: ConfirmSubscriptionEmail({...}) })` | 发送自定义确认邮件（异步），失败仅记录日志不阻断订阅流程——联系人已成功创建 |
+| `console.error('[subscribe] Error:', error)` | 记录完整错误到服务端日志。客户端只收到通用错误信息，不泄露内部细节 |
 
 ---
 
@@ -4872,13 +4933,48 @@ export async function POST(request: NextRequest) {
 // components/subscribe/subscribe-form.tsx
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { PreferenceTree } from './preference-tree';
+import type { SubscriptionOption } from '@/lib/sanity/types';
 
-export function SubscribeForm() {
+interface Props {
+  showHeading?: boolean;
+}
+
+export function SubscribeForm({ showHeading = true }: Props) {
+  const t = useTranslations('subscribe');
+  const locale = useLocale();
   const [email, setEmail] = useState('');
+  const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set());
+  const [options, setOptions] = useState<SubscriptionOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const submittingRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch('/api/subscription-options');
+        const json = await res.json();
+        if (!cancelled && json.success) {
+          setOptions(json.data);
+        }
+      } catch {
+        // options fetch failure is non-fatal
+      } finally {
+        if (!cancelled) setOptionsLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleSelectionChange = useCallback((next: Set<string>) => {
+    setSubscriptions(next);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -4892,22 +4988,27 @@ export function SubscribeForm() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail }),
+        body: JSON.stringify({
+          email: trimmedEmail,
+          locale,
+          subscriptions: [...subscriptions],
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
         setStatus('success');
-        setMessage(data.message);
+        setMessage(String(data.message ?? '') || t('success'));
         setEmail('');
+        setSubscriptions(new Set());
       } else {
         setStatus('error');
-        setMessage(data.message || '订阅失败，请稍后重试');
+        setMessage(String(data.message ?? '') || t('error'));
       }
     } catch {
       setStatus('error');
-      setMessage('网络错误，请稍后重试');
+      setMessage(t('networkError'));
     } finally {
       submittingRef.current = false;
     }
@@ -4923,13 +5024,15 @@ export function SubscribeForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <h3 className="font-semibold text-sm">订阅更新通知</h3>
+      {showHeading && (
+        <h3 className="font-semibold text-sm">{t('title')}</h3>
+      )}
       <div className="flex gap-2">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
+          placeholder={t('placeholder')}
           required
           className="flex-1 px-3 py-2 border rounded-lg text-sm outline-none focus:border-zinc-400 transition-colors"
         />
@@ -4938,9 +5041,27 @@ export function SubscribeForm() {
           disabled={status === 'loading'}
           className="px-4 py-2 bg-zinc-900 text-white text-sm rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50"
         >
-          {status === 'loading' ? '提交中...' : '订阅'}
+          {status === 'loading' ? t('submitting') : t('submit')}
         </button>
       </div>
+
+      {/* Subscription preferences */}
+      <fieldset className="border rounded-lg p-3">
+        <legend className="text-xs text-zinc-500 px-1">
+          {t('preferencesLabel')}
+        </legend>
+        {optionsLoading ? (
+          <p className="text-xs text-zinc-400 py-2">{t('loadingOptions')}</p>
+        ) : (
+          <PreferenceTree
+            options={options}
+            selected={subscriptions}
+            onSelectionChange={handleSelectionChange}
+          />
+        )}
+        <p className="text-xs text-zinc-400 mt-1">{t('preferencesHint')}</p>
+      </fieldset>
+
       {status === 'error' && (
         <p className="text-sm text-red-600">{message}</p>
       )}
@@ -4953,16 +5074,277 @@ export function SubscribeForm() {
 
 | 行 | 说明 |
 |------|------|
-| `'use client'` | 标记为客户端组件——需要 `useState`、`useRef`、`onSubmit` 事件处理、浏览器 `fetch` API |
-| `useState<'idle' \| 'loading' \| 'success' \| 'error'>('idle')` | 状态机初始化为 `idle`。TS 联合类型确保只能赋值这 4 种合法状态 |
-| `const submittingRef = useRef(false)` | **双重提交守卫**：ref 在 React 渲染周期外保持状态，`setState` 异步批处理期间 ref 已同步置 `true`，防止快速双击或延迟响应导致的重复提交 |
-| `if (submittingRef.current) return` | 若已有进行中的请求，直接忽略本次提交——比仅靠 `disabled` 属性更可靠 |
-| `submittingRef.current = true` | 在 `setStatus('loading')` 之前设置，确保即使 React 批处理延迟，守卫也已生效 |
-| `const trimmedEmail = email.trim()` | **客户端 trim**：去除邮箱首尾空格，减少无效 API 调用 |
-| `e.preventDefault()` | 阻止表单默认提交（页面刷新），改为 JS 控制异步请求 |
-| `if (res.ok && data.success)` | **双重校验**：既检查 HTTP 状态码（`res.ok`），又检查业务逻辑成功标记（`data.success`）。resend 返回的非 2xx 在 `res.ok` 层面拦截 |
-| `finally { submittingRef.current = false }` | 无论成功/失败/异常，都重置守卫，确保用户可以重试 |
-| 移除 `categories` / `projects` Props | Phase 2 并未实现分类过滤订阅功能，预留空数组徒增复杂度——YAGNI 原则 |
+| `'use client'` | 标记为客户端组件——需要 `useState`、`useRef`、`useEffect`、`fetch`、浏览器事件 |
+| `useTranslations('subscribe')` | 使用 `next-intl` 加载订阅命名空间的翻译文本，支持中英双语 |
+| `useLocale()` | 获取用户当前浏览语言（`zh` 或 `en`），提交时传给 API 用于发送对应语言邮件 |
+| `useState<Set<string>>(new Set())` | **关键数据结构**：使用 Set 存储已选中的订阅 key（如 `"category:tech"`），去重且 O(1) 查找 |
+| `useEffect(() => { load() }, [])` | 组件挂载后从 `/api/subscription-options` 获取分类树数据，`cancelled` 标志防止 Strict Mode 重复请求或卸载后 setState |
+| `handleSelectionChange = useCallback(...)` | 缓存回调引用避免 PreferenceTree 无意义重渲染。Set 是不可变更新——每次传入新的 Set 实例 |
+| `submittingRef` | **双重提交守卫**：ref 在 React 渲染周期外同步置 true，防止快速双击或延迟响应导致的重复提交 |
+| `subscriptions: [...subscriptions]` | 将 Set 展开为数组传给 API。API 端再 join 为逗号分隔字符串存储 |
+| `showHeading` prop | 在 Dialog 弹窗中已显示标题，嵌入页面侧边栏时显示标题——同一组件适配两种场景 |
+| `<fieldset>` 偏好选择区 | HTML 原生 `<fieldset>` + `<legend>` 提供无障碍语义分组，加载中显示骨架文本 |
+| `PreferenceTree` 组件 | 递归渲染 category → project → collection 树，处理复选框的父子联动逻辑 |
+| `catch { setMessage(t('networkError')) }` | **i18n 错误消息**：网络异常时根据当前语言显示对应文本，而非硬编码中文 |
+
+---
+
+#### 3.1.3.1 订阅选项 API
+
+**概念说明——数据来源**
+
+订阅偏好选择器需要从 Sanity 获取所有 Category → Project → Collection 的关系树。这些数据与博客渲染页面相同，但需要扁平化为选项列表供树形组件消费。
+
+设计决策：用 ISR（Incremental Static Regeneration）缓存 1 小时。分类结构变化频率极低（数月一次），无需每次请求都实时查询 Sanity。
+
+**[文件用途]** `app/api/subscription-options/route.ts`——GET API，返回全部分类/项目/合集选项列表。
+
+```ts
+// app/api/subscription-options/route.ts
+import { NextResponse } from 'next/server';
+import { getSubscriptionOptions } from '@/lib/sanity/queries';
+
+export const dynamic = 'force-static';
+export const revalidate = 3600;
+
+export async function GET() {
+  try {
+    const options = await getSubscriptionOptions();
+    return NextResponse.json(
+      { success: true, data: options },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('[subscription-options] Error:', error);
+    return NextResponse.json(
+      { success: false, data: [] },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `dynamic = 'force-static'` + `revalidate = 3600` | ISR 策略：构建时生成静态 JSON，1 小时后后台重新生成。分类结构极少变化 |
+| `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400` | CDN 缓存 1 小时，过期后仍可返回旧数据（最长 24h）同时后台刷新 |
+| `{ success: false, data: [] }` | **降级策略**：Sanity 查询失败时返回空数组而非 500。订阅表单显示"暂无可选分类"，不阻断订阅流程——用户仍可"全选"订阅 |
+
+对应的 Sanity 查询函数（`lib/sanity/queries.ts`）：
+
+```ts
+export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
+  const categories = await client.fetch(
+    groq`*[_type == "category"] | order(order) {
+      "type": "category", "slug": slug.current, title
+    }`
+  );
+  const projects = await client.fetch(
+    groq`*[_type == "project"] | order(order) {
+      "type": "project", "slug": slug.current, title,
+      "parentSlug": category->slug.current
+    }`
+  );
+  const collections = await client.fetch(
+    groq`*[_type == "collection"] | order(order) {
+      "type": "collection", "slug": slug.current, title,
+      "parentSlug": project->slug.current
+    }`
+  );
+  return [...categories, ...projects, ...collections] as SubscriptionOption[];
+}
+```
+
+> **为什么 `parentSlug` 对 collection 特别重要**：Collection slug 只在同一 project 内唯一——不同 project 下可以有同名的 collection（如两个 project 都有 "changelog" 合集）。订阅时需要用 `collection:projectSlug/collectionSlug` 格式来唯一标识，而 `parentSlug`（即 project slug）正是构造这个复合 key 所必需的数据。
+
+**TypeScript 类型**（`lib/sanity/types.ts`）：
+
+```ts
+export interface SubscriptionOption {
+  type: 'category' | 'project' | 'collection';
+  slug: string;
+  title: string;
+  parentSlug?: string; // project 的父 category slug；collection 的父 project slug
+}
+```
+
+---
+
+#### 3.1.3.2 偏好树组件
+
+**概念说明——key 格式与级联逻辑**
+
+偏好树组件将扁平的 `SubscriptionOption[]` 构建为 category → project → collection 三层树，通过 checkbox 让用户选择订阅范围。关键设计：
+
+- **Key 格式**：`category:slug`、`project:slug`、`collection:projectSlug/collectionSlug`（collection key 包含父 project slug，解决 slug 非全局唯一问题）
+- **级联逻辑**：勾选父节点自动勾选所有子节点；取消父节点自动取消所有子节点。这是单向级联——取消子节点不影响父节点
+- **匹配语义**：通知发送时使用 OR 逻辑——只要用户的订阅 key 集合中匹配 category、project 或 collection 任一维度，就发送通知
+
+**[文件用途]** `components/subscribe/preference-tree.tsx`——分类偏好树组件，渲染 checkbox 树并处理级联逻辑。
+
+```tsx
+// components/subscribe/preference-tree.tsx
+'use client';
+
+import { useTranslations } from 'next-intl';
+import type { SubscriptionOption } from '@/lib/sanity/types';
+
+interface Props {
+  options: SubscriptionOption[];
+  selected: Set<string>;
+  onSelectionChange: (newSelected: Set<string>) => void;
+}
+
+interface TreeNode {
+  type: 'category' | 'project' | 'collection';
+  slug: string;
+  title: string;
+  parentSlug?: string;
+  children: TreeNode[];
+}
+
+function buildTree(options: SubscriptionOption[]): TreeNode[] {
+  const catMap = new Map<string, TreeNode>();
+  const projMap = new Map<string, TreeNode>();
+  const result: TreeNode[] = [];
+
+  // Pass 1: build category nodes
+  for (const o of options) {
+    if (o.type === 'category') {
+      const node: TreeNode = { type: 'category', slug: o.slug, title: o.title, children: [] };
+      catMap.set(o.slug, node);
+      result.push(node);
+    }
+  }
+  // Pass 2: build project nodes, attach to parent category
+  for (const o of options) {
+    if (o.type === 'project') {
+      const node: TreeNode = { type: 'project', slug: o.slug, title: o.title, parentSlug: o.parentSlug, children: [] };
+      projMap.set(o.slug, node);
+      const parent = catMap.get(o.parentSlug ?? '');
+      if (parent) parent.children.push(node);
+    }
+  }
+  // Pass 3: build collection nodes, attach to parent project
+  for (const o of options) {
+    if (o.type === 'collection') {
+      const node: TreeNode = { type: 'collection', slug: o.slug, title: o.title, parentSlug: o.parentSlug, children: [] };
+      const parent = projMap.get(o.parentSlug ?? '');
+      if (parent) parent.children.push(node);
+    }
+  }
+
+  return result;
+}
+
+function getKey(type: string, slug: string, parentSlug?: string) {
+  if (type === 'collection' && parentSlug) {
+    return `${type}:${parentSlug}/${slug}`;
+  }
+  return `${type}:${slug}`;
+}
+
+export function PreferenceTree({ options, selected, onSelectionChange }: Props) {
+  const t = useTranslations('subscribe');
+  const tree = buildTree(options);
+
+  function nodeKey(node: TreeNode): string {
+    return getKey(node.type, node.slug, node.parentSlug);
+  }
+
+  function handleToggle(node: TreeNode) {
+    const key = nodeKey(node);
+    const next = new Set(selected);
+
+    if (next.has(key)) {
+      next.delete(key);
+      for (const child of node.children) removeDescendants(child, next);
+    } else {
+      next.add(key);
+      for (const child of node.children) addDescendants(child, next);
+    }
+
+    onSelectionChange(next);
+  }
+
+  function removeDescendants(node: TreeNode, set: Set<string>) {
+    set.delete(nodeKey(node));
+    for (const child of node.children) removeDescendants(child, set);
+  }
+
+  function addDescendants(node: TreeNode, set: Set<string>) {
+    set.add(nodeKey(node));
+    for (const child of node.children) addDescendants(child, set);
+  }
+
+  return (
+    <div className="max-h-48 overflow-y-auto space-y-1 text-sm">
+      {tree.map((cat) => (
+        <div key={cat.slug}>
+          <label className="flex items-center gap-2 py-0.5 cursor-pointer font-medium">
+            <input
+              type="checkbox"
+              checked={selected.has(nodeKey(cat))}
+              onChange={() => handleToggle(cat)}
+              className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+            />
+            <span>{cat.title}</span>
+          </label>
+          {cat.children.map((proj) => (
+            <div key={proj.slug} className="ml-4">
+              <label className="flex items-center gap-2 py-0.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected.has(nodeKey(proj))}
+                  onChange={() => handleToggle(proj)}
+                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+                />
+                <span>{proj.title}</span>
+              </label>
+              {proj.children.map((col) => (
+                <div key={col.slug} className="ml-4">
+                  <label className="flex items-center gap-2 py-0.5 cursor-pointer text-zinc-500">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(nodeKey(col))}
+                      onChange={() => handleToggle(col)}
+                      className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+                    />
+                    <span>{col.title}</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
+      {tree.length === 0 && (
+        <p className="text-zinc-400 text-xs py-2">{t('emptyOptions')}</p>
+      )}
+    </div>
+  );
+}
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `buildTree()` 三段式构建 | 先收集所有 category → Map，再遍历 project 挂到 category.children，最后 collection 挂到 project.children。三段而非一段，因为 GROQ 返回是扁平的——project 可能在 category 之前返回 |
+| `parentSlug` 存储在 TreeNode | project 存储其父 category slug，collection 存储其父 project slug。后者用于 `getKey()` 构造 `collection:projectSlug/collectionSlug` 复合 key |
+| `getKey(type, slug, parentSlug?)` | **核心逻辑**：仅 collection 类型使用 `parentSlug` 构造复合 key。category 和 project 的 slug 本身已全局唯一 |
+| `nodeKey(node)` | 包装 `getKey()`，从 TreeNode 读取字段。`node.parentSlug` 在 buildTree 时已设置 |
+| `handleToggle(node)` | **级联开关**：选中 → 递归 addChildren；取消 → 递归 removeChildren。每次创建新 Set 实例（不可变更新）通知父组件 |
+| `max-h-48 overflow-y-auto` | 限制选项区高度 12rem（约 3 行半），内容多时出现纵向滚动条，防止弹窗过高 |
+| `ml-4` 递进缩进 | project 相对 category 缩进 1rem，collection 相对 project 再缩进 1rem。纯 Tailwind 实现，无需嵌套组件传 depth |
+| `font-medium` vs `text-zinc-500` | category 加粗，collection 用灰色——视觉层级：category > project > collection |
+| `tree.length === 0` 空态 | API 异常返回空数组时显示"暂无可选分类"（i18n），表单仍可提交——此时即为"全选"订阅 |
 
 ---
 
@@ -5008,37 +5390,56 @@ interface Props {
   postUrl: string;
   category: string;
   project: string;
+  locale?: 'zh' | 'en';
 }
+
+const content = {
+  zh: {
+    preview: (title: string) => `iceaxing 有新文章：${title}`,
+    heading: 'iceaxing 更新通知',
+    intro: '你在 iceaxing 订阅的内容有更新：',
+    article: (title: string) => `新文章：《${title}》`,
+    readNow: '立即阅读',
+    footer: '不想再收到此类通知？点击邮件底部的退订链接即可。',
+  },
+  en: {
+    preview: (title: string) => `iceaxing — New Post: ${title}`,
+    heading: 'iceaxing Update',
+    intro: 'New content from your iceaxing subscription:',
+    article: (title: string) => `"${title}"`,
+    readNow: 'Read Now',
+    footer: "Don't want these notifications? Click the unsubscribe link at the bottom of this email.",
+  },
+};
 
 export function NewPostNotificationEmail({
   postTitle,
   postUrl,
   category,
   project,
+  locale = 'zh',
 }: Props) {
+  const m = content[locale];
+
   return (
-    <Html lang="zh">
+    <Html lang={locale}>
       <Head />
-      <Preview>iceaxing 有新文章：{postTitle}</Preview>
+      <Preview>{m.preview(postTitle)}</Preview>
       <Body style={bodyStyle}>
         <Container>
-          <Text style={headingStyle}>iceaxing 更新通知</Text>
+          <Text style={headingStyle}>{m.heading}</Text>
+          <Text style={textStyle}>{m.intro}</Text>
           <Text style={textStyle}>
-            你在 iceaxing 订阅的内容有更新：
+            {category} &gt; {project}
           </Text>
           <Text style={textStyle}>
-            分类：{category} &gt; {project}
-          </Text>
-          <Text style={textStyle}>
-            新文章：《{postTitle}》
+            {m.article(postTitle)}
           </Text>
           <Link href={postUrl} style={buttonStyle}>
-            立即阅读
+            {m.readNow}
           </Link>
           <Hr style={hrStyle} />
-          <Text style={footerStyle}>
-            不想再收到此类通知？点击邮件底部的退订链接即可。
-          </Text>
+          <Text style={footerStyle}>{m.footer}</Text>
         </Container>
       </Body>
     </Html>
@@ -5090,12 +5491,11 @@ const footerStyle = {
 
 | 行 | 说明 |
 |------|------|
-| `import { Html, Head, Preview, Body, Container, Text, Link, Hr } from '@react-email/components'` | 导入邮件专用组件，每个组件对应一个 HTML 标签并附带客户端兼容的默认样式 |
-| `interface Props { postTitle; postUrl; category; project }` | 模板参数类型——调用时通过 JSX props 传入动态数据 |
-| `<Html lang="zh">` | 声明邮件语言，帮助屏幕阅读器和邮件客户端正确处理 |
-| `<Preview>iceaxing 有新文章：{postTitle}</Preview>` | 预览文本：收件人在邮件列表中最先看到的内容（通常约 40-90 字符） |
-| `<Body style={bodyStyle}>` | 邮件正文，内联样式不使用 `className`（邮件环境无 CSS 文件支持） |
-| `<Link href={postUrl} style={buttonStyle}>` | 渲染为 `<a>` 标签，设置 `textDecoration: 'none'` 防止默认下划线 |
+| `import { Html, Head, Preview, ... } from '@react-email/components'` | 导入邮件专用组件，每个组件对应一个 HTML 标签并附带客户端兼容的默认样式 |
+| `locale?: 'zh' \| 'en'` | 新增 prop：根据文章语言选择邮件模板语言。默认为 `'zh'` |
+| `const content = { zh: {...}, en: {...} }` | **双语内容对象**：将所有文案抽取到组件外的 `content` 对象中，按语言组织。组件内通过 `const m = content[locale]` 选择 |
+| `<Html lang={locale}>` | 动态设置邮件语言属性，替代硬编码的 `lang="zh"` |
+| `{category} &gt; {project}` | 在邮件正文中显示"分类 > 项目"路径，帮助订阅者快速了解文章所属范围 |
 | `const bodyStyle = { backgroundColor: '#ffffff', ... }` | 所有样式定义为模块级常量对象，与 JSX 分离便于调整 |
 | 注意：`const` 样式对象放在组件外部 | 避免每次渲染重新创建对象，减少不必要的内存分配（虽然邮件渲染是一次性的，保持这个习惯对 React 开发有益） |
 
@@ -5115,7 +5515,24 @@ const footerStyle = {
 
 > **重要**：以下代码假设 webhook payload 中包含 `body._id`、`body._createdAt`、`body._updatedAt`。Sanity webhook 默认发送完整文档，这些字段自动包含。
 
-**[文件用途]** 在 `app/api/revalidate/route.ts` 的 revalidation 逻辑后追加——当检测到新 blog 文档时，遍历所有订阅者发送通知邮件。
+**[文件用途]** 在 `app/api/revalidate/route.ts` 的 revalidation 逻辑后追加——当检测到新 blog 文档时，根据订阅者的分类偏好筛选后发送通知邮件。
+
+**概念说明——偏好匹配逻辑**
+
+通知发送不再"全员广播"，而是根据订阅者存储的 `subscriptions` 属性进行 OR 匹配：
+
+- 订阅者选择了 `category:tech` → 任何 tech 分类下的文章都通知
+- 订阅者选择了 `project:blog-site` → blog-site 项目的文章通知
+- 订阅者选择了 `collection:blog-site/changelog` → 仅 changelog 合集通知
+- 订阅者的 `subscriptions` 为空或不存在 → 视为"全选"（向后兼容旧订阅者）
+
+**概念说明——分页与 N+1 查询**
+
+Resend `contacts.list()` 不返回 `properties` 字段，只返回基础信息（id, email）。读取订阅偏好必须逐条调用 `contacts.get(id)`。对于个人博客 < 100 订阅者的规模，N+1 调用完全可接受；若未来订阅量增长至数千，可考虑用 Resend segments 或外部数据库缓存偏好数据。
+
+**概念说明——Fail-Open 策略**
+
+在整个通知链路中，任何不确定性都采用 fail-open：`contacts.get()` 失败 → 发送通知；`properties` 解析失败 → 发送通知。宁可多发不漏发——对于个人博客，多收一封邮件的代价远低于漏掉真正感兴趣的读者。
 
 在 `app/api/revalidate/route.ts` 中，当 blog 被创建或更新时发送通知邮件。由于 webhook payload 中的 `project` 仅是 `_ref`，需要先查询展开：
 
@@ -5131,10 +5548,11 @@ async function sendNewPostNotification(blogId: string) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
 
-  // Resolve the blog post's category, project, collection, and slug via GROQ
+  // Resolve the blog post's category, project, collection, slug, AND language via GROQ
   const post = await client.fetch(
     groq`*[_id == $id][0]{
       title,
+      language,
       "slug": slug.current,
       "project": project->{"slug": slug.current, title},
       "category": project->category->{"slug": slug.current, title},
@@ -5153,35 +5571,102 @@ async function sendNewPostNotification(blogId: string) {
     ? `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.collection.slug}/${post.slug}`
     : `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.slug}`;
 
+  const postCatSlug = post.category.slug;
+  const postProjSlug = post.project.slug;
+  const postColSlug = post.collection?.slug ?? null;
+  const postLocale: 'zh' | 'en' = post.language === 'en' ? 'en' : 'zh';
+
   const { Resend } = await import('resend');
   const { NewPostNotificationEmail } = await import(
     '@/lib/email/templates/new-post-notification'
   );
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // Fetch all confirmed subscribers (Resend v6: Response<{ data: Contact[] }>)
-  const listResponse = await resend.contacts.list();
-  const contacts = listResponse.data?.data;
-  if (!contacts || contacts.length === 0) return;
+  // Fetch all contacts with pagination (contacts.list() does NOT return properties)
+  const allContacts: { id: string; email: string }[] = [];
+  let after: string | undefined;
+  let hasMore = true;
+  while (hasMore && allContacts.length < 500) {
+    const listResponse = await resend.contacts.list(
+      after ? { after, limit: 100 } : { limit: 100 }
+    );
+    if (listResponse.error) {
+      console.error('[revalidate] contacts.list error:', listResponse.error);
+      break;
+    }
+    const data = listResponse.data?.data;
+    if (data && data.length > 0) {
+      allContacts.push(...data.map((c) => ({ id: c.id, email: c.email })));
+    }
+    hasMore = listResponse.data?.has_more ?? false;
+    after = data?.[data.length - 1]?.id;
+  }
 
-  // Send emails in parallel with allSettled so one failure doesn't block others
+  if (allContacts.length === 0) return;
+
+  // Filter contacts by subscription preferences (N+1 get for properties)
+  const matchedContacts: { id: string; email: string }[] = [];
+  for (const contact of allContacts) {
+    try {
+      const getResult = await resend.contacts.get(contact.id);
+      if (getResult.error) {
+        // Fail-open: if we can't read properties, include the contact
+        matchedContacts.push(contact);
+        continue;
+      }
+      const props = getResult.data?.properties as
+        | Record<string, { type: string; value: unknown }>
+        | undefined;
+      const subsProp = props?.subscriptions;
+      const subs: string | undefined =
+        subsProp?.type === 'string' && typeof subsProp.value === 'string'
+          ? subsProp.value
+          : undefined;
+
+      if (subs === undefined || subs === '') {
+        // Legacy subscriber or "all content" — include
+        matchedContacts.push(contact);
+      } else {
+        const prefSet = new Set(subs.split(','));
+        if (
+          prefSet.has(`category:${postCatSlug}`) ||
+          prefSet.has(`project:${postProjSlug}`) ||
+          (postColSlug && prefSet.has(`collection:${postProjSlug}/${postColSlug}`))
+        ) {
+          matchedContacts.push(contact);
+        }
+      }
+    } catch {
+      // Fail-open: include contact on any read error
+      matchedContacts.push(contact);
+    }
+  }
+
+  if (matchedContacts.length === 0) {
+    console.log('[revalidate] No matching subscribers for this post');
+    return;
+  }
+
+  // Send emails in parallel with allSettled
   const results = await Promise.allSettled(
-    contacts.map((c) =>
+    matchedContacts.map((c) =>
       resend.emails.send({
         from: 'notify@iceaxing.com',
         to: c.email,
-        subject: `iceaxing 新文章: ${post.title}`,
+        subject: postLocale === 'en'
+          ? `iceaxing — New Post: ${post.title}`
+          : `iceaxing 新文章: ${post.title}`,
         react: NewPostNotificationEmail({
           postTitle: post.title,
           postUrl,
           category: post.category.title,
           project: post.project.title,
+          locale: postLocale,
         }),
       })
     )
   );
 
-  // Count both rejections AND Resend v6 resolved-with-error responses
   const failed = results.filter((r) => {
     if (r.status === 'rejected') return true;
     if (r.status === 'fulfilled' && (r.value as { error?: unknown })?.error) return true;
@@ -5197,17 +5682,18 @@ async function sendNewPostNotification(blogId: string) {
 
 | 行 | 说明 |
 |------|------|
-| `if (!process.env.RESEND_API_KEY)` | **安全守卫**：API Key 不存在时直接跳过通知，不抛错。ISR revalidation 不应因邮件通知失败而中断 |
-| `const siteUrl = process.env.NEXT_PUBLIC_SITE_URL \|\| 'https://iceaxing.com'` | 从环境变量读取站点 URL，带 fallback。用于构造通知邮件中的文章链接 |
-| `"collection": collection->{"slug": slug.current}` | **关键字段**：展开 blog → collection 引用。若 blog 属于某个 collection，URL 需要 4 段路径。缺少此字段会导致 Collection 内的文章通知链接指向错误的 3 段 URL（404） |
-| `if (!post?.title \|\| !post?.category?.slug \|\| ...)` | **全字段 null guard**：不仅检查 slug 存在性，还检查 title。若 Project 或 Category 被删除或 slug 缺失，优雅跳过通知而非发送含 `undefined` 的邮件 |
-| `postUrl = post.collection?.slug ? 4段 : 3段` | **URL 分支**：有 collection 时生成 `/cat/proj/col/slug`，无 collection 时生成 `/cat/proj/slug` |
-| `const { Resend } = await import('resend')` | **动态导入**：仅在 `sendNewPostNotification` 被调用时加载 Resend 模块。非 blog 类型 webhook 不加载此模块 |
-| `const listResponse = await resend.contacts.list()` | 获取订阅者列表。Resend v6 返回 `Response<ListContactsResponseSuccess>` 包装 |
-| `const contacts = listResponse.data?.data` | **双重解引用**：Resend v6 的 `Response<T>` wrapper → `data: T` → `ListContactsResponseSuccess.data: Contact[]`。必须是 `response.data?.data`，不是 `response.data` |
-| `Promise.allSettled(...)` | **并行发送 + 错误隔离**：所有订阅者邮件并行发出，一个失败不影响其他。`allSettled` 等待全部完成，不因单个 reject 而中断 |
-| `r.status === 'fulfilled' && r.value?.error` | **Resend v6 特性**：SDK 使用 `Response<T>` 模式，API 错误可能 resolve（而非 reject）并携带 `error` 字段。必须同时检查 rejected 和 resolved-with-error |
-| `console.warn(...failed...results.length...failed)` | 记录失败数量到日志，方便运维排查。不抛出异常——revalidation 本身已成功 |
+| `language` field in GROQ query | 获取文章语言（`zh`/`en`），用于选择通知邮件的语言和邮件标题 |
+| `postColSlug = post.collection?.slug ?? null` | Collection 可选——文章可能不属于任何合集。`null` 在后续匹配中跳过 collection 维度 |
+| `postLocale: 'zh' \| 'en'` | 根据 blog 的 `language` 字段派生通知语言 |
+| `while (hasMore && allContacts.length < 500)` | **分页循环**：`contacts.list()` 每页最多 100 条，通过 `after` 游标翻页。500 上限防止无限循环 |
+| `listResponse.data?.has_more` | Resend API 的分页标志——为 `true` 时还有下一页，`after` 设为最后一页最后一个联系人的 ID |
+| `resend.contacts.get(contact.id)` | **N+1 读取**：`contacts.list()` 不返回 `properties` 字段，必须逐个 `get()` 才能读取 `subscriptions` 属性。对于个人博客 < 100 订阅者的规模可接受 |
+| `props?.subscriptions` | 从 contact 的 custom properties 中提取订阅偏好。Resend v6 属性格式为 `{ type: string; value: unknown }` |
+| `subs === undefined \|\| subs === ''` | **向后兼容**：旧订阅者没有 `subscriptions` 属性（`undefined`），或选了全部分类（`''` 空字符串）→ 所有文章都发送通知 |
+| `prefSet.has('category:...') \|\| prefSet.has('project:...') \|\| prefSet.has('collection:...')` | **OR 匹配**：只要文章的分类、项目或合集任一维度命中用户偏好，就发送通知 |
+| `` `collection:${postProjSlug}/${postColSlug}` `` | **复合 key**：collection slug 非全局唯一，必须拼接 project slug 才能唯一标识——与前端 preference-tree 的 `getKey()` 格式完全一致 |
+| `catch { matchedContacts.push(contact) }` | **Fail-open**：读取 contact 属性失败时仍包含该联系人，宁可多发不漏发 |
+| `locale: postLocale` prop | 传给邮件模板，渲染对应语言的内容（中文/英文） |
 
 ---
 
@@ -5814,7 +6300,15 @@ export default async function LocaleLayout({
   "subscribe": {
     "title": "订阅更新通知",
     "submit": "订阅",
-    "submitting": "提交中..."
+    "submitting": "提交中...",
+    "close": "关闭",
+    "success": "订阅成功！请检查邮箱确认",
+    "error": "订阅失败，请稍后重试",
+    "networkError": "网络错误，请稍后重试",
+    "preferencesLabel": "订阅范围（可选）",
+    "preferencesHint": "可选，不选则订阅全部内容",
+    "loadingOptions": "加载选项中...",
+    "emptyOptions": "暂无可选分类"
   },
   "pdf": {
     "download": "下载 PDF",
@@ -5863,7 +6357,15 @@ export default async function LocaleLayout({
   "subscribe": {
     "title": "Subscribe for updates",
     "submit": "Subscribe",
-    "submitting": "Submitting..."
+    "submitting": "Submitting...",
+    "close": "Close",
+    "success": "Subscribed! Please check your email to confirm",
+    "error": "Subscription failed, please try again later",
+    "networkError": "Network error, please try again later",
+    "preferencesLabel": "Subscription Scope (optional)",
+    "preferencesHint": "Optional. Leave empty to subscribe to all content.",
+    "loadingOptions": "Loading options...",
+    "emptyOptions": "No categories available"
   },
   "pdf": {
     "download": "Download PDF",

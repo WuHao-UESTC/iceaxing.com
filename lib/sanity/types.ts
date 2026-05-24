@@ -82,3 +82,10 @@ export interface SanityImage {
   hotspot?: { x: number; y: number; width: number; height: number };
   crop?: { top: number; bottom: number; left: number; right: number };
 }
+
+export interface SubscriptionOption {
+  type: 'category' | 'project' | 'collection';
+  slug: string;
+  title: string;
+  parentSlug?: string;
+}

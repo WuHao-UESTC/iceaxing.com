@@ -83,7 +83,11 @@
     "close": "Close",
     "success": "Subscribed! Please check your email to confirm",
     "error": "Subscription failed, please try again later",
-    "networkError": "Network error, please try again later"
+    "networkError": "Network error, please try again later",
+    "preferencesLabel": "Subscription Scope (optional)",
+    "preferencesHint": "Optional. Leave empty to subscribe to all content.",
+    "loadingOptions": "Loading options...",
+    "emptyOptions": "No categories available"
   },
   "pdf": {
     "download": "Download PDF",

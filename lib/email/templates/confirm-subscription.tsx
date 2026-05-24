@@ -11,6 +11,8 @@ import {
 interface Props {
   email: string;
   locale?: 'zh' | 'en';
+  subscriptionCount?: number;
+  isAllContent?: boolean;
 }
 
 const t = {
@@ -18,17 +20,26 @@ const t = {
     preview: 'iceaxing — 请确认你的订阅',
     heading: '订阅确认',
     body: '我们收到了你的邮箱发起的订阅请求。你已成功加入 iceaxing 的订阅列表。',
+    allContent: '订阅范围：全部内容',
+    customContent: '订阅范围：已选择 {count} 个分类/项目',
     footer: '如果你没有发起此请求，请忽略此邮件。之后你收到的任何通知邮件底部都会有退订链接。',
   },
   en: {
     preview: 'iceaxing — Confirm your subscription',
     heading: 'Subscription Confirmed',
     body: "We've received a subscription request for this email address. You've been added to iceaxing's mailing list.",
+    allContent: 'Subscription scope: All content',
+    customContent: 'Subscription scope: {count} selected',
     footer: "If you didn't request this, please ignore this email. Any future notification emails will include an unsubscribe link.",
   },
 };
 
-export function ConfirmSubscriptionEmail({ email, locale = 'zh' }: Props) {
+export function ConfirmSubscriptionEmail({
+  email,
+  locale = 'zh',
+  subscriptionCount = 0,
+  isAllContent = true,
+}: Props) {
   const m = t[locale];
 
   return (
@@ -40,6 +51,12 @@ export function ConfirmSubscriptionEmail({ email, locale = 'zh' }: Props) {
           <Text style={headingStyle}>{m.heading}</Text>
           <Text style={textStyle}>{m.body}</Text>
           <Text style={subStyle}>{email}</Text>
+          <Text style={subStyle}>
+            {isAllContent
+              ? m.allContent
+              : m.customContent.replace('{count}', String(subscriptionCount))
+            }
+          </Text>
           <Hr style={hrStyle} />
           <Text style={footerStyle}>{m.footer}</Text>
         </Container>

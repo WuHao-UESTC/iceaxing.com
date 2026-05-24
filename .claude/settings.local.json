@@ -25,7 +25,11 @@
       "Bash(git *)",
       "Bash(node *)",
       "WebSearch",
-      "WebFetch(domain:resend.com)"
+      "WebFetch(domain:resend.com)",
+      "Bash(npx vercel *)",
+      "WebFetch(domain:iceaxing-4uo5vw5t6-iceaxing-s-projects.vercel.app)",
+      "Bash(npx next *)",
+      "Bash(curl -sI http://localhost:3000)"
     ]
   }
 }

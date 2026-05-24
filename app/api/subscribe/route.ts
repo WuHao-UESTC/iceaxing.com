@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Rate limit: 每 IP 每分钟最多 3 次
   const forwarded = request.headers.get('x-forwarded-for') || 'unknown';
   const ip = forwarded.split(',')[0].trim();
   if (!checkRateLimit(ip, 3, 60_000)) {
@@ -43,39 +42,56 @@ export async function POST(request: NextRequest) {
     }
 
     const locale: 'zh' | 'en' = body.locale === 'en' ? 'en' : 'zh';
+    const subscriptions: string[] =
+      Array.isArray(body.subscriptions) ? body.subscriptions.filter((s: unknown) => typeof s === 'string') : [];
+    const subscriptionValue = subscriptions.join(',');
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // Create contact in the segment
+    // Create or update contact
     const createResult = await resend.contacts.create({
       email,
       segments: [{ id: segmentId }],
+      properties: { subscriptions: subscriptionValue },
     });
 
     if (createResult.error) {
       const err = createResult.error as { statusCode?: number; message?: string };
-      // Duplicate contact — treat as already subscribed
+      // Duplicate contact — update their subscription preferences
       if (err.statusCode === 422 && err.message?.includes('already')) {
+        const updateResult = await resend.contacts.update({
+          email,
+          properties: { subscriptions: subscriptionValue },
+        });
+        if (updateResult.error) {
+          console.error('[subscribe] contacts.update error:', updateResult.error);
+          return NextResponse.json(
+            { success: false, message: '订阅更新失败，请稍后重试' },
+            { status: 500 }
+          );
+        }
+      } else {
+        console.error('[subscribe] contacts.create error:', err);
         return NextResponse.json(
-          { success: false, message: '该邮箱已订阅' },
-          { status: 409 }
+          { success: false, message: '订阅失败，请稍后重试' },
+          { status: 500 }
         );
       }
-      console.error('[subscribe] contacts.create error:', err);
-      return NextResponse.json(
-        { success: false, message: '订阅失败，请稍后重试' },
-        { status: 500 }
-      );
     }
 
-    // Send confirmation email (non-fatal: contact already created)
+    // Send confirmation email (non-fatal: contact already created/updated)
     const sendResult = await resend.emails.send({
       from: 'notify@iceaxing.com',
       to: email,
       subject: locale === 'en'
         ? 'iceaxing — Subscription Confirmed'
         : 'iceaxing — 订阅确认',
-      react: ConfirmSubscriptionEmail({ email, locale }),
+      react: ConfirmSubscriptionEmail({
+        email,
+        locale,
+        subscriptionCount: subscriptions.length,
+        isAllContent: subscriptions.length === 0,
+      }),
     });
     if (sendResult.error) {
       console.error('[subscribe] Failed to send confirmation email:', sendResult.error);
