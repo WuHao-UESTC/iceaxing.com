@@ -233,11 +233,15 @@ async function sendNewPostNotification(blogId: string) {
   );
 
   for (const r of results) {
-    if (r.status === 'fulfilled' && (r.value as { id?: string })?.id) {
-      console.log(`[revalidate] Email sent: ${(r.value as { id: string }).id}`);
-    }
-    if (r.status === 'fulfilled' && (r.value as { error?: unknown })?.error) {
-      console.error(`[revalidate] Email error:`, (r.value as { error: unknown }).error);
+    if (r.status === 'fulfilled') {
+      const v = r.value as Record<string, unknown>;
+      const data = v?.data as Record<string, unknown> | undefined;
+      if (data?.id) {
+        console.log(`[revalidate] Email sent: ${data.id}`);
+      }
+      if (v?.error) {
+        console.error(`[revalidate] Email error:`, v.error);
+      }
     }
   }
 
