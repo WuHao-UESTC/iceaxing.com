@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { generateUnsubscribeToken } from '@/lib/auth/token';
 import { ConfirmSubscriptionEmail } from '@/lib/email/templates/confirm-subscription';
 
 export async function POST(request: NextRequest) {
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     // Create or update contact
+    let contactId: string | undefined;
     const createResult = await resend.contacts.create({
       email,
       segments: [{ id: segmentId }],
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           );
         }
+        contactId = updateResult.data?.id;
       } else {
         console.error('[subscribe] contacts.create error:', err);
         return NextResponse.json(
@@ -77,11 +80,18 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+    } else {
+      contactId = createResult.data?.id;
     }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
+    const unsubscribeUrl = contactId
+      ? `${siteUrl}/api/unsubscribe?c=${contactId}&t=${generateUnsubscribeToken(contactId)}`
+      : undefined;
 
     // Send confirmation email (non-fatal: contact already created/updated)
     const sendResult = await resend.emails.send({
-      from: 'notify@iceaxing.com',
+      from: 'ICEAXING <notify@iceaxing.com>',
       to: email,
       subject: locale === 'en'
         ? 'iceaxing — Subscription Confirmed'
@@ -91,7 +101,14 @@ export async function POST(request: NextRequest) {
         locale,
         subscriptionCount: subscriptions.length,
         isAllContent: subscriptions.length === 0,
+        unsubscribeUrl,
       }),
+      ...(unsubscribeUrl ? {
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      } : {}),
     });
     if (sendResult.error) {
       console.error('[subscribe] Failed to send confirmation email:', sendResult.error);

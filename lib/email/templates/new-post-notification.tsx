@@ -14,7 +14,9 @@ interface Props {
   postUrl: string;
   category: string;
   project: string;
+  postExcerpt?: string;
   locale?: 'zh' | 'en';
+  unsubscribeUrl: string;
 }
 
 const content = {
@@ -24,7 +26,8 @@ const content = {
     intro: '你在 iceaxing 订阅的内容有更新：',
     article: (title: string) => `新文章：《${title}》`,
     readNow: '立即阅读',
-    footer: '不想再收到此类通知？点击邮件底部的退订链接即可。',
+    footer: '不想再收到此类通知？',
+    unsubscribe: '退订',
   },
   en: {
     preview: (title: string) => `iceaxing — New Post: ${title}`,
@@ -32,7 +35,8 @@ const content = {
     intro: 'New content from your iceaxing subscription:',
     article: (title: string) => `"${title}"`,
     readNow: 'Read Now',
-    footer: "Don't want these notifications? Click the unsubscribe link at the bottom of this email.",
+    footer: "Don't want these notifications?",
+    unsubscribe: 'Unsubscribe',
   },
 };
 
@@ -41,7 +45,9 @@ export function NewPostNotificationEmail({
   postUrl,
   category,
   project,
+  postExcerpt,
   locale = 'zh',
+  unsubscribeUrl,
 }: Props) {
   const m = content[locale];
 
@@ -59,11 +65,16 @@ export function NewPostNotificationEmail({
           <Text style={textStyle}>
             {m.article(postTitle)}
           </Text>
+          {postExcerpt && (
+            <Text style={excerptStyle}>{postExcerpt}</Text>
+          )}
           <Link href={postUrl} style={buttonStyle}>
             {m.readNow}
           </Link>
           <Hr style={hrStyle} />
-          <Text style={footerStyle}>{m.footer}</Text>
+          <Text style={footerStyle}>
+            {m.footer} <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>
+          </Text>
         </Container>
       </Body>
     </Html>
@@ -86,6 +97,13 @@ const textStyle = {
   fontSize: '14px',
   color: '#333',
   marginBottom: '8px',
+};
+
+const excerptStyle = {
+  fontSize: '13px',
+  color: '#666',
+  marginBottom: '8px',
+  fontStyle: 'italic',
 };
 
 const buttonStyle = {

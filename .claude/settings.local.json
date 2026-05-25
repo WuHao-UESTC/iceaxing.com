@@ -29,7 +29,10 @@
       "Bash(npx vercel *)",
       "WebFetch(domain:iceaxing-4uo5vw5t6-iceaxing-s-projects.vercel.app)",
       "Bash(npx next *)",
-      "Bash(curl -sI http://localhost:3000)"
+      "Bash(curl -sI http://localhost:3000)",
+      "Bash(curl *)",
+      "mcp__Sanity__create_documents_from_json",
+      "mcp__Sanity__publish_documents"
     ]
   }
 }

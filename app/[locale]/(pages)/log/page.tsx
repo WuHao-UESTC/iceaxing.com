@@ -1,12 +1,24 @@
 import { getAllLogs } from '@/lib/sanity/queries';
 import { getTranslations } from 'next-intl/server';
 import { LogGrid } from '@/components/log/log-grid';
+import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
-export async function generateMetadata() {
-  const t = await getTranslations('log');
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'log' });
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: getStaticAlternates(locale, '/log'),
+    openGraph: {
+      title: t('title'),
+      description: t('metaDescription'),
+      url: localizedUrl(locale, '/log'),
+    },
   };
 }
 

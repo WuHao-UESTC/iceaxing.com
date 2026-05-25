@@ -1,11 +1,23 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/lib/i18n/navigation';
+import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
-export async function generateMetadata() {
-  const t = await getTranslations('about');
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'about' });
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: getStaticAlternates(locale, '/about'),
+    openGraph: {
+      title: t('title'),
+      description: t('metaDescription'),
+      url: localizedUrl(locale, '/about'),
+    },
   };
 }
 

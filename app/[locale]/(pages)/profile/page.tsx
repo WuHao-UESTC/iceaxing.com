@@ -3,12 +3,24 @@ import { urlFor } from '@/lib/sanity/image';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
+import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
-export async function generateMetadata() {
-  const t = await getTranslations('profile');
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'profile' });
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: getStaticAlternates(locale, '/profile'),
+    openGraph: {
+      title: t('title'),
+      description: t('metaDescription'),
+      url: localizedUrl(locale, '/profile'),
+    },
   };
 }
 

@@ -49,5 +49,12 @@ export default defineType({
       type: 'number',
       initialValue: 0,
     }),
+    defineField({
+      name: 'notified',
+      title: '已发送通知',
+      type: 'boolean',
+      initialValue: false,
+      hidden: true,
+    }),
   ],
 });

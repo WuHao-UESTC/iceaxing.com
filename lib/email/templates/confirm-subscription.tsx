@@ -5,6 +5,7 @@ import {
   Body,
   Container,
   Text,
+  Link,
   Hr,
 } from '@react-email/components';
 
@@ -13,6 +14,7 @@ interface Props {
   locale?: 'zh' | 'en';
   subscriptionCount?: number;
   isAllContent?: boolean;
+  unsubscribeUrl?: string;
 }
 
 const t = {
@@ -22,7 +24,9 @@ const t = {
     body: '我们收到了你的邮箱发起的订阅请求。你已成功加入 iceaxing 的订阅列表。',
     allContent: '订阅范围：全部内容',
     customContent: '订阅范围：已选择 {count} 个分类/项目',
-    footer: '如果你没有发起此请求，请忽略此邮件。之后你收到的任何通知邮件底部都会有退订链接。',
+    footer: '如果你没有发起此请求，可随时',
+    unsubscribe: '退订',
+    footerEnd: '。',
   },
   en: {
     preview: 'iceaxing — Confirm your subscription',
@@ -30,7 +34,9 @@ const t = {
     body: "We've received a subscription request for this email address. You've been added to iceaxing's mailing list.",
     allContent: 'Subscription scope: All content',
     customContent: 'Subscription scope: {count} selected',
-    footer: "If you didn't request this, please ignore this email. Any future notification emails will include an unsubscribe link.",
+    footer: "If you didn't request this, you can ",
+    unsubscribe: 'unsubscribe',
+    footerEnd: ' at any time.',
   },
 };
 
@@ -39,6 +45,7 @@ export function ConfirmSubscriptionEmail({
   locale = 'zh',
   subscriptionCount = 0,
   isAllContent = true,
+  unsubscribeUrl,
 }: Props) {
   const m = t[locale];
 
@@ -58,7 +65,11 @@ export function ConfirmSubscriptionEmail({
             }
           </Text>
           <Hr style={hrStyle} />
-          <Text style={footerStyle}>{m.footer}</Text>
+          <Text style={footerStyle}>
+            {m.footer}
+            {unsubscribeUrl && <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>}
+            {m.footerEnd}
+          </Text>
         </Container>
       </Body>
     </Html>

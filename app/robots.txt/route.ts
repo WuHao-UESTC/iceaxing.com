@@ -1,5 +1,7 @@
+import { SITE_URL } from '@/lib/seo';
+
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
+  const siteUrl = SITE_URL;
 
   const body = `User-agent: *
 Allow: /

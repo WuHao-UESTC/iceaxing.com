@@ -3,19 +3,28 @@ import { Link } from '@/lib/i18n/navigation';
 import { getProjectBySlug, getBlogPostsByProject, getCollectionsByProject, getCategoryBySlug } from '@/lib/sanity/queries';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
+import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
 interface Props {
   params: Promise<{ locale: string; category: string; project: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { project, locale } = await params;
+  const { category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
   const proj = await getProjectBySlug(project);
   if (!proj) return { title: t('notFound') };
+  const description = proj.description || proj.title;
+  const path = `/${category}/${project}`;
   return {
     title: proj.title,
-    description: proj.description,
+    description,
+    alternates: getStaticAlternates(locale, path),
+    openGraph: {
+      title: proj.title,
+      description,
+      url: localizedUrl(locale, path),
+    },
   };
 }
 

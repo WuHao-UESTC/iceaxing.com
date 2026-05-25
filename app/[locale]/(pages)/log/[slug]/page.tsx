@@ -4,6 +4,7 @@ import { getLogBySlug } from '@/lib/sanity/queries';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { GiscusComments } from '@/components/comments/giscus';
 import { getTranslations } from 'next-intl/server';
+import { getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
 
 interface Props {
   params: Promise<{ locale: string; slug: string }>;
@@ -14,9 +15,18 @@ export async function generateMetadata({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'common' });
   const log = await getLogBySlug(slug);
   if (!log) return { title: t('notFound') };
+  const description = log.description || `${log.title} - ${t('log')}`;
   return {
     title: log.title,
-    description: log.description || `${log.title} — ${t('log')}`,
+    description,
+    alternates: getStaticAlternates(locale, `/log/${slug}`),
+    openGraph: {
+      title: log.title,
+      description,
+      type: 'article',
+      url: localizedUrl(locale, `/log/${slug}`),
+      publishedTime: log.date,
+    },
   };
 }
 
@@ -32,9 +42,26 @@ export default async function LogDetailPage({ params }: Props) {
     site: tl('categorySite'),
     other: tl('categoryOther'),
   };
+  const logJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: log.title,
+    description: log.description || log.title,
+    datePublished: log.date,
+    dateModified: log.date,
+    author: {
+      '@type': 'Person',
+      name: 'iceaxing',
+    },
+    mainEntityOfPage: localizedUrl(locale, `/log/${slug}`),
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(logJsonLd) }}
+      />
       <nav className="text-sm text-zinc-400 mb-8">
         <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
         <span className="mx-2">/</span>

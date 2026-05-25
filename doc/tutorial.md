@@ -30,6 +30,13 @@
   - [2.9 Phase 3 预留](#29-phase-3-预留)
 - [三、Phase 2：互动系统](#三phase-2互动系统)
   - [3.1 订阅系统（Resend Contacts API）](#31-订阅系统resend-contacts-api)
+    - [3.1.1 Rate Limit 工具](#311-rate-limit-工具)
+    - [3.1.2 Subscribe API Route](#312-subscribe-api-route)
+    - [3.1.3 订阅表单 UI](#313-订阅表单-ui)
+    - [3.1.4 新文章通知邮件模板](#314-新文章通知邮件模板)
+    - [3.1.5 Webhook 中集成通知发送](#315-webhook-中集成通知发送)
+    - [3.1.6 新建内容通知邮件模板](#316-新建内容通知邮件模板)
+    - [3.1.7 退订系统](#317-退订系统)
   - [3.2 Collection UI 激活](#32-collection-ui-激活)
   - [3.3 i18n 英文版](#33-i18n-英文版)
   - [3.4 数据备份](#34-数据备份)
@@ -4782,6 +4789,7 @@ npm install resend@^6
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { generateUnsubscribeToken } from '@/lib/auth/token';
 import { ConfirmSubscriptionEmail } from '@/lib/email/templates/confirm-subscription';
 
 export async function POST(request: NextRequest) {
@@ -4830,7 +4838,8 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // Create or update contact
+    // Create or update contact — capture ID for unsubscribe token
+    let contactId: string | undefined;
     const createResult = await resend.contacts.create({
       email,
       segments: [{ id: segmentId }],
@@ -4852,6 +4861,7 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           );
         }
+        contactId = updateResult.data?.id;
       } else {
         console.error('[subscribe] contacts.create error:', err);
         return NextResponse.json(
@@ -4859,11 +4869,18 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+    } else {
+      contactId = createResult.data?.id;
     }
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
+    const unsubscribeUrl = contactId
+      ? `${siteUrl}/api/unsubscribe?c=${contactId}&t=${generateUnsubscribeToken(contactId)}`
+      : undefined;
 
     // Send confirmation email (non-fatal: contact already created/updated)
     const sendResult = await resend.emails.send({
-      from: 'notify@iceaxing.com',
+      from: 'ICEAXING <notify@iceaxing.com>',
       to: email,
       subject: locale === 'en'
         ? 'iceaxing — Subscription Confirmed'
@@ -4873,7 +4890,14 @@ export async function POST(request: NextRequest) {
         locale,
         subscriptionCount: subscriptions.length,
         isAllContent: subscriptions.length === 0,
+        unsubscribeUrl,
       }),
+      ...(unsubscribeUrl ? {
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      } : {}),
     });
     if (sendResult.error) {
       console.error('[subscribe] Failed to send confirmation email:', sendResult.error);
@@ -4909,6 +4933,12 @@ export async function POST(request: NextRequest) {
 | `const subscriptionValue = subscriptions.join(',')` | 将订阅偏好序列化为逗号分隔字符串（如 `"category:tech,project:blog"`），存储在 Resend contact 的 `properties` 字段 |
 | `resend.contacts.create({ segments: [{ id: segmentId }], properties: {...} })` | 核心操作：创建联系人并加入 Segment。`properties.subscriptions` 存储分类偏好 |
 | `err.statusCode === 422 && err.message?.includes('already')` | **AND 条件判断重复邮箱**：重复邮箱返回 422 → 走 `contacts.update()` 更新其偏好设置，而非报错 |
+| `let contactId: string \| undefined` | 声明变量存储联系人 ID。create 成功时从 `createResult.data?.id` 获取；duplicate 时从 `updateResult.data?.id` 获取 |
+| `generateUnsubscribeToken(contactId)` | 用 HMAC-SHA256 对 `contactId:timestamp` 签名，生成不可伪造的退订 token（详见 3.1.8 节） |
+| `'ICEAXING <notify@iceaxing.com>'` | 发件人采用「名称 + 邮箱」格式。仅写邮箱地址会被 Gmail 标记为"未知发件人"，降低投递率 |
+| `unsubscribeUrl` prop on ConfirmSubscriptionEmail | 将退订 URL 传入确认邮件模板，模板底部渲染可点击的"退订"链接 |
+| `List-Unsubscribe` header | RFC 2369 标准邮件头。Gmail/Outlook 识别此头后在邮件顶部显示"取消订阅"按钮，提升用户体验和投递信誉 |
+| `List-Unsubscribe-Post: List-Unsubscribe=One-Click` | RFC 8058 一键退订。邮件客户端可 POST 到退订 URL 直接完成退订，无需用户额外操作 |
 | `resend.emails.send({ react: ConfirmSubscriptionEmail({...}) })` | 发送自定义确认邮件（异步），失败仅记录日志不阻断订阅流程——联系人已成功创建 |
 | `console.error('[subscribe] Error:', error)` | 记录完整错误到服务端日志。客户端只收到通用错误信息，不泄露内部细节 |
 
@@ -5390,7 +5420,9 @@ interface Props {
   postUrl: string;
   category: string;
   project: string;
+  postExcerpt?: string;
   locale?: 'zh' | 'en';
+  unsubscribeUrl: string;
 }
 
 const content = {
@@ -5400,7 +5432,8 @@ const content = {
     intro: '你在 iceaxing 订阅的内容有更新：',
     article: (title: string) => `新文章：《${title}》`,
     readNow: '立即阅读',
-    footer: '不想再收到此类通知？点击邮件底部的退订链接即可。',
+    footer: '不想再收到此类通知？',
+    unsubscribe: '退订',
   },
   en: {
     preview: (title: string) => `iceaxing — New Post: ${title}`,
@@ -5408,7 +5441,8 @@ const content = {
     intro: 'New content from your iceaxing subscription:',
     article: (title: string) => `"${title}"`,
     readNow: 'Read Now',
-    footer: "Don't want these notifications? Click the unsubscribe link at the bottom of this email.",
+    footer: "Don't want these notifications?",
+    unsubscribe: 'Unsubscribe',
   },
 };
 
@@ -5417,7 +5451,9 @@ export function NewPostNotificationEmail({
   postUrl,
   category,
   project,
+  postExcerpt,
   locale = 'zh',
+  unsubscribeUrl,
 }: Props) {
   const m = content[locale];
 
@@ -5435,11 +5471,16 @@ export function NewPostNotificationEmail({
           <Text style={textStyle}>
             {m.article(postTitle)}
           </Text>
+          {postExcerpt && (
+            <Text style={excerptStyle}>{postExcerpt}</Text>
+          )}
           <Link href={postUrl} style={buttonStyle}>
             {m.readNow}
           </Link>
           <Hr style={hrStyle} />
-          <Text style={footerStyle}>{m.footer}</Text>
+          <Text style={footerStyle}>
+            {m.footer} <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>
+          </Text>
         </Container>
       </Body>
     </Html>
@@ -5462,6 +5503,13 @@ const textStyle = {
   fontSize: '14px',
   color: '#333',
   marginBottom: '8px',
+};
+
+const excerptStyle = {
+  fontSize: '13px',
+  color: '#666',
+  marginBottom: '8px',
+  fontStyle: 'italic',
 };
 
 const buttonStyle = {
@@ -5492,7 +5540,12 @@ const footerStyle = {
 | 行 | 说明 |
 |------|------|
 | `import { Html, Head, Preview, ... } from '@react-email/components'` | 导入邮件专用组件，每个组件对应一个 HTML 标签并附带客户端兼容的默认样式 |
-| `locale?: 'zh' \| 'en'` | 新增 prop：根据文章语言选择邮件模板语言。默认为 `'zh'` |
+| `postExcerpt?: string` | 新增 prop：博客文章摘要，在标题下方以斜体灰色文字显示。可选——旧文章可能没有摘要 |
+| `unsubscribeUrl: string` | 新增 prop：退订链接 URL，由调用方（revalidate 或 subscribe route）在发送邮件前生成。含 HMAC 签名 token |
+| `{postExcerpt && (<Text style={excerptStyle}>{postExcerpt}</Text>)}` | 条件渲染摘要：仅当摘要存在时才显示，避免空标签 |
+| `const excerptStyle = { fontStyle: 'italic', ... }` | 摘要的专属样式——比正文更小（13px）、颜色更浅（# (666）、斜体，与正文区分 |
+| `<Link href={unsubscribeUrl}>{m.unsubscribe}</Link>` | 在 footer 文字后渲染可点击的退订链接，指向 `/api/unsubscribe?c=...&t=...` |
+| `locale?: 'zh' \| 'en'` | 根据文章语言选择邮件模板语言。默认为 `'zh'` |
 | `const content = { zh: {...}, en: {...} }` | **双语内容对象**：将所有文案抽取到组件外的 `content` 对象中，按语言组织。组件内通过 `const m = content[locale]` 选择 |
 | `<Html lang={locale}>` | 动态设置邮件语言属性，替代硬编码的 `lang="zh"` |
 | `{category} &gt; {project}` | 在邮件正文中显示"分类 > 项目"路径，帮助订阅者快速了解文章所属范围 |
@@ -5503,23 +5556,26 @@ const footerStyle = {
 
 #### 3.1.5 Webhook 中集成通知发送
 
-**概念说明——新文章检测逻辑（`_createdAt === _updatedAt`）**
+**概念说明——Webhook Handler 结构**
 
-当 Sanity 文档发生变化时，webhook 会发送包含 `body._createdAt` 和 `body._updatedAt` 的 payload。检测"新创建"的常见手段有多种，各有优劣：
+`POST /api/revalidate` 接收 Sanity webhook，根据文档 `_type` 分发处理。其中 `blog`、`category`、`project`、`collection` 四种类型会触发邮件通知：
 
-- **方案一——`_createdAt === _updatedAt`**（本教程采用）：文档被创建时，两个时间戳由 Sanity 设为同一值；后续编辑只更新 `_updatedAt`。逻辑简单，零额外依赖。**局限性**：如果文档创建后在同一秒内被编辑（几乎不可能），会产生假阴性。
-- **方案二——检查 webhook event type**：Sanity 可以按 `document.create` / `document.update` / `document.delete` 分类发送 webhook。但如果创建草稿后直接发布，可能触发 `create` + `publish` 两次事件，需要去重处理。
-- **方案三——数据库标记 `notified: boolean`**：在 blog schema 加一个字段记录是否已发送通知。最可靠但增加 schema 复杂度和一次额外的 patch 操作。
+- **blog**：新文章发布 → 调用 `sendNewPostNotification()`，按订阅偏好匹配后发送
+- **category/project/collection**：新建内容结构 → 调用 `sendNewContentNotification()`，检查 `notified` 字段防止重复发送
 
-对于个人博客的低频更新场景，方案一已经足够——每篇文章发布前必然会编辑多次，`_createdAt === _updatedAt` 恰好只在第一次 publish 时为 true。
+**概念说明——`notified` 去重字段**
 
-> **重要**：以下代码假设 webhook payload 中包含 `body._id`、`body._createdAt`、`body._updatedAt`。Sanity webhook 默认发送完整文档，这些字段自动包含。
+由于 Sanity webhook 在每次 publish 时都会触发（包括编辑后重新发布），需要在 schema 中添加 `notified: boolean` 字段（`initialValue: false`，`hidden: true`）。webhook handler 检查 `body.notified !== true` 后才发送通知，发送成功后用 `writeClient.patch().set({ notified: true }).commit()` 标记。这确保新建内容仅发送一次通知。
 
-**[文件用途]** 在 `app/api/revalidate/route.ts` 的 revalidation 逻辑后追加——当检测到新 blog 文档时，根据订阅者的分类偏好筛选后发送通知邮件。
+> **重要**：`writeClient` 需要 `SANITY_API_WRITE_TOKEN`（具有写权限的 API token），webhook URL 格式为 `https://<domain>/api/revalidate`，需在 Sanity Dashboard 中手动配置。Secret 通过 `SANITY_WEBHOOK_SECRET` 环境变量设置。
+
+---
+
+**[文件用途]** `app/api/revalidate/route.ts`——Webhook 接收 + ISR 缓存更新 + 邮件通知发送。本章先展示 webhook handler 主结构，然后分别讲解两个通知函数。
 
 **概念说明——偏好匹配逻辑**
 
-通知发送不再"全员广播"，而是根据订阅者存储的 `subscriptions` 属性进行 OR 匹配：
+通知发送根据订阅者存储的 `subscriptions` 属性进行 OR 匹配：
 
 - 订阅者选择了 `category:tech` → 任何 tech 分类下的文章都通知
 - 订阅者选择了 `project:blog-site` → blog-site 项目的文章通知
@@ -5530,29 +5586,75 @@ const footerStyle = {
 
 Resend `contacts.list()` 不返回 `properties` 字段，只返回基础信息（id, email）。读取订阅偏好必须逐条调用 `contacts.get(id)`。对于个人博客 < 100 订阅者的规模，N+1 调用完全可接受；若未来订阅量增长至数千，可考虑用 Resend segments 或外部数据库缓存偏好数据。
 
+**概念说明——Resend 速率限制**
+
+Resend 免费套餐的速率限制为 **5 请求/秒**（滚动 1 秒窗口）。`contacts.list()` 分页 + `contacts.get()` 逐条读取后，速率预算已被大量消耗。若紧接着并行发送邮件，极易触发 `429 rate_limit_exceeded`。
+
+**解决方案**：
+1. 在开始发送邮件前，先等待 1 秒让速率窗口清零
+2. 邮件改为**顺序发送**（非并行），每封之间间隔 250ms
+3. 3 封邮件总耗时约 1.5 秒——对 webhook 响应完全可接受
+
 **概念说明——Fail-Open 策略**
 
 在整个通知链路中，任何不确定性都采用 fail-open：`contacts.get()` 失败 → 发送通知；`properties` 解析失败 → 发送通知。宁可多发不漏发——对于个人博客，多收一封邮件的代价远低于漏掉真正感兴趣的读者。
 
-在 `app/api/revalidate/route.ts` 中，当 blog 被创建或更新时发送通知邮件。由于 webhook payload 中的 `project` 仅是 `_ref`，需要先查询展开：
+**3.1.5.1 Webhook Handler 主结构**
 
 ```ts
-// 在 revalidatePath 之后追加: app/api/revalidate/route.ts
-// 完整实现在 switch case 'blog' 分支中调用 sendNewPostNotification()
+// app/api/revalidate/route.ts — POST handler (switch statement部分)
+export async function POST(request: NextRequest) {
+  // ... secret validation ...
 
-async function sendNewPostNotification(blogId: string) {
+  const { _type } = body;
+
+  switch (_type) {
+    case 'blog':
+      revalidatePath('/', 'layout');
+      revalidatePath('/en', 'layout');
+      if (body._id) {
+        try { await sendNewPostNotification(body._id); } catch (err) {
+          console.error('[revalidate] Notification error:', err);
+        }
+      }
+      break;
+
+    case 'category':
+    case 'project':
+    case 'collection':
+      revalidatePath('/', 'layout');
+      revalidatePath('/en', 'layout');
+      if (body._id && body.notified !== true) {
+        try { await sendNewContentNotification(_type, body._id); } catch (err) {
+          console.error('[revalidate] New-content notification error:', err);
+        }
+      }
+      break;
+
+    // log, friend, profile — revalidate only, no notification
+  }
+}
+```
+
+**3.1.5.2 sendNewPostNotification —— 文章通知**
+
+由于 webhook payload 中的 `project` 仅是 `_ref`，需要先查询展开引用。此外需生成退订 token 并为每封邮件添加 `List-Unsubscribe` 头：
+
+```ts
+// app/api/revalidate/route.ts — sendNewPostNotification()
+async function sendNewPostNotification(blogId: string): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[revalidate] RESEND_API_KEY not set, skipping notification');
+    console.warn('[notification] RESEND_API_KEY not set, skipping');
     return;
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
 
-  // Resolve the blog post's category, project, collection, slug, AND language via GROQ
   const post = await client.fetch(
     groq`*[_id == $id][0]{
       title,
       language,
+      excerpt,
       "slug": slug.current,
       "project": project->{"slug": slug.current, title},
       "category": project->category->{"slug": slug.current, title},
@@ -5563,7 +5665,7 @@ async function sendNewPostNotification(blogId: string) {
 
   if (!post?.title || !post?.category?.slug || !post?.category?.title
       || !post?.project?.slug || !post?.project?.title || !post?.slug) {
-    console.warn('[revalidate] Post not found or missing refs for notification:', blogId);
+    console.warn('[notification] Post not found or missing refs:', blogId);
     return;
   }
 
@@ -5582,7 +5684,7 @@ async function sendNewPostNotification(blogId: string) {
   );
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // Fetch all contacts with pagination (contacts.list() does NOT return properties)
+  // Fetch all contacts with pagination (max 500)
   const allContacts: { id: string; email: string }[] = [];
   let after: string | undefined;
   let hasMore = true;
@@ -5591,7 +5693,7 @@ async function sendNewPostNotification(blogId: string) {
       after ? { after, limit: 100 } : { limit: 100 }
     );
     if (listResponse.error) {
-      console.error('[revalidate] contacts.list error:', listResponse.error);
+      console.error('[notification] contacts.list error:', listResponse.error);
       break;
     }
     const data = listResponse.data?.data;
@@ -5602,16 +5704,19 @@ async function sendNewPostNotification(blogId: string) {
     after = data?.[data.length - 1]?.id;
   }
 
-  if (allContacts.length === 0) return;
+  if (allContacts.length === 0) {
+    console.log('[notification] No contacts found');
+    return;
+  }
 
   // Filter contacts by subscription preferences (N+1 get for properties)
-  const matchedContacts: { id: string; email: string }[] = [];
+  const matched: { id: string; email: string }[] = [];
   for (const contact of allContacts) {
     try {
       const getResult = await resend.contacts.get(contact.id);
       if (getResult.error) {
-        // Fail-open: if we can't read properties, include the contact
-        matchedContacts.push(contact);
+        console.warn('[notification] contacts.get error for', contact.email, ':', getResult.error);
+        matched.push(contact);  // fail-open
         continue;
       }
       const props = getResult.data?.properties as
@@ -5624,8 +5729,7 @@ async function sendNewPostNotification(blogId: string) {
           : undefined;
 
       if (subs === undefined || subs === '') {
-        // Legacy subscriber or "all content" — include
-        matchedContacts.push(contact);
+        matched.push(contact);  // legacy / all-content
       } else {
         const prefSet = new Set(subs.split(','));
         if (
@@ -5633,25 +5737,31 @@ async function sendNewPostNotification(blogId: string) {
           prefSet.has(`project:${postProjSlug}`) ||
           (postColSlug && prefSet.has(`collection:${postProjSlug}/${postColSlug}`))
         ) {
-          matchedContacts.push(contact);
+          matched.push(contact);
         }
       }
-    } catch {
-      // Fail-open: include contact on any read error
-      matchedContacts.push(contact);
+    } catch (err) {
+      console.warn('[notification] contacts.get threw for', contact.email, ':', err);
+      matched.push(contact);  // fail-open
     }
   }
 
-  if (matchedContacts.length === 0) {
-    console.log('[revalidate] No matching subscribers for this post');
+  if (matched.length === 0) {
+    console.log('[notification] No matching subscribers for post:', blogId);
     return;
   }
 
-  // Send emails in parallel with allSettled
-  const results = await Promise.allSettled(
-    matchedContacts.map((c) =>
-      resend.emails.send({
-        from: 'notify@iceaxing.com',
+  // Wait 1s for rate-limit window to clear
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Send sequentially with 250ms inter-email delay
+  for (let i = 0; i < matched.length; i++) {
+    const c = matched[i];
+    try {
+      const unsubscribeUrl = `${siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}`;
+
+      const result = await resend.emails.send({
+        from: 'ICEAXING <notify@iceaxing.com>',
         to: c.email,
         subject: postLocale === 'en'
           ? `iceaxing — New Post: ${post.title}`
@@ -5662,18 +5772,24 @@ async function sendNewPostNotification(blogId: string) {
           category: post.category.title,
           project: post.project.title,
           locale: postLocale,
+          postExcerpt: post.excerpt ?? undefined,
+          unsubscribeUrl,
         }),
-      })
-    )
-  );
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      });
+      if (result.error) {
+        console.error('[notification] Send error for', c.email, ':', result.error);
+      }
+    } catch (err) {
+      console.error('[notification] Send threw for', c.email, ':', err);
+    }
 
-  const failed = results.filter((r) => {
-    if (r.status === 'rejected') return true;
-    if (r.status === 'fulfilled' && (r.value as { error?: unknown })?.error) return true;
-    return false;
-  }).length;
-  if (failed > 0) {
-    console.warn(`[revalidate] ${failed}/${results.length} notification emails failed`);
+    if (matched.length > 1 && i < matched.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   }
 }
 ```
@@ -5682,18 +5798,477 @@ async function sendNewPostNotification(blogId: string) {
 
 | 行 | 说明 |
 |------|------|
+| `excerpt` field in GROQ query | 获取文章摘要，传给邮件模板在标题下方展示。可选字段——旧文章可能没有摘要 |
 | `language` field in GROQ query | 获取文章语言（`zh`/`en`），用于选择通知邮件的语言和邮件标题 |
 | `postColSlug = post.collection?.slug ?? null` | Collection 可选——文章可能不属于任何合集。`null` 在后续匹配中跳过 collection 维度 |
 | `postLocale: 'zh' \| 'en'` | 根据 blog 的 `language` 字段派生通知语言 |
 | `while (hasMore && allContacts.length < 500)` | **分页循环**：`contacts.list()` 每页最多 100 条，通过 `after` 游标翻页。500 上限防止无限循环 |
-| `listResponse.data?.has_more` | Resend API 的分页标志——为 `true` 时还有下一页，`after` 设为最后一页最后一个联系人的 ID |
-| `resend.contacts.get(contact.id)` | **N+1 读取**：`contacts.list()` 不返回 `properties` 字段，必须逐个 `get()` 才能读取 `subscriptions` 属性。对于个人博客 < 100 订阅者的规模可接受 |
-| `props?.subscriptions` | 从 contact 的 custom properties 中提取订阅偏好。Resend v6 属性格式为 `{ type: string; value: unknown }` |
+| `resend.contacts.get(contact.id)` | **N+1 读取**：`contacts.list()` 不返回 `properties` 字段，必须逐个 `get()` 才能读取 `subscriptions` 属性 |
 | `subs === undefined \|\| subs === ''` | **向后兼容**：旧订阅者没有 `subscriptions` 属性（`undefined`），或选了全部分类（`''` 空字符串）→ 所有文章都发送通知 |
 | `prefSet.has('category:...') \|\| prefSet.has('project:...') \|\| prefSet.has('collection:...')` | **OR 匹配**：只要文章的分类、项目或合集任一维度命中用户偏好，就发送通知 |
-| `` `collection:${postProjSlug}/${postColSlug}` `` | **复合 key**：collection slug 非全局唯一，必须拼接 project slug 才能唯一标识——与前端 preference-tree 的 `getKey()` 格式完全一致 |
-| `catch { matchedContacts.push(contact) }` | **Fail-open**：读取 contact 属性失败时仍包含该联系人，宁可多发不漏发 |
-| `locale: postLocale` prop | 传给邮件模板，渲染对应语言的内容（中文/英文） |
+| `` `collection:${postProjSlug}/${postColSlug}` `` | **复合 key**：collection slug 非全局唯一，必须拼接 project slug 才能唯一标识 |
+| `catch { matched.push(contact) }` | **Fail-open**：读取 contact 属性失败时仍包含该联系人，宁可多发不漏发 |
+| `await new Promise(r => setTimeout(r, 1000))` | **速率限制前摇**：在 `contacts.get()` N+1 调用后等待 1 秒，清空 Resend 速率限制窗口 |
+| `generateUnsubscribeToken(c.id)` | 为每个收件人生成独立的 HMAC 签名退订 token（详见 3.1.8 节） |
+| `'ICEAXING <notify@iceaxing.com>'` | 发件人采用「名称 + 邮箱」格式，提升邮件投递率和收件箱显示效果 |
+| `postExcerpt: post.excerpt ?? undefined` | 将文章摘要传入邮件模板，在标题下方渲染斜体摘要 |
+| `unsubscribeUrl` prop | 将退订 URL 传入邮件模板，模板底部渲染可点击的退订链接 |
+| `List-Unsubscribe` header | RFC 2369 邮件头。Gmail/Outlook 识别后在邮件顶部显示「取消订阅」按钮 |
+| `List-Unsubscribe-Post: List-Unsubscribe=One-Click` | RFC 8058 一键退订头。邮件客户端可 POST 到退订 URL 直接完成退订 |
+| `for (let i = 0; ...)` 顺序发送 | **替代并行发送**：邮件顺序发送，每封间隔 250ms。并行发送会瞬间超过 5 req/s 限制导致 429 |
+| `if (result.error)` 错误日志 | Resend SDK v6 不抛异常，错误信息在返回值 `.error` 字段中 |
+
+**3.1.5.3 sendNewContentNotification —— 新建内容通知**
+
+当 category、project 或 collection 被新建时触发。全局订阅者接收"仅通知"邮件，定向订阅者接收"询问是否订阅"邮件。通过 `notified` 字段防止重复发布时再次通知：
+
+```ts
+// app/api/revalidate/route.ts — sendNewContentNotification()
+type ContentType = 'category' | 'project' | 'collection';
+
+async function sendNewContentNotification(
+  type: ContentType,
+  docId: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[notification] RESEND_API_KEY not set, skipping');
+    return;
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
+
+  // GROQ: resolve parent references based on content type
+  const contentQueries: Record<ContentType, string> = {
+    category: groq`*[_id == $id][0]{
+      title, "slug": slug.current, description
+    }`,
+    project: groq`*[_id == $id][0]{
+      title, "slug": slug.current, description,
+      "category": category->{"slug": slug.current, title}
+    }`,
+    collection: groq`*[_id == $id][0]{
+      title, "slug": slug.current, description,
+      "project": project->{"slug": slug.current, title},
+      "category": project->category->{"slug": slug.current, title}
+    }`,
+  };
+
+  const doc = await client.fetch(contentQueries[type], { id: docId });
+
+  if (!doc?.title || !doc?.slug) {
+    console.warn('[notification] New content not found:', docId);
+    return;
+  }
+
+  // Build content URL and extract parent info
+  let contentUrl: string;
+  let parentSlug: string | undefined;
+  let parentTitle: string | undefined;
+
+  switch (type) {
+    case 'category':
+      contentUrl = `${siteUrl}/${doc.slug}`;
+      break;
+    case 'project':
+      if (!doc.category?.slug) return;
+      contentUrl = `${siteUrl}/${doc.category.slug}/${doc.slug}`;
+      parentSlug = doc.category.slug;
+      parentTitle = doc.category.title;
+      break;
+    case 'collection':
+      if (!doc.project?.slug || !doc.category?.slug) return;
+      contentUrl = `${siteUrl}/${doc.category.slug}/${doc.project.slug}/${doc.slug}`;
+      parentSlug = doc.project.slug;
+      parentTitle = doc.project.title;
+      break;
+  }
+
+  const { Resend } = await import('resend');
+  const { NewContentNotificationEmail } = await import(
+    '@/lib/email/templates/new-content-notification'
+  );
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  // Fetch contacts + separate into global and targeted
+  const allContacts: { id: string; email: string }[] = [];
+  // ... pagination loop (same as sendNewPostNotification) ...
+
+  const globalRecipients: { id: string; email: string }[] = [];
+  const targetedRecipients: { id: string; email: string }[] = [];
+
+  const contentKey =
+    type === 'category' ? `category:${doc.slug}` :
+    type === 'project' ? `project:${doc.slug}` :
+    `collection:${parentSlug}/${doc.slug}`;
+
+  for (const contact of allContacts) {
+    // ... contacts.get() to read subscriptions ...
+    if (subs === undefined || subs === '') {
+      globalRecipients.push(contact);
+    } else {
+      const prefSet = new Set(subs.split(','));
+      if (prefSet.has(contentKey)) continue;  // already subscribed — skip
+      targetedRecipients.push(contact);
+    }
+  }
+
+  // Combine: global first, then targeted
+  const allRecipients = [
+    ...globalRecipients.map((c) => ({ ...c, isGlobal: true })),
+    ...targetedRecipients.map((c) => ({ ...c, isGlobal: false })),
+  ];
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Send sequentially
+  let sentCount = 0;
+  for (let i = 0; i < allRecipients.length; i++) {
+    const c = allRecipients[i];
+    const unsubscribeUrl = `${siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}`;
+    const result = await resend.emails.send({
+      from: 'ICEAXING <notify@iceaxing.com>',
+      to: c.email,
+      subject: `iceaxing 新增内容 / New Content: ${doc.title}`,
+      react: NewContentNotificationEmail({
+        contentType: type,
+        contentName: doc.title,
+        contentDescription: doc.description ?? undefined,
+        parentName: parentTitle,
+        contentUrl,
+        isGlobal: c.isGlobal,
+        unsubscribeUrl,
+      }),
+      headers: {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
+    });
+    if (!result.error) sentCount++;
+    if (i < allRecipients.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  // Mark as notified (best-effort)
+  if (sentCount > 0 && process.env.SANITY_API_WRITE_TOKEN) {
+    try {
+      await writeClient.patch(docId).set({ notified: true }).commit();
+    } catch (err) {
+      console.error('[notification] Failed to patch notified for', docId, ':', err);
+    }
+  }
+}
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `ContentType` | 联合类型：`'category' \| 'project' \| 'collection'`。三种内容共用同一个发送函数 |
+| `contentQueries` | 按类型选择不同的 GROQ 查询——category 无父级，project 有一个父级（category），collection 有两个父级（project→category） |
+| `switch (type)` 构建 URL | 每种类型的 URL 结构不同：category 为 `/{slug}`，project 为 `/{cat}/{slug}`，collection 为 `/{cat}/{proj}/{slug}` |
+| `contentKey` | 新内容的偏好 key。collection 的 key 包含 project slug（`projectSlug/collectionSlug`），保持全局唯一 |
+| `globalRecipients` vs `targetedRecipients` | 两类收件人分开收集——全局订阅者只通知（`isGlobal: true`），定向订阅者询问是否订阅（`isGlobal: false`） |
+| `prefSet.has(contentKey) && continue` | 已订阅该内容的用户跳过——他们不需要"询问"邮件 |
+| `allRecipients = [global..., targeted...]` | 合并为一个列表，全局订阅者在前。确保顺序一致性 |
+| `writeClient.patch(docId).set({ notified: true }).commit()` | **去重写入**：发送成功后标记 `notified: true`，防止下次 publish 重复发送。需要 `SANITY_API_WRITE_TOKEN` |
+| `if (sentCount > 0 && process.env.SANITY_API_WRITE_TOKEN)` | 双条件保护：有成功发送 + token 存在，才执行 patch。任一条件不满足时仅 skip（非致命） |
+
+---
+
+#### 3.1.6 新建内容通知邮件模板
+
+**[文件用途]** `lib/email/templates/new-content-notification.tsx`——当 category/project/collection 新建时发送的通知邮件模板。与文章通知模板相比有两个模式：
+
+- **全局订阅者**（`isGlobal: true`）：仅通知，CTA 为"查看详情"
+- **定向订阅者**（`isGlobal: false`）：询问是否订阅新内容，CTA 为"更新订阅偏好"，下方有提示文字
+
+```tsx
+// lib/email/templates/new-content-notification.tsx
+import {
+  Html, Head, Preview, Body, Container, Text, Link, Hr,
+} from '@react-email/components';
+
+interface Props {
+  contentType: 'category' | 'project' | 'collection';
+  contentName: string;
+  contentDescription?: string;
+  parentName?: string;
+  contentUrl: string;
+  locale?: 'zh' | 'en';
+  isGlobal: boolean;
+  unsubscribeUrl: string;
+}
+
+const typeLabels = {
+  zh: { category: '分类', project: '项目', collection: '合集' },
+  en: { category: 'Category', project: 'Project', collection: 'Collection' },
+};
+
+const content = {
+  zh: {
+    preview: (name: string) => `iceaxing 新增内容：${name}`,
+    heading: 'iceaxing 内容更新',
+    globalIntro: '你在 iceaxing 订阅了全部内容。以下新增内容的相关文章将自动推送给你：',
+    targetedIntro: (parent: string) => `你在 iceaxing 订阅的"${parent}"下新增了内容：`,
+    nameIntro: (type: string, name: string) => `新增${type}：${name}`,
+    viewDetails: '查看详情',
+    updatePrefs: '更新订阅偏好',
+    prefsHint: '点击上方按钮，在订阅弹窗中勾选新增内容即可完成订阅。',
+    footer: '不想再收到此类通知？',
+    unsubscribe: '退订',
+  },
+  en: {
+    // ... (英文版本结构相同)
+  },
+};
+
+export function NewContentNotificationEmail({
+  contentType, contentName, contentDescription,
+  parentName, contentUrl, locale = 'zh', isGlobal, unsubscribeUrl,
+}: Props) {
+  const m = content[locale];
+  const typeLabel = typeLabels[locale][contentType];
+
+  return (
+    <Html lang={locale}>
+      <Head />
+      <Preview>{m.preview(contentName)}</Preview>
+      <Body style={bodyStyle}>
+        <Container>
+          <Text style={headingStyle}>{m.heading}</Text>
+          {isGlobal
+            ? <Text style={textStyle}>{m.globalIntro}</Text>
+            : <Text style={textStyle}>{m.targetedIntro(parentName ?? '')}</Text>
+          }
+          <Text style={textStyle}>{m.nameIntro(typeLabel, contentName)}</Text>
+          {contentDescription && <Text style={descStyle}>{contentDescription}</Text>}
+          <Link href={contentUrl} style={buttonStyle}>
+            {isGlobal ? m.viewDetails : m.updatePrefs}
+          </Link>
+          {!isGlobal && <Text style={hintStyle}>{m.prefsHint}</Text>}
+          <Hr style={hrStyle} />
+          <Text style={footerStyle}>
+            {m.footer} <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+// ... style objects (same pattern as new-post-notification) ...
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `contentType: 'category' \| 'project' \| 'collection'` | 三种内容类型，用于显示「新增分类/项目/合集」标签 |
+| `isGlobal: boolean` | **核心分支**：`true` → 全局订阅者（通知模式），`false` → 定向订阅者（询问模式） |
+| `typeLabels` | 将 content type 映射为用户可读的中/英文标签 |
+| `{isGlobal ? m.globalIntro : m.targetedIntro(parentName)}` | 根据模式显示不同的引入文字——全局说"将自动推送"，定向说"请更新偏好" |
+| `{isGlobal ? m.viewDetails : m.updatePrefs}` | CTA 按钮文字随模式切换——全局看详情，定向更新偏好 |
+| `{!isGlobal && <Text>{m.prefsHint}</Text>}` | 仅在定向模式下显示提示文字，告知用户如何订阅新内容 |
+| `contentDescription` | 可选字段——新建内容可能有 description（Sanity schema 中的描述字段） |
+
+---
+
+#### 3.1.7 退订系统
+
+**概念说明——为什么不用 Resend 内置退订**
+
+Resend 的 `{{{RESEND_UNSUBSCRIBE_URL}}}` 模板变量仅在使用 Resend Domain（`resend.dev`）发送时可用。自定义域名（如 `notify@iceaxing.com`）的邮件中该变量为空。此外它只能退订整个 Audience，无法实现按偏好退订。因此需要自建退订链路。
+
+**架构**：HMAC Token 生成 → 嵌入邮件链接/Header → GET/POST 退订 API → 验证 Token → Resend `contacts.remove()`
+
+**3.1.7.1 HMAC Token 工具**
+
+**[文件用途]** `lib/auth/token.ts`——生成和验证退订链接中的安全 token。使用 HMAC-SHA256 对 `contactId:timestamp` 签名，防止退订链接被伪造或篡改。
+
+```ts
+// lib/auth/token.ts
+import { createHmac, timingSafeEqual } from 'crypto';
+
+function getSecret(): string {
+  return process.env.SANITY_WEBHOOK_SECRET
+    || process.env.RESEND_API_KEY
+    || 'iceaxing-fallback-secret';
+}
+
+function hmac(payload: string): string {
+  return createHmac('sha256', getSecret()).update(payload).digest('hex');
+}
+
+export function generateUnsubscribeToken(contactId: string): string {
+  const payload = `${contactId}:${Date.now()}`;
+  const sig = hmac(payload);
+  return `${Buffer.from(payload).toString('base64url')}.${sig}`;
+}
+
+export function verifyUnsubscribeToken(contactId: string, token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 2) return false;
+
+    const payload = Buffer.from(parts[0], 'base64url').toString('utf-8');
+    const [id] = payload.split(':');
+
+    if (id !== contactId) return false;
+
+    const expectedSig = hmac(payload);
+    return timingSafeEqual(Buffer.from(parts[1]), Buffer.from(expectedSig));
+  } catch {
+    return false;
+  }
+}
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `getSecret()` | 从环境变量中获取签名密钥。优先级：`SANITY_WEBHOOK_SECRET` > `RESEND_API_KEY` > fallback。多来源确保任一环境变量存在即可 |
+| `createHmac('sha256', secret)` | 使用 SHA-256 哈希算法的 HMAC（Hash-based Message Authentication Code） |
+| `payload = contactId:timestamp` | Token 载荷包含联系人 ID 和时间戳。timestamp 非必须但可用于未来实现过期逻辑 |
+| `base64url` 编码 | Base64 URL-safe 编码（`+` → `-`，`/` → `_`，去掉 `=`），可直接放入 URL query string |
+| `token = payload.sig` | Token 格式：`<base64url编码的载荷>.<HMAC签名>`。与 JWT 格式类似，便于解析 |
+| `timingSafeEqual()` | **关键安全措施**：时间恒定字符串比较，防止时序攻击（timing attack）推断正确的签名 |
+| `verifyUnsubscribeToken` | 三步验证：① 分割 token → ② 解码 payload 并比对 contactId → ③ 重新计算 HMAC 签名并时间恒定比对 |
+
+**3.1.7.2 退订 API Route**
+
+**[文件用途]** `app/api/unsubscribe/route.ts`——处理 GET（用户点击链接）和 POST（邮件客户端一键退订）请求。验证 token 后调用 Resend `contacts.remove()` 删除联系人。
+
+```ts
+// app/api/unsubscribe/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyUnsubscribeToken } from '@/lib/auth/token';
+
+export async function GET(request: NextRequest) {
+  return handleUnsubscribe(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleUnsubscribe(request);
+}
+
+async function handleUnsubscribe(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const contactId = searchParams.get('c');
+  const token = searchParams.get('t');
+
+  if (!contactId || !token) {
+    return new NextResponse(htmlPage('zh', false, '缺少参数'), {
+      status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  if (!verifyUnsubscribeToken(contactId, token)) {
+    return new NextResponse(htmlPage('zh', false, '链接无效或已过期'), {
+      status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    return new NextResponse(htmlPage('zh', false, '服务暂未配置'), {
+      status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const result = await resend.contacts.remove(contactId);
+
+    if (result.error) {
+      console.error('[unsubscribe] contacts.remove error:', result.error);
+      return new NextResponse(htmlPage('zh', false, '退订失败，请稍后重试'), {
+        status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
+
+    return new NextResponse(htmlPage('zh', true), {
+      status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  } catch (err) {
+    console.error('[unsubscribe] Error:', err);
+    return new NextResponse(htmlPage('zh', false, '退订失败，请稍后重试'), {
+      status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+}
+
+function htmlPage(locale: 'zh' | 'en', success: boolean, message?: string): string {
+  const t = locale === 'zh'
+    ? {
+        title: success ? '退订成功' : '退订失败',
+        heading: success ? '你已成功退订' : '退订失败',
+        body: success
+          ? '你已从 iceaxing 的订阅列表中移除，不会再收到任何通知邮件。'
+          : message ?? '退订请求处理失败，请稍后重试。',
+        back: '返回首页',
+      }
+    : {
+        title: success ? 'Unsubscribed' : 'Unsubscribe Failed',
+        heading: success ? 'Successfully Unsubscribed' : 'Unsubscribe Failed',
+        body: success
+          ? "You've been removed from iceaxing's mailing list."
+          : message ?? 'Failed to process your unsubscribe request.',
+        back: 'Back to Home',
+      };
+
+  return `<!DOCTYPE html>
+<html lang="${locale}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${t.title} — iceaxing</title>
+<style>
+  body { font-family: -apple-system, sans-serif; display: flex; justify-content: center;
+    align-items: center; min-height: 100vh; margin: 0; background: #fafafa; }
+  .card { text-align: center; padding: 40px; max-width: 400px; }
+  h1 { font-size: 20px; margin-bottom: 12px; }
+  p { color: #666; font-size: 14px; margin-bottom: 24px; }
+  a { display: inline-block; padding: 10px 24px; background: #18181b; color: #fff;
+    border-radius: 8px; text-decoration: none; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>${t.heading}</h1>
+  <p>${t.body}</p>
+  <a href="/">${t.back}</a>
+</div>
+</body>
+</html>`;
+}
+```
+
+**逐行解读**：
+
+| 行 | 说明 |
+|------|------|
+| `export async function GET` + `POST` | 两个 HTTP 方法共享同一处理逻辑。GET 用于用户点击邮件链接，POST 用于邮件客户端 RFC 8058 一键退订 |
+| `contactId = searchParams.get('c')` | URL query 参数：`c` 为 Resend contact ID，`t` 为 HMAC token |
+| `verifyUnsubscribeToken(contactId, token)` | 三步验证：分割 token → 解码 payload 比对 contactId → HMAC 签名时间恒定比对 |
+| `resend.contacts.remove(contactId)` | Resend API 调用：从 Audience 中永久删除联系人，包括其所有属性和订阅偏好 |
+| `htmlPage()` | 返回服务器端渲染的完整 HTML 页面（非 JSON），用户可直接在浏览器中看到退订结果 |
+| `<a href="/">` | 提供返回首页链接，改善退订后的用户体验 |
+
+**3.1.7.3 List-Unsubscribe 邮件头**
+
+所有通知邮件和确认邮件都添加两个标准邮件头，使 Gmail/Outlook 在邮件顶部显示"取消订阅"按钮：
+
+```ts
+headers: {
+  'List-Unsubscribe': `<${unsubscribeUrl}>`,        // RFC 2369: 退订链接
+  'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',  // RFC 8058: 支持一键退订
+},
+```
+
+- **`List-Unsubscribe`**（RFC 2369）：包含退订 URL，邮件客户端在邮件顶部渲染"取消订阅"按钮。Gmail 在发件人地址旁显示，Apple Mail 在邮件头部 banner 中显示
+- **`List-Unsubscribe-Post`**（RFC 8058）：声明支持 POST 方式的一键退订。用户点击"取消订阅"后，邮件客户端直接 POST 到退订 URL，无需用户额外确认
+- 两个头配合：`POST /api/unsubscribe?c=...&t=...` 由邮件客户端自动发起，用户无需离开收件箱
 
 ---
 

@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server';
 import { routing } from '@/lib/i18n/routing';
 import { notFound } from 'next/navigation';
+import { SITE_NAME, SITE_URL, getStaticAlternates } from '@/lib/seo';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -16,11 +17,38 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: 'home' });
 
   return {
+    metadataBase: new URL(SITE_URL),
     title: {
-      default: 'iceaxing',
-      template: '%s — iceaxing',
+      default: SITE_NAME,
+      template: `%s - ${SITE_NAME}`,
     },
     description: t('metaDescription'),
+    applicationName: SITE_NAME,
+    alternates: getStaticAlternates(locale),
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description: t('metaDescription'),
+      url: locale === 'en' ? `${SITE_URL}/en` : SITE_URL,
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+    },
+    twitter: {
+      card: 'summary',
+      title: SITE_NAME,
+      description: t('metaDescription'),
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+      },
+    },
   };
 }
 

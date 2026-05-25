@@ -31,6 +31,7 @@ export interface BlogListItem {
 
 export interface BlogFull extends BlogListItem {
   body: PortableTextBlock[];
+  bodyText?: string;
   updatedAt?: string;
   project?: { title: string; slug: string };
   category?: { title: string; slug: string };

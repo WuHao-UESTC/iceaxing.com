@@ -100,6 +100,7 @@ const blogFullFields = groq`{
   language,
   theme,
   body,
+  "bodyText": pt::text(body),
   excerpt,
   publishedAt,
   updatedAt,

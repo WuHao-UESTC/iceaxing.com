@@ -14,52 +14,127 @@ import { GiscusComments } from '@/components/comments/giscus';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import {
+  SITE_NAME,
+  getCanonicalByContentLanguage,
+  getDescriptionFallback,
+  getStaticAlternates,
+  jsonLd,
+  localizedUrl,
+} from '@/lib/seo';
+import type { BlogFull } from '@/lib/sanity/types';
 
 interface Props {
   params: Promise<{ locale: string; category: string; project: string; slug: string[] }>;
 }
 
+function postPath(category: string, project: string, slug: string[]) {
+  return `/${category}/${project}/${slug.join('/')}`;
+}
+
+function postMetadata(post: BlogFull, locale: string, path: string): Metadata {
+  const description = getDescriptionFallback(post.title, post.excerpt || post.bodyText);
+  const canonical = getCanonicalByContentLanguage(post.language, path);
+  const contentLocale = post.language === 'en' ? 'en' : 'zh';
+  const localeMatchesContent = contentLocale === locale;
+
+  return {
+    title: post.title,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      url: canonical,
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      locale: contentLocale === 'en' ? 'en_US' : 'zh_CN',
+      siteName: SITE_NAME,
+    },
+    twitter: {
+      card: 'summary',
+      title: post.title,
+      description,
+    },
+    robots: localeMatchesContent
+      ? undefined
+      : {
+          index: false,
+          follow: true,
+        },
+  };
+}
+
+function BlogStructuredData({
+  post,
+  canonical,
+}: {
+  post: BlogFull;
+  canonical: string;
+}) {
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: getDescriptionFallback(post.title, post.excerpt || post.bodyText),
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt || post.publishedAt,
+    inLanguage: post.language === 'en' ? 'en-US' : 'zh-CN',
+    author: {
+      '@type': 'Person',
+      name: SITE_NAME,
+    },
+    publisher: {
+      '@type': 'Person',
+      name: SITE_NAME,
+    },
+    mainEntityOfPage: canonical,
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLd(articleJsonLd) }}
+    />
+  );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug, project, locale } = await params;
+  const { slug, category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
   if (slug.length === 0 || slug.length > 2) return { title: t('notFound') };
 
   if (slug.length === 1) {
     const collections = await getCollectionsByProject(project);
     const collection = collections.find((c) => c.slug === slug[0]);
+    const path = postPath(category, project, slug);
+
     if (collection) {
+      const description = collection.description || `${collection.title} collection`;
       return {
         title: collection.title,
-        description: collection.description || `${collection.title} 合集`,
+        description,
+        alternates: getStaticAlternates(locale, path),
+        openGraph: {
+          title: collection.title,
+          description,
+          url: localizedUrl(locale, path),
+        },
       };
     }
 
     const post = await getBlogPost(project, slug[0]);
     if (!post) return { title: t('notFound') };
-    return {
-      title: post.title,
-      description: post.excerpt,
-      openGraph: {
-        title: post.title,
-        description: post.excerpt,
-        type: 'article',
-        publishedTime: post.publishedAt,
-      },
-    };
+    return postMetadata(post, locale, path);
   }
 
+  const path = postPath(category, project, slug);
   const post = await getBlogPostWithCollection(project, slug[0], slug[1]);
   if (!post) return { title: t('notFound') };
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: 'article',
-      publishedTime: post.publishedAt,
-    },
-  };
+  return postMetadata(post, locale, path);
 }
 
 export default async function CatchAllPage({ params }: Props) {
@@ -70,13 +145,14 @@ export default async function CatchAllPage({ params }: Props) {
     return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US');
   }
 
-  // ═══ 两段路径：Collection + Blog 正文 ═══
   if (slug.length === 2) {
     const post = await getBlogPostWithCollection(project, slug[0], slug[1]);
     if (!post) notFound();
+    const canonical = getCanonicalByContentLanguage(post.language, postPath(category, project, slug));
 
     return (
       <BlogThemeWrapper theme={post.theme ?? 'default'}>
+        <BlogStructuredData post={post} canonical={canonical} />
         <article className="max-w-3xl mx-auto px-4 py-12">
           <nav className="text-sm text-zinc-400 mb-8">
             <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
@@ -128,7 +204,6 @@ export default async function CatchAllPage({ params }: Props) {
     );
   }
 
-  // ═══ 单段路径：Collection 列表 或 Blog 正文 ═══
   if (slug.length === 1) {
     const collections = await getCollectionsByProject(project);
     const collection = collections.find((c) => c.slug === slug[0]);
@@ -180,12 +255,13 @@ export default async function CatchAllPage({ params }: Props) {
       );
     }
 
-    // → 无 Collection 的 Blog 正文
     const post = await getBlogPost(project, slug[0]);
     if (!post) notFound();
+    const canonical = getCanonicalByContentLanguage(post.language, postPath(category, project, slug));
 
     return (
       <BlogThemeWrapper theme={post.theme ?? 'default'}>
+        <BlogStructuredData post={post} canonical={canonical} />
         <article className="max-w-3xl mx-auto px-4 py-12">
           <nav className="text-sm text-zinc-400 mb-8">
             <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>

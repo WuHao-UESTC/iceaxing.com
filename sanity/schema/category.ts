@@ -36,6 +36,13 @@ export default defineType({
       type: 'image',
       options: { hotspot: true },
     }),
+    defineField({
+      name: 'notified',
+      title: '已发送通知',
+      type: 'boolean',
+      initialValue: false,
+      hidden: true,
+    }),
   ],
   orderings: [
     { title: '排序', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] },

@@ -2,12 +2,24 @@ import { getFriends } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/image';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
+import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
-export async function generateMetadata() {
-  const t = await getTranslations('friends');
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'friends' });
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: getStaticAlternates(locale, '/friends'),
+    openGraph: {
+      title: t('title'),
+      description: t('metaDescription'),
+      url: localizedUrl(locale, '/friends'),
+    },
   };
 }
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSubscriptionOptions } from '@/lib/sanity/queries';
 
 export const dynamic = 'force-static';
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
       { success: true, data: options },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=3600',
         },
       }
     );

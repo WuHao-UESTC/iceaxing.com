@@ -1,14 +1,58 @@
 import { StaticHomePage } from '@/components/home/static-homepage';
 import { getTranslations } from 'next-intl/server';
+import { SITE_NAME, SITE_URL, getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
 
-export async function generateMetadata() {
-  const t = await getTranslations('home');
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'home' });
   return {
     title: t('metaTitle'),
     description: t('metaDescription'),
+    alternates: getStaticAlternates(locale),
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      title: t('metaTitle'),
+      description: t('metaDescription'),
+      url: localizedUrl(locale),
+      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+    },
+    twitter: {
+      card: 'summary',
+      title: t('metaTitle'),
+      description: t('metaDescription'),
+    },
   };
 }
 
-export default function HomePage() {
-  return <StaticHomePage />;
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'home' });
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: localizedUrl(locale),
+    description: t('metaDescription'),
+    inLanguage: locale === 'en' ? 'en-US' : 'zh-CN',
+    publisher: {
+      '@type': 'Person',
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }}
+      />
+      <StaticHomePage />
+    </>
+  );
 }
