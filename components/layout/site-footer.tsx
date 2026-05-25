@@ -16,7 +16,7 @@ export async function SiteFooter() {
             {t('rss')}
           </a>
         </div>
-        <p>&copy; {currentYear} iceaxing</p>
+        <p>&copy; {currentYear} iceaxing @ 1.0.0</p>
       </div>
     </footer>
   );
