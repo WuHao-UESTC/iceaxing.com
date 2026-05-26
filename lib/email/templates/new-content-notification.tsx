@@ -8,6 +8,7 @@ import {
   Link,
   Hr,
 } from '@react-email/components';
+import { emailStyles } from './styles';
 
 interface Props {
   contentType: 'category' | 'project' | 'collection';
@@ -69,34 +70,34 @@ export function NewContentNotificationEmail({
     <Html lang={locale}>
       <Head />
       <Preview>{m.preview(contentName)}</Preview>
-      <Body style={bodyStyle}>
+      <Body style={emailStyles.body}>
         <Container>
-          <Text style={headingStyle}>{m.heading}</Text>
+          <Text style={emailStyles.heading}>{m.heading}</Text>
 
           {isGlobal ? (
-            <Text style={textStyle}>{m.globalIntro}</Text>
+            <Text style={emailStyles.text}>{m.globalIntro}</Text>
           ) : (
-            <Text style={textStyle}>{m.targetedIntro(parentName ?? '')}</Text>
+            <Text style={emailStyles.text}>{m.targetedIntro(parentName ?? '')}</Text>
           )}
 
-          <Text style={textStyle}>
+          <Text style={emailStyles.text}>
             {m.nameIntro(typeLabel, contentName)}
           </Text>
 
           {contentDescription && (
-            <Text style={descStyle}>{contentDescription}</Text>
+            <Text style={emailStyles.description}>{contentDescription}</Text>
           )}
 
-          <Link href={contentUrl} style={buttonStyle}>
+          <Link href={contentUrl} style={emailStyles.button}>
             {isGlobal ? m.viewDetails : m.updatePrefs}
           </Link>
 
           {!isGlobal && (
-            <Text style={hintStyle}>{m.prefsHint}</Text>
+            <Text style={emailStyles.hint}>{m.prefsHint}</Text>
           )}
 
-          <Hr style={hrStyle} />
-          <Text style={footerStyle}>
+          <Hr style={emailStyles.divider} />
+          <Text style={emailStyles.footer}>
             {m.footer} <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>
           </Text>
         </Container>
@@ -104,56 +105,3 @@ export function NewContentNotificationEmail({
     </Html>
   );
 }
-
-const bodyStyle = {
-  backgroundColor: '#ffffff',
-  fontFamily: '-apple-system, sans-serif',
-  padding: '20px',
-};
-
-const headingStyle = {
-  fontSize: '18px',
-  fontWeight: 'bold',
-  marginBottom: '16px',
-};
-
-const textStyle = {
-  fontSize: '14px',
-  color: '#333',
-  marginBottom: '8px',
-};
-
-const descStyle = {
-  fontSize: '13px',
-  color: '#666',
-  marginBottom: '12px',
-  fontStyle: 'italic',
-};
-
-const buttonStyle = {
-  display: 'inline-block',
-  padding: '10px 20px',
-  backgroundColor: '#18181b',
-  color: '#ffffff',
-  borderRadius: '8px',
-  textDecoration: 'none',
-  fontSize: '14px',
-  marginTop: '12px',
-};
-
-const hintStyle = {
-  fontSize: '11px',
-  color: '#999',
-  marginTop: '8px',
-};
-
-const hrStyle = {
-  marginTop: '24px',
-  borderColor: '#e4e4e7',
-};
-
-const footerStyle = {
-  fontSize: '11px',
-  color: '#999',
-  marginTop: '8px',
-};

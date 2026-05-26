@@ -81,26 +81,31 @@ function htmlPage(locale: 'zh' | 'en', success: boolean, message?: string): stri
         back: 'Back to Home',
       };
 
+  const pageTitle = escapeHtml(`${t.title} - iceaxing`);
+
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${t.title} — iceaxing</title>
-<style>
-  body { font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #fafafa; }
-  .card { text-align: center; padding: 40px; max-width: 400px; }
-  h1 { font-size: 20px; margin-bottom: 12px; }
-  p { color: #666; font-size: 14px; margin-bottom: 24px; }
-  a { display: inline-block; padding: 10px 24px; background: #18181b; color: #fff; border-radius: 8px; text-decoration: none; font-size: 14px; }
-</style>
+<title>${pageTitle}</title>
+<link rel="stylesheet" href="/styles/unsubscribe.css">
 </head>
 <body>
 <div class="card">
-  <h1>${t.heading}</h1>
-  <p>${t.body}</p>
-  <a href="/">${t.back}</a>
+  <h1>${escapeHtml(t.heading)}</h1>
+  <p>${escapeHtml(t.body)}</p>
+  <a href="/">${escapeHtml(t.back)}</a>
 </div>
 </body>
 </html>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }

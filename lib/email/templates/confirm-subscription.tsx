@@ -8,6 +8,7 @@ import {
   Link,
   Hr,
 } from '@react-email/components';
+import { emailStyles } from './styles';
 
 interface Props {
   email: string;
@@ -53,19 +54,19 @@ export function ConfirmSubscriptionEmail({
     <Html lang={locale}>
       <Head />
       <Preview>{m.preview}</Preview>
-      <Body style={bodyStyle}>
+      <Body style={emailStyles.body}>
         <Container>
-          <Text style={headingStyle}>{m.heading}</Text>
-          <Text style={textStyle}>{m.body}</Text>
-          <Text style={subStyle}>{email}</Text>
-          <Text style={subStyle}>
+          <Text style={emailStyles.heading}>{m.heading}</Text>
+          <Text style={emailStyles.text}>{m.body}</Text>
+          <Text style={emailStyles.mutedText}>{email}</Text>
+          <Text style={emailStyles.mutedText}>
             {isAllContent
               ? m.allContent
               : m.customContent.replace('{count}', String(subscriptionCount))
             }
           </Text>
-          <Hr style={hrStyle} />
-          <Text style={footerStyle}>
+          <Hr style={emailStyles.divider} />
+          <Text style={emailStyles.footer}>
             {m.footer}
             {unsubscribeUrl && <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>}
             {m.footerEnd}
@@ -75,38 +76,3 @@ export function ConfirmSubscriptionEmail({
     </Html>
   );
 }
-
-const bodyStyle = {
-  backgroundColor: '#ffffff',
-  fontFamily: '-apple-system, sans-serif',
-  padding: '20px',
-};
-
-const headingStyle = {
-  fontSize: '18px',
-  fontWeight: 'bold',
-  marginBottom: '16px',
-};
-
-const textStyle = {
-  fontSize: '14px',
-  color: '#333',
-  marginBottom: '8px',
-};
-
-const subStyle = {
-  fontSize: '13px',
-  color: '#666',
-  marginBottom: '8px',
-};
-
-const hrStyle = {
-  marginTop: '24px',
-  borderColor: '#e4e4e7',
-};
-
-const footerStyle = {
-  fontSize: '11px',
-  color: '#999',
-  marginTop: '8px',
-};

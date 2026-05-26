@@ -9,6 +9,7 @@ import {
   getProjectBySlug,
 } from '@/lib/sanity/queries';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
+import { TableOfContents } from '@/components/blog/table-of-contents';
 import { BlogThemeWrapper } from '@/components/blog/blog-theme-wrapper';
 import { GiscusComments } from '@/components/comments/giscus';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -102,6 +103,92 @@ function BlogStructuredData({
   );
 }
 
+function PostArticle({
+  post,
+  category,
+  project,
+  collectionSlug,
+  locale,
+  formatDate,
+  t,
+}: {
+  post: BlogFull;
+  category: string;
+  project: string;
+  collectionSlug?: string;
+  locale: string;
+  formatDate: (dateStr: string) => string;
+  t: (key: string) => string;
+}) {
+  return (
+    <>
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-12 lg:grid-cols-[minmax(0,48rem)_16rem]">
+        <article className="min-w-0">
+          <nav className="text-sm text-zinc-400 mb-8">
+            <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/${category}`} className="hover:text-zinc-600">{post.category?.title || category}</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/${category}/${project}`} className="hover:text-zinc-600">
+              {post.project?.title || project}
+            </Link>
+            {collectionSlug && (
+              <>
+                <span className="mx-2">/</span>
+                <Link href={`/${category}/${project}/${collectionSlug}`} className="hover:text-zinc-600">
+                  {post.collection?.title || collectionSlug}
+                </Link>
+              </>
+            )}
+          </nav>
+
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
+            <div className="flex items-center gap-3 text-sm text-zinc-400">
+              <time dateTime={post.publishedAt}>
+                {formatDate(post.publishedAt)}
+              </time>
+              {post.tags && post.tags.length > 0 && (
+                <div className="flex gap-2">
+                  {post.tags.map((tag) => (
+                    <span key={tag} className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </header>
+
+          <div className="mb-8 lg:hidden">
+            <TableOfContents content={post.body} locale={locale} />
+          </div>
+
+          <div className="blog-body">
+            <BlogBody content={post.body} />
+          </div>
+
+          {post.updatedAt && (
+            <p className="text-sm text-zinc-400 mt-12 pt-6 border-t">
+              {t('updatedAt')} {formatDate(post.updatedAt)}
+            </p>
+          )}
+        </article>
+
+        <div className="hidden lg:block">
+          <div className="sticky top-24">
+            <TableOfContents content={post.body} locale={locale} />
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 pb-12">
+        <GiscusComments locale={locale} />
+      </div>
+    </>
+  );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
@@ -153,53 +240,15 @@ export default async function CatchAllPage({ params }: Props) {
     return (
       <BlogThemeWrapper theme={post.theme ?? 'default'}>
         <BlogStructuredData post={post} canonical={canonical} />
-        <article className="max-w-3xl mx-auto px-4 py-12">
-          <nav className="text-sm text-zinc-400 mb-8">
-            <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}`} className="hover:text-zinc-600">{post.category?.title || category}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}/${project}`} className="hover:text-zinc-600">
-              {post.project?.title || project}
-            </Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}/${project}/${slug[0]}`} className="hover:text-zinc-600">
-              {post.collection?.title || slug[0]}
-            </Link>
-          </nav>
-
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
-            <div className="flex items-center gap-3 text-sm text-zinc-400">
-              <time dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
-              </time>
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex gap-2">
-                  {post.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </header>
-
-          <div className="blog-body">
-            <BlogBody content={post.body} />
-          </div>
-
-          {post.updatedAt && (
-            <p className="text-sm text-zinc-400 mt-12 pt-6 border-t">
-              {t('updatedAt')} {formatDate(post.updatedAt)}
-            </p>
-          )}
-        </article>
-
-        <div className="max-w-3xl mx-auto px-4 pb-12">
-          <GiscusComments locale={locale} />
-        </div>
+        <PostArticle
+          post={post}
+          category={category}
+          project={project}
+          collectionSlug={slug[0]}
+          locale={locale}
+          formatDate={formatDate}
+          t={t}
+        />
       </BlogThemeWrapper>
     );
   }
@@ -262,49 +311,14 @@ export default async function CatchAllPage({ params }: Props) {
     return (
       <BlogThemeWrapper theme={post.theme ?? 'default'}>
         <BlogStructuredData post={post} canonical={canonical} />
-        <article className="max-w-3xl mx-auto px-4 py-12">
-          <nav className="text-sm text-zinc-400 mb-8">
-            <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}`} className="hover:text-zinc-600">{post.category?.title || category}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}/${project}`} className="hover:text-zinc-600">
-              {post.project?.title || project}
-            </Link>
-          </nav>
-
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
-            <div className="flex items-center gap-3 text-sm text-zinc-400">
-              <time dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
-              </time>
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex gap-2">
-                  {post.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </header>
-
-          <div className="blog-body">
-            <BlogBody content={post.body} />
-          </div>
-
-          {post.updatedAt && (
-            <p className="text-sm text-zinc-400 mt-12 pt-6 border-t">
-              {t('updatedAt')} {formatDate(post.updatedAt)}
-            </p>
-          )}
-        </article>
-
-        <div className="max-w-3xl mx-auto px-4 pb-12">
-          <GiscusComments locale={locale} />
-        </div>
+        <PostArticle
+          post={post}
+          category={category}
+          project={project}
+          locale={locale}
+          formatDate={formatDate}
+          t={t}
+        />
       </BlogThemeWrapper>
     );
   }

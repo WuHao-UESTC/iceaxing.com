@@ -69,7 +69,18 @@ export default defineType({
         { type: 'mathBlock' },
         { type: 'codeBlock' },
         { type: 'pdfEmbed' },
-        { type: 'image' },
+        {
+          type: 'image',
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: 'caption',
+              title: '图名',
+              type: 'string',
+              description: '可选。显示在图片下方。',
+            }),
+          ],
+        },
       ],
     }),
     defineField({

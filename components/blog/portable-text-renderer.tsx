@@ -24,6 +24,21 @@ interface MarkDef {
   href?: string;
 }
 
+type HeadingLevel = 1 | 2 | 3;
+
+function getHeadingId(value: unknown): string {
+  const raw = value as { _key?: string; children?: SpanData[] };
+  if (raw._key) return `section-${raw._key}`;
+
+  const text = (raw.children ?? [])
+    .filter((child) => child._type === 'span')
+    .map((child) => child.text)
+    .join(' ')
+    .trim();
+
+  return `section-${encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'))}`;
+}
+
 /** Split a text string on $...$ delimiters, returning alternating text/math segments. */
 function parseInlineMath(text: string): { type: 'text' | 'math'; content: string }[] {
   const segments: { type: 'text' | 'math'; content: string }[] = [];
@@ -113,6 +128,23 @@ function applyMarks(
   return wrapped;
 }
 
+function renderTextBlock(value: unknown, tag: 'p' | `h${HeadingLevel}`) {
+  const raw = value as { children?: SpanData[]; markDefs?: MarkDef[] };
+  const spans: SpanData[] = (raw.children ?? []).filter(
+    (c: SpanData) => c._type === 'span',
+  );
+  const defs: MarkDef[] = raw.markDefs ?? [];
+
+  if (spans.length === 0) return <br />;
+
+  const children = spans.map((span, i) => renderSpan(span, defs, i));
+
+  if (tag === 'h1') return <h1 id={getHeadingId(value)} className="scroll-mt-24">{children}</h1>;
+  if (tag === 'h2') return <h2 id={getHeadingId(value)} className="scroll-mt-24">{children}</h2>;
+  if (tag === 'h3') return <h3 id={getHeadingId(value)} className="scroll-mt-24">{children}</h3>;
+  return <p>{children}</p>;
+}
+
 const components: PortableTextComponents = {
   types: {
     mindmap: ({ value }) => (
@@ -142,6 +174,11 @@ const components: PortableTextComponents = {
             height={675}
             className="rounded-lg"
           />
+          {value.caption && (
+            <figcaption className="mt-2 text-center text-sm text-zinc-500">
+              {value.caption}
+            </figcaption>
+          )}
         </figure>
       );
     },
@@ -149,24 +186,11 @@ const components: PortableTextComponents = {
 
   block: {
     normal: ({ value }) => {
-      // Portable Text block runtime shape — children is always an array of span objects
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const raw = value as any;
-      const spans: SpanData[] = (raw.children ?? []).filter(
-        (c: SpanData) => c._type === 'span',
-      );
-      const defs: MarkDef[] = raw.markDefs ?? [];
-
-      if (spans.length === 0) return <br />;
-
-      return (
-        <p>
-          {spans.map((span, i) =>
-            renderSpan(span, defs, i),
-          )}
-        </p>
-      );
+      return renderTextBlock(value, 'p');
     },
+    h1: ({ value }) => renderTextBlock(value, 'h1'),
+    h2: ({ value }) => renderTextBlock(value, 'h2'),
+    h3: ({ value }) => renderTextBlock(value, 'h3'),
   },
 };
 

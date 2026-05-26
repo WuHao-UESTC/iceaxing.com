@@ -30,17 +30,24 @@ export function SearchDialog({ categories = [] }: Props) {
   const t = useTranslations('search');
   const router = useRouter();
 
-  // Use refs so the keydown handler doesn't re-register on every results update.
   const resultsRef = useRef(results);
-  resultsRef.current = results;
   const selectedIndexRef = useRef(selectedIndex);
-  selectedIndexRef.current = selectedIndex;
   const openRef = useRef(open);
-  openRef.current = open;
 
   const closeAndClear = useCallback(() => {
     setOpen(false);
+    setQuery('');
+    setResults([]);
+    setSelectedIndex(-1);
+    setCategoryFilter('');
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    resultsRef.current = results;
+    selectedIndexRef.current = selectedIndex;
+    openRef.current = open;
+  }, [results, selectedIndex, open]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,19 +86,11 @@ export function SearchDialog({ categories = [] }: Props) {
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
-    else {
-      // Reset on close so a fresh dialog starts clean.
-      setQuery('');
-      setResults([]);
-      setSelectedIndex(-1);
-      setCategoryFilter('');
-    }
   }, [open]);
 
   // Debounced search
   useEffect(() => {
     if (!query.trim()) {
-      setResults([]);
       return;
     }
 
@@ -142,7 +141,15 @@ export function SearchDialog({ categories = [] }: Props) {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                const nextQuery = e.target.value;
+                setQuery(nextQuery);
+                if (!nextQuery.trim()) {
+                  setResults([]);
+                  setSelectedIndex(-1);
+                  setLoading(false);
+                }
+              }}
               placeholder={t('placeholder')}
               className="w-full px-4 py-3 text-lg border-b outline-none"
               role="search"

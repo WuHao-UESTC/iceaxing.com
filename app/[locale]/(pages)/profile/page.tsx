@@ -4,6 +4,7 @@ import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
+import Image from 'next/image';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -25,7 +26,6 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function ProfilePage() {
-  const t = await getTranslations('profile');
   const tc = await getTranslations('common');
   const profile = await getProfile();
 
@@ -41,9 +41,11 @@ export default async function ProfilePage() {
     <div className="max-w-2xl mx-auto px-4 py-12">
       <div className="flex items-center gap-4 mb-8">
         {profile.avatar && (
-          <img
+          <Image
             src={urlFor(profile.avatar).width(96).height(96).format('webp').url()}
             alt={profile.name}
+            width={64}
+            height={64}
             className="w-16 h-16 rounded-full object-cover"
           />
         )}

@@ -3,6 +3,7 @@ import { urlFor } from '@/lib/sanity/image';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
+import Image from 'next/image';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -45,9 +46,11 @@ export default async function FriendsPage() {
               className="flex items-start gap-4 p-4 border rounded-lg hover:border-zinc-400 transition-colors"
             >
               {friend.avatar && (
-                <img
+                <Image
                   src={urlFor(friend.avatar).width(80).height(80).format('webp').url()}
                   alt={friend.name}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                 />
               )}

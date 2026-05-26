@@ -10,9 +10,12 @@ export function SubscribeDialog() {
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const openRef = useRef(open);
-  openRef.current = open;
 
   const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

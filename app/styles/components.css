@@ -1,0 +1,7 @@
+.log-grid-inner {
+  min-width: 780px;
+}
+
+.pixelated-image {
+  image-rendering: pixelated;
+}

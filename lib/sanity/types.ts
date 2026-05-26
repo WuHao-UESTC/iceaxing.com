@@ -80,6 +80,7 @@ export interface SanityImage {
     _type: 'reference';
   };
   alt?: string;
+  caption?: string;
   hotspot?: { x: number; y: number; width: number; height: number };
   crop?: { top: number; bottom: number; left: number; right: number };
 }

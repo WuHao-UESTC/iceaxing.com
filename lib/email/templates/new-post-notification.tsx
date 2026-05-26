@@ -8,6 +8,7 @@ import {
   Link,
   Hr,
 } from '@react-email/components';
+import { emailStyles } from './styles';
 
 interface Props {
   postTitle: string;
@@ -55,24 +56,24 @@ export function NewPostNotificationEmail({
     <Html lang={locale}>
       <Head />
       <Preview>{m.preview(postTitle)}</Preview>
-      <Body style={bodyStyle}>
+      <Body style={emailStyles.body}>
         <Container>
-          <Text style={headingStyle}>{m.heading}</Text>
-          <Text style={textStyle}>{m.intro}</Text>
-          <Text style={textStyle}>
+          <Text style={emailStyles.heading}>{m.heading}</Text>
+          <Text style={emailStyles.text}>{m.intro}</Text>
+          <Text style={emailStyles.text}>
             {category} &gt; {project}
           </Text>
-          <Text style={textStyle}>
+          <Text style={emailStyles.text}>
             {m.article(postTitle)}
           </Text>
           {postExcerpt && (
-            <Text style={excerptStyle}>{postExcerpt}</Text>
+            <Text style={emailStyles.excerpt}>{postExcerpt}</Text>
           )}
-          <Link href={postUrl} style={buttonStyle}>
+          <Link href={postUrl} style={emailStyles.button}>
             {m.readNow}
           </Link>
-          <Hr style={hrStyle} />
-          <Text style={footerStyle}>
+          <Hr style={emailStyles.divider} />
+          <Text style={emailStyles.footer}>
             {m.footer} <Link href={unsubscribeUrl}>{m.unsubscribe}</Link>
           </Text>
         </Container>
@@ -80,50 +81,3 @@ export function NewPostNotificationEmail({
     </Html>
   );
 }
-
-const bodyStyle = {
-  backgroundColor: '#ffffff',
-  fontFamily: '-apple-system, sans-serif',
-  padding: '20px',
-};
-
-const headingStyle = {
-  fontSize: '18px',
-  fontWeight: 'bold',
-  marginBottom: '16px',
-};
-
-const textStyle = {
-  fontSize: '14px',
-  color: '#333',
-  marginBottom: '8px',
-};
-
-const excerptStyle = {
-  fontSize: '13px',
-  color: '#666',
-  marginBottom: '8px',
-  fontStyle: 'italic',
-};
-
-const buttonStyle = {
-  display: 'inline-block',
-  padding: '10px 20px',
-  backgroundColor: '#18181b',
-  color: '#ffffff',
-  borderRadius: '8px',
-  textDecoration: 'none',
-  fontSize: '14px',
-  marginTop: '12px',
-};
-
-const hrStyle = {
-  marginTop: '24px',
-  borderColor: '#e4e4e7',
-};
-
-const footerStyle = {
-  fontSize: '11px',
-  color: '#999',
-  marginTop: '8px',
-};

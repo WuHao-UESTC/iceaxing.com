@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import type { LogDoc } from '@/lib/sanity/types';
 
@@ -24,16 +24,10 @@ export function LogGrid({
   ].sort((a, b) => b.localeCompare(a));
 
   const [selectedYear, setSelectedYear] = useState(years[0] || '');
+  const activeYear = years.includes(selectedYear) ? selectedYear : years[0] || '';
 
-  // Resync selectedYear if years change (e.g. ISR revalidation)
-  useEffect(() => {
-    if (years.length > 0 && !years.includes(selectedYear)) {
-      setSelectedYear(years[0]);
-    }
-  }, [years, selectedYear]);
-
-  const filteredLogs = selectedYear
-    ? logs.filter((log) => log.date.startsWith(selectedYear))
+  const filteredLogs = activeYear
+    ? logs.filter((log) => log.date.startsWith(activeYear))
     : logs;
 
   const dateMap = new Map<string, LogDoc>();
@@ -43,8 +37,8 @@ export function LogGrid({
 
   // Build the 52-week grid centered on the selected year
   let yearDate: Date;
-  if (selectedYear) {
-    yearDate = new Date(Number(selectedYear), 11, 31); // Dec 31 of selected year
+  if (activeYear) {
+    yearDate = new Date(Number(activeYear), 11, 31); // Dec 31 of selected year
   } else {
     yearDate = new Date();
   }
@@ -81,7 +75,7 @@ export function LogGrid({
               key={year}
               onClick={() => setSelectedYear(year)}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                year === selectedYear
+                year === activeYear
                   ? 'bg-zinc-900 text-white'
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
               }`}
@@ -93,7 +87,7 @@ export function LogGrid({
       )}
 
       <div className="overflow-x-auto pb-2">
-        <div className="flex gap-1" style={{ minWidth: '780px' }}>
+        <div className="log-grid-inner flex gap-1">
           {weeks.map((week, wi) => (
             <div key={wi} className="flex flex-col gap-1">
               {week.map((day) => {

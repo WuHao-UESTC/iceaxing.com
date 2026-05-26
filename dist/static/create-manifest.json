@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-05-24T00:57:06.345Z",
+  "createdAt": "2026-05-25T11:50:59.857Z",
   "studioVersion": "5.26.0",
   "version": 3,
   "workspaces": [
@@ -13,7 +13,7 @@
       },
       "name": "iceaxing-blog",
       "projectId": "fa79h3qq",
-      "schema": "e696c562.create-schema.json",
+      "schema": "77e47bd3.create-schema.json",
       "title": "iceaxing Blog",
       "tools": "a1fd46b5.create-tools.json"
     }
