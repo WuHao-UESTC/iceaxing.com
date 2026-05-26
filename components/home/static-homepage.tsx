@@ -1,7 +1,6 @@
 import { getAllCategories } from '@/lib/sanity/queries';
 import { Link } from '@/lib/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 
 export async function StaticHomePage() {
   const categories = await getAllCategories();
@@ -10,13 +9,6 @@ export async function StaticHomePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-      <Image
-        src="/assets/manor-under-construction.png"
-        alt={t('imageAlt')}
-        width={256}
-        height={256}
-        className="pixelated-image mx-auto mb-8 w-64 h-64"
-      />
       <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
       <p className="text-zinc-500 mb-8">{t('subtitle')}</p>
       <nav className="flex flex-wrap justify-center gap-3">
