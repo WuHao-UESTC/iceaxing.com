@@ -266,7 +266,7 @@ export async function getFriends(): Promise<FriendDoc[]> {
 }
 
 export async function getProfile(): Promise<ProfileDoc | null> {
-  return client.fetch(groq`*[_id == "site-profile"][0] {
+  return client.fetch(groq`*[_type == "profile"] | order(_id == "site-profile" desc, _updatedAt desc)[0] {
     _id, name, avatar, bio, socialLinks
   }`);
 }
@@ -421,9 +421,13 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
   }`;
 
   return client.fetch(groq`{
-    "siteIntro": *[_type == "siteSettings"][0]{
-      "text": ${localizedString('homeIntro')}
-    }.text,
+    "siteSettings": *[_type == "siteSettings"][0]{
+      "homeIntro": ${localizedString('homeIntro')},
+      "logEntryTitle": ${localizedString('logEntryTitle')},
+      "logEntryIntro": ${localizedString('logEntryIntro')},
+      "friendsEntryTitle": ${localizedString('friendsEntryTitle')},
+      "friendsEntryIntro": ${localizedString('friendsEntryIntro')}
+    },
     "mottos": *[_type == "motto"] | order(order asc, _createdAt desc) {
       _id,
       "text": ${localizedString('text')},
@@ -436,10 +440,12 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       "title": ${localizedString('title')},
       "intro": ${localizedString('intro')}
     },
-    "profile": *[_id == "site-profile"][0] {
+    "profile": *[_type == "profile"] | order(_id == "site-profile" desc, _updatedAt desc)[0] {
       _id,
       name,
-      "intro": pt::text(bio)
+      "entryTitle": ${localizedString('entryTitle')},
+      "entryIntro": ${localizedString('entryIntro')},
+      "bioText": pt::text(bio)
     },
     "friendCount": count(*[_type == "friend"]),
     "latestLog": *[_type == "log"] | order(date desc)[0] {
@@ -467,17 +473,17 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       )
     ] | order(publishedAt desc)[0...18] ${blogCardProjection}
   }{
-    siteIntro,
+    "siteIntro": siteSettings.homeIntro,
     mottos,
     specialPosts,
     calendarPosts,
     "entryCards": [
       {
         "_id": "home-entry-log",
-        "title": "Log",
+        "title": coalesce(siteSettings.logEntryTitle, "Log"),
         "href": "/log",
         "kind": "log",
-        "intro": coalesce(latestLog.description, latestLog.title)
+        "intro": coalesce(siteSettings.logEntryIntro, latestLog.description, latestLog.title)
       },
       {
         "_id": "home-entry-about",
@@ -488,17 +494,17 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       },
       {
         "_id": "home-entry-friends",
-        "title": "Friends",
+        "title": coalesce(siteSettings.friendsEntryTitle, "Friends"),
         "href": "/friends",
         "kind": "friends",
-        "intro": select(friendCount > 0 => string(friendCount) + " links", "No links yet")
+        "intro": coalesce(siteSettings.friendsEntryIntro, select(friendCount > 0 => string(friendCount) + " links", "No links yet"))
       },
       {
         "_id": "home-entry-profile",
-        "title": coalesce(profile.name, "Profile"),
+        "title": coalesce(profile.entryTitle, profile.name, "Profile"),
         "href": "/profile",
         "kind": "profile",
-        "intro": profile.intro
+        "intro": coalesce(profile.entryIntro, profile.bioText)
       }
     ],
     skillCategories,
