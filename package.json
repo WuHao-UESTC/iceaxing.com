@@ -9,6 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.2.11",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
+    "@fontsource/noto-serif-sc": "^5.2.9",
     "@giscus/react": "^3.1.0",
     "@portabletext/react": "^6.2.0",
     "@react-email/components": "^0.5.7",
@@ -17,6 +21,7 @@
     "@sanity/vision": "^5.26.0",
     "@sanity/webhook": "^4.0.4",
     "@tailwindcss/typography": "^0.5.19",
+    "cn-fontsource-lxgw-wen-kai-screen": "^1.0.6",
     "feed": "^5.2.1",
     "highlight.js": "^11.11.1",
     "katex": "^0.17.0",

@@ -97,7 +97,7 @@ export function PreferenceTree({ options, selected, onSelectionChange }: Props) 
               type="checkbox"
               checked={selected.has(nodeKey(cat))}
               onChange={() => handleToggle(cat)}
-              className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+              className="rounded border-[var(--color-line)] text-[var(--color-blue)] focus:ring-[var(--color-blue-soft)]"
             />
             <span>{cat.title}</span>
           </label>
@@ -108,18 +108,18 @@ export function PreferenceTree({ options, selected, onSelectionChange }: Props) 
                   type="checkbox"
                   checked={selected.has(nodeKey(proj))}
                   onChange={() => handleToggle(proj)}
-                  className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+                  className="rounded border-[var(--color-line)] text-[var(--color-blue)] focus:ring-[var(--color-blue-soft)]"
                 />
                 <span>{proj.title}</span>
               </label>
               {proj.children.map((col) => (
                 <div key={col.slug} className="ml-4">
-                  <label className="flex items-center gap-2 py-0.5 cursor-pointer text-zinc-500">
+                  <label className="flex items-center gap-2 py-0.5 cursor-pointer text-[var(--color-text-faint)]">
                     <input
                       type="checkbox"
                       checked={selected.has(nodeKey(col))}
                       onChange={() => handleToggle(col)}
-                      className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-400"
+                      className="rounded border-[var(--color-line)] text-[var(--color-blue)] focus:ring-[var(--color-blue-soft)]"
                     />
                     <span>{col.title}</span>
                   </label>
@@ -130,7 +130,7 @@ export function PreferenceTree({ options, selected, onSelectionChange }: Props) 
         </div>
       ))}
       {tree.length === 0 && (
-        <p className="text-zinc-400 text-xs py-2">{t('emptyOptions')}</p>
+        <p className="text-[var(--color-text-faint)] text-xs py-2">{t('emptyOptions')}</p>
       )}
     </div>
   );

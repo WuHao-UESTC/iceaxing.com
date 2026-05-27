@@ -73,8 +73,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body className="min-h-screen bg-white text-zinc-900 antialiased font-sans">
+    <html lang={locale} data-theme="dark">
+      <body className="site-shell min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SiteHeader />
           <main className="min-h-[calc(100vh-12rem)]">{children}</main>

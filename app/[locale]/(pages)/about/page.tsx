@@ -34,7 +34,7 @@ export default async function AboutPage() {
           Phase 2 考虑迁入 Sanity profile 或保持静态。
         </p>
       </div>
-      <Link href="/" className="text-sm text-blue-600 hover:underline mt-8 inline-block">
+      <Link href="/" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
         {tc('backToHome')}
       </Link>
     </div>

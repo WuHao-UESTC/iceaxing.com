@@ -14,17 +14,17 @@ interface Props {
 
 export function LogGrid({
   logs,
-  categoryColorMap,
   legendContent,
   legendSite,
   legendOther,
 }: Props) {
+  const currentYear = String(new Date().getFullYear());
   const years = [
-    ...new Set(logs.map((log) => log.date.slice(0, 4))),
+    ...new Set([currentYear, ...logs.map((log) => log.date.slice(0, 4))]),
   ].sort((a, b) => b.localeCompare(a));
 
-  const [selectedYear, setSelectedYear] = useState(years[0] || '');
-  const activeYear = years.includes(selectedYear) ? selectedYear : years[0] || '';
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const activeYear = years.includes(selectedYear) ? selectedYear : currentYear;
 
   const filteredLogs = activeYear
     ? logs.filter((log) => log.date.startsWith(activeYear))
@@ -35,93 +35,93 @@ export function LogGrid({
     dateMap.set(log.date, log);
   }
 
-  // Build the 52-week grid centered on the selected year
-  let yearDate: Date;
-  if (activeYear) {
-    yearDate = new Date(Number(activeYear), 11, 31); // Dec 31 of selected year
-  } else {
-    yearDate = new Date();
-  }
+  const yearNumber = activeYear ? Number(activeYear) : new Date().getFullYear();
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Find the Sunday of the week containing Dec 31, then go back 52 weeks
-  const endSunday = new Date(yearDate);
-  endSunday.setDate(endSunday.getDate() - endSunday.getDay()); // Previous Sunday
-  const startDate = new Date(endSunday);
-  startDate.setDate(startDate.getDate() - 52 * 7 + 1);
+  const months = Array.from({ length: 12 }, (_, month) => {
+    const firstDay = new Date(yearNumber, month, 1).getDay();
+    const daysInMonth = new Date(yearNumber, month + 1, 0).getDate();
+    const cells = [
+      ...Array.from({ length: firstDay }, () => null),
+      ...Array.from({ length: daysInMonth }, (_, dayIndex) => {
+        const day = dayIndex + 1;
+        return {
+          date: `${yearNumber}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+          day,
+        };
+      }),
+    ];
 
-  const weeks: { date: string; dayOfWeek: number }[][] = [];
-  for (let w = 0; w < 52; w++) {
-    const week: { date: string; dayOfWeek: number }[] = [];
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + w * 7 + d);
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const dStr = String(date.getDate()).padStart(2, '0');
-      week.push({
-        date: `${y}-${m}-${dStr}`,
-        dayOfWeek: d,
-      });
-    }
-    weeks.push(week);
-  }
+    return { month, cells };
+  });
 
   return (
     <>
-      {years.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-6">
+      <div className="log-year-header">
+        <h2>{activeYear}</h2>
+        <div className="log-year-switcher" aria-label="Year selector">
           {years.map((year) => (
             <button
               key={year}
               onClick={() => setSelectedYear(year)}
-              className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                year === activeYear
-                  ? 'bg-zinc-900 text-white'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              }`}
+              className={year === activeYear ? 'is-active' : ''}
             >
               {year}
             </button>
           ))}
         </div>
-      )}
+      </div>
 
-      <div className="overflow-x-auto pb-2">
-        <div className="log-grid-inner flex gap-1">
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-1">
-              {week.map((day) => {
-                const log = dateMap.get(day.date);
+      <div className="log-calendar">
+        {months.map(({ month, cells }) => (
+          <section key={month} className="log-month" aria-label={`${monthNames[month]} ${yearNumber}`}>
+            <h2>{monthNames[month]}</h2>
+            <div className="log-weekdays" aria-hidden="true">
+              {weekDays.map((day, index) => (
+                <span key={`${day}-${index}`}>{day}</span>
+              ))}
+            </div>
+            <div className="log-days">
+              {cells.map((cell, index) => {
+                if (!cell) {
+                  return <span key={`empty-${index}`} className="log-day is-empty" />;
+                }
+
+                const log = dateMap.get(cell.date);
                 return log ? (
                   <Link
-                    key={day.date}
+                    key={cell.date}
                     href={`/log/${log.slug}`}
                     title={`${log.title}\n${log.description || ''}`}
-                    className={`w-3.5 h-3.5 rounded-sm ${
-                      categoryColorMap[log.category] || categoryColorMap.content
-                    } transition-colors`}
-                  />
+                    aria-label={`${cell.date}: ${log.title}`}
+                    className={`log-day has-log is-${log.category}`}
+                  >
+                    {cell.day}
+                  </Link>
                 ) : (
-                  <div
-                    key={day.date}
-                    className="w-3.5 h-3.5 rounded-sm bg-zinc-100"
-                  />
+                  <span key={cell.date} className="log-day">
+                    {cell.day}
+                  </span>
                 );
               })}
             </div>
+          </section>
           ))}
-        </div>
       </div>
 
-      <div className="flex items-center gap-4 mt-6 text-sm text-zinc-500">
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-sm bg-amber-400" /> {legendContent}
+      <div className="log-legend">
+        <span>
+          <span className="bg-[var(--color-gold)]" /> {legendContent}
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-sm bg-yellow-500" /> {legendSite}
+        <span>
+          <span className="bg-[var(--color-blue-soft)]" /> {legendSite}
         </span>
-        <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-sm bg-orange-400" /> {legendOther}
+        <span>
+          <span className="bg-[var(--color-copper)]" /> {legendOther}
         </span>
       </div>
     </>

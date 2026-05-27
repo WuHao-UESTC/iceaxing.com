@@ -6,13 +6,13 @@ export async function SiteFooter() {
   const t = await getTranslations('nav');
 
   return (
-    <footer className="border-t py-8 mt-16">
-      <div className="max-w-4xl mx-auto px-4 text-center text-sm text-zinc-400">
+    <footer className="border-t border-[color:var(--line)] py-8 mt-16">
+      <div className="max-w-6xl mx-auto px-4 text-center text-sm text-[var(--color-text-faint)]">
         <div className="flex justify-center gap-4 mb-2">
-          <Link href="/profile" className="hover:text-zinc-600 transition-colors">
+          <Link href="/profile" className="hover:text-[var(--color-text)] transition-colors">
             {t('profile')}
           </Link>
-          <a href="/feed.xml" className="hover:text-zinc-600 transition-colors">
+          <a href="/feed.xml" className="hover:text-[var(--color-text)] transition-colors">
             {t('rss')}
           </a>
         </div>

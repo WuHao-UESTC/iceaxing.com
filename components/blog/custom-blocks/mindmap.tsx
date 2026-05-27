@@ -31,11 +31,11 @@ export function MindMap({ data, caption }: Props) {
   return (
     <figure className="my-8">
       {caption && (
-        <figcaption className="text-sm text-zinc-500 text-center mb-2">
+        <figcaption className="text-sm text-[var(--color-text-faint)] text-center mb-2">
           {caption}
         </figcaption>
       )}
-      <svg ref={svgRef} className="w-full h-[400px] max-sm:h-[250px] border rounded-lg" />
+      <svg ref={svgRef} className="mindmap-svg w-full h-[400px] max-sm:h-[250px] border rounded-lg" />
     </figure>
   );
 }

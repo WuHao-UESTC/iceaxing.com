@@ -8,8 +8,10 @@ import type {
   LogDoc,
   CollectionDoc,
   FriendDoc,
+  HomeEntryGroup,
   ProfileDoc,
   SubscriptionOption,
+  SpecialCategorySection,
 } from './types';
 
 // ═══ Category ═══
@@ -18,6 +20,7 @@ const categoryFields = groq`{
   _id,
   title,
   "slug": slug.current,
+  intro,
   description,
   order,
   icon
@@ -25,6 +28,37 @@ const categoryFields = groq`{
 
 export async function getAllCategories(): Promise<CategoryDoc[]> {
   return client.fetch(groq`*[_type == "category"] | order(order) ${categoryFields}`);
+}
+
+export async function getSpecialBlogsByCategory(): Promise<SpecialCategorySection[]> {
+  return client.fetch(groq`
+    *[_type == "category"] | order(order) {
+      _id,
+      title,
+      "slug": slug.current,
+      intro,
+      description,
+      order,
+      icon,
+      "specialPosts": *[
+        _type == "blog" &&
+        "special" in tags[] &&
+        project->category._ref == ^._id
+      ] | order(publishedAt desc)[0...6] {
+        _id,
+        title,
+        "slug": slug.current,
+        language,
+        theme,
+        excerpt,
+        publishedAt,
+        tags,
+        "project": project->{title, "slug": slug.current},
+        "category": project->category->{title, "slug": slug.current},
+        "collection": collection->{title, "slug": slug.current}
+      }
+    }[count(specialPosts) > 0]
+  `);
 }
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryDoc | null> {
@@ -40,6 +74,7 @@ const projectFields = groq`{
   _id,
   title,
   "slug": slug.current,
+  intro,
   description,
   order,
   "category": category->{title, "slug": slug.current}
@@ -222,11 +257,40 @@ export async function searchBlogs(
 export async function getCollectionsByProject(projectSlug: string): Promise<CollectionDoc[]> {
   return client.fetch(
     groq`*[_type == "collection" && project->slug.current == $projectSlug] | order(order) {
-      _id, title, "slug": slug.current, description,
+      _id, title, "slug": slug.current, intro, description,
       "postCount": count(*[_type == "blog" && references(^._id)])
     }`,
     { projectSlug }
   );
+}
+
+export async function getHomeEntryGroups(): Promise<HomeEntryGroup[]> {
+  return client.fetch(groq`
+    *[_type == "category"] | order(order) {
+      _id,
+      title,
+      "slug": slug.current,
+      intro,
+      description,
+      order,
+      icon,
+      "projects": *[_type == "project" && category._ref == ^._id] | order(order) {
+        _id,
+        title,
+        "slug": slug.current,
+        intro,
+        description,
+        "collections": *[_type == "collection" && project._ref == ^._id] | order(order) {
+          _id,
+          title,
+          "slug": slug.current,
+          intro,
+          description,
+          "postCount": count(*[_type == "blog" && references(^._id)])
+        }
+      }
+    }
+  `);
 }
 
 // ═══ Subscription Options ═══
@@ -236,7 +300,8 @@ export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
     groq`*[_type == "category"] | order(order) {
       "type": "category",
       "slug": slug.current,
-      title
+      title,
+      "intro": coalesce(intro, description)
     }`
   );
   const projects = await client.fetch(
@@ -244,6 +309,7 @@ export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
       "type": "project",
       "slug": slug.current,
       title,
+      "intro": coalesce(intro, description),
       "parentSlug": category->slug.current
     }`
   );
@@ -252,6 +318,7 @@ export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
       "type": "collection",
       "slug": slug.current,
       title,
+      "intro": coalesce(intro, description),
       "parentSlug": project->slug.current
     }`
   );

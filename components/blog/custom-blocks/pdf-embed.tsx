@@ -36,7 +36,7 @@ export function PdfEmbed({ file, caption }: Props) {
         <a
           href={fileUrl}
           download
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)]"
         >
           {t('download')}
         </a>

@@ -88,7 +88,7 @@ export default async function LogDetailPage({ params }: Props) {
 
       <GiscusComments locale={locale} />
 
-      <Link href="/log" className="text-sm text-blue-600 hover:underline mt-8 inline-block">
+      <Link href="/log" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
         {t('backToLog')}
       </Link>
     </div>

@@ -123,7 +123,7 @@ export function SearchDialog({ categories = [] }: Props) {
       {/* Trigger button */}
       <button
         onClick={() => setOpen(true)}
-        className="hover:text-zinc-900 transition-colors text-sm text-zinc-600"
+        className="hover:text-[var(--color-text)] transition-colors text-sm text-[var(--color-text-muted)]"
         aria-label={t('triggerLabel')}
       >
         🔍
@@ -132,9 +132,9 @@ export function SearchDialog({ categories = [] }: Props) {
       {/* Dialog */}
       {open && (
         <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
           <div
-            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl border overflow-hidden"
+            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] shadow-xl shadow-black/45"
             onClick={(e) => e.stopPropagation()}
           >
             <input
@@ -151,13 +151,13 @@ export function SearchDialog({ categories = [] }: Props) {
                 }
               }}
               placeholder={t('placeholder')}
-              className="w-full px-4 py-3 text-lg border-b outline-none"
+              className="w-full px-4 py-3 text-lg border-b border-[color:var(--line)] outline-none"
               role="search"
               aria-label={t('ariaLabel')}
             />
 
             {categories.length > 0 && (
-              <div className="px-4 py-2 border-b bg-zinc-50">
+              <div className="px-4 py-2 border-b border-[color:var(--line)] bg-[var(--color-panel-soft)]/80">
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
@@ -174,13 +174,13 @@ export function SearchDialog({ categories = [] }: Props) {
             )}
 
             {loading && (
-              <div className="px-4 py-8 text-center text-zinc-400 text-sm">
+              <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
                 {t('loading')}
               </div>
             )}
 
             {!loading && query && results.length === 0 && (
-              <div className="px-4 py-8 text-center text-zinc-400 text-sm">
+              <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
                 {t('noResults')}
               </div>
             )}
@@ -191,19 +191,19 @@ export function SearchDialog({ categories = [] }: Props) {
                   <button
                     key={result._id}
                     className={`w-full text-left px-4 py-3 transition-colors ${
-                      i === selectedIndex ? 'bg-zinc-100' : 'hover:bg-zinc-50'
+                      i === selectedIndex ? 'bg-[var(--color-panel-soft)]' : 'hover:bg-[var(--color-panel-soft)]'
                     }`}
                     onClick={() => {
                       router.push(resultUrl(result));
                       closeAndClear();
                     }}
                   >
-                    <div className="font-medium text-sm">{result.title}</div>
-                    <div className="text-xs text-zinc-400 mt-0.5">
+                    <div className="font-medium text-sm text-[var(--color-text)]">{result.title}</div>
+                    <div className="text-xs text-[var(--color-text-faint)] mt-0.5">
                       {result.category.title} &gt; {result.project.title}
                     </div>
                     {result.excerpt && (
-                      <div className="text-xs text-zinc-500 mt-1 line-clamp-1">
+                      <div className="text-xs text-[var(--color-text-faint)] mt-1 line-clamp-1">
                         {result.excerpt}
                       </div>
                     )}

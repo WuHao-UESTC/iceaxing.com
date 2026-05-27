@@ -4,6 +4,7 @@ export interface CategoryDoc {
   _id: string;
   title: string;
   slug: string;
+  intro?: string;
   description?: string;
   order?: number;
   icon?: SanityImage;
@@ -13,6 +14,7 @@ export interface ProjectDoc {
   _id: string;
   title: string;
   slug: string;
+  intro?: string;
   description?: string;
   order?: number;
   category?: { title: string; slug: string };
@@ -27,6 +29,16 @@ export interface BlogListItem {
   excerpt?: string;
   publishedAt: string;
   tags?: string[];
+}
+
+export interface SpecialBlogItem extends BlogListItem {
+  project?: { title: string; slug: string };
+  category?: { title: string; slug: string };
+  collection?: { title: string; slug: string };
+}
+
+export interface SpecialCategorySection extends CategoryDoc {
+  specialPosts: SpecialBlogItem[];
 }
 
 export interface BlogFull extends BlogListItem {
@@ -52,8 +64,31 @@ export interface CollectionDoc {
   _id: string;
   title: string;
   slug: string;
+  intro?: string;
   description?: string;
   postCount: number;
+}
+
+export interface HomeCollectionEntry {
+  _id: string;
+  title: string;
+  slug: string;
+  intro?: string;
+  description?: string;
+  postCount: number;
+}
+
+export interface HomeProjectEntry {
+  _id: string;
+  title: string;
+  slug: string;
+  intro?: string;
+  description?: string;
+  collections: HomeCollectionEntry[];
+}
+
+export interface HomeEntryGroup extends CategoryDoc {
+  projects: HomeProjectEntry[];
 }
 
 export interface FriendDoc {
@@ -89,5 +124,6 @@ export interface SubscriptionOption {
   type: 'category' | 'project' | 'collection';
   slug: string;
   title: string;
+  intro?: string;
   parentSlug?: string;
 }

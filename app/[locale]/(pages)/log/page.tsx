@@ -23,9 +23,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 const categoryColorMap: Record<string, string> = {
-  content: 'bg-amber-400 hover:bg-amber-500',
-  site: 'bg-yellow-500 hover:bg-yellow-600',
-  other: 'bg-orange-400 hover:bg-orange-500',
+  content: 'bg-[var(--color-gold)]',
+  site: 'bg-[var(--color-blue-soft)]',
+  other: 'bg-[var(--color-copper)]',
 };
 
 export default async function LogPage() {

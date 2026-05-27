@@ -25,6 +25,13 @@ export default defineType({
       type: 'text',
     }),
     defineField({
+      name: 'intro',
+      title: '入口简介',
+      type: 'text',
+      rows: 3,
+      description: '用于首页入口按钮展示的简短介绍。为空时会使用描述字段。',
+    }),
+    defineField({
       name: 'order',
       title: '排序',
       type: 'number',

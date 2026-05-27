@@ -40,8 +40,8 @@ export function SubscribeDialog() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-1.5 bg-zinc-900 text-white text-sm rounded-full
-                   hover:bg-zinc-700 transition-colors font-medium"
+        className="px-3 py-1.5 bg-[var(--color-panel-soft)]/50 text-[var(--color-text)] text-sm rounded-full
+                   ring-1 ring-[var(--color-line)] hover:bg-[var(--color-blue-deep)] transition-colors font-medium"
         aria-label={tn('subscribe')}
       >
         {tn('subscribe')}
@@ -49,21 +49,21 @@ export function SubscribeDialog() {
 
       {open && (
         <div className="fixed inset-0 z-50" onClick={close}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby={headingId}
-            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-full max-w-md
-                        bg-white rounded-xl shadow-2xl border p-6"
+            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md
+                        rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] p-6 shadow-xl shadow-black/45"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 id={headingId} className="font-semibold text-lg">{t('title')}</h2>
+              <h2 id={headingId} className="font-semibold text-lg text-[var(--color-text)]">{t('title')}</h2>
               <button
                 ref={closeRef}
                 onClick={close}
-                className="text-zinc-400 hover:text-zinc-600 text-xl leading-none"
+                className="text-[var(--color-text-faint)] hover:text-[var(--color-text)] text-xl leading-none"
                 aria-label={t('close')}
               >
                 ✕

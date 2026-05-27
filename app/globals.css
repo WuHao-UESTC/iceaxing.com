@@ -1,4 +1,16 @@
 @import "tailwindcss";
+@import "@fontsource/noto-serif-sc/chinese-simplified-400.css";
+@import "@fontsource/noto-serif-sc/chinese-simplified-500.css";
+@import "@fontsource/noto-serif-sc/chinese-simplified-700.css";
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/cormorant-garamond/700.css";
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/500.css";
+@import "@fontsource/newsreader/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "cn-fontsource-lxgw-wen-kai-screen/font.css";
 @import "katex/dist/katex.min.css";
 @import "highlight.js/styles/github-dark.css";
 @import "./styles/blog.css";
@@ -9,6 +21,80 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: system-ui, -apple-system, sans-serif;
-  --font-mono: "Cascadia Code", "Fira Code", "JetBrains Mono", monospace;
+  --font-sans: var(--font-reading);
+  --font-serif: var(--font-serif-cn);
+  --font-mono: var(--font-mono-stack);
+}
+
+:root {
+  --color-abyss: #05070a;
+  --color-ink: #081018;
+  --color-panel: #111b24;
+  --color-panel-soft: #172632;
+  --color-line: #2a3740;
+  --color-text: #e2e6e8;
+  --color-text-muted: #9aa6aa;
+  --color-text-faint: #6f7b80;
+  --color-blue: #2f5f7a;
+  --color-blue-deep: #1c4056;
+  --color-blue-soft: #6f8d9b;
+  --color-gold: #a9825f;
+  --color-sand: #b4aa94;
+  --color-copper: #7c5d46;
+  --color-success: #5f725f;
+  --color-danger: #b98078;
+
+  --background: var(--color-abyss);
+  --foreground: var(--color-text);
+  --muted-foreground: var(--color-text-muted);
+  --panel: color-mix(in srgb, var(--color-panel) 86%, transparent);
+  --panel-strong: color-mix(in srgb, var(--color-panel) 96%, black 4%);
+  --line: color-mix(in srgb, var(--color-line) 72%, transparent);
+  --glow: color-mix(in srgb, var(--color-blue) 30%, transparent);
+
+  --font-serif-cn: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-serif-en: "Cormorant Garamond", "Noto Serif SC", serif;
+  --font-reading: "Newsreader", "Noto Serif SC", serif;
+  --font-hand: "LXGW WenKai Screen", "Noto Serif SC", serif;
+  --font-mono-stack: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+}
+
+[data-theme="light"] {
+  --color-abyss: #f3f0ea;
+  --color-ink: #e8e3da;
+  --color-panel: #ddd8cf;
+  --color-panel-soft: #c9d2ce;
+  --color-line: #b9b2a7;
+  --color-text: #252826;
+  --color-text-muted: #656b66;
+  --color-text-faint: #89877f;
+  --color-blue: #6e8793;
+  --color-blue-deep: #4d6874;
+  --color-blue-soft: #a8b8bc;
+  --color-gold: #a68b68;
+  --color-sand: #d4c8b7;
+  --color-copper: #a57862;
+  --color-success: #8e9b89;
+  --color-danger: #a96f66;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  font-family: var(--font-reading);
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif-en);
 }

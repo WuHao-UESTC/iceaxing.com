@@ -64,7 +64,7 @@ export default async function ProfilePage() {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)]"
             >
               {link.label}
             </a>

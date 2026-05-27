@@ -22,7 +22,7 @@ export function LanguageSwitcher() {
     <button
       onClick={handleSwitch}
       disabled={isPending}
-      className="text-sm text-zinc-600 hover:text-zinc-900 transition-colors"
+      className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors disabled:opacity-60"
       aria-label={nextLocale === 'zh' ? '切换到中文' : 'Switch to English'}
     >
       {nextLocale === 'zh' ? '中文' : 'EN'}
