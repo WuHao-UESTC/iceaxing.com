@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { Link } from '@/lib/i18n/navigation';
 import {
   getBlogPost,
   getBlogPostWithCollection,
@@ -19,6 +18,11 @@ import {
   localizedUrl,
 } from '@/lib/seo';
 import { intlLocale } from '@/lib/i18n/locales';
+import {
+  CollectionHero,
+  ListingBreadcrumb,
+  PostList,
+} from '@/components/site/listing-cards';
 
 interface Props {
   params: Promise<{ locale: string; category: string; project: string; slug: string[] }>;
@@ -102,42 +106,36 @@ export default async function CatchAllPage({ params }: Props) {
         getCategoryBySlug(category, locale),
         getProjectBySlug(project, locale),
       ]);
+      const labels = {
+        locale,
+        home: t('home'),
+        posts: t('posts'),
+        collections: t('collections'),
+        postCountUnit: t('postCountUnit'),
+      };
 
       return (
-        <div className="max-w-3xl mx-auto px-4 py-12">
-          <nav className="text-sm text-zinc-400 mb-8">
-            <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}`} className="hover:text-zinc-600">{cat?.title || category}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/${category}/${project}`} className="hover:text-zinc-600">{proj?.title || project}</Link>
-          </nav>
-
-          <h1 className="text-3xl font-bold mb-2">{collection.title}</h1>
-          {collection.description && (
-            <p className="text-zinc-500 mb-8">{collection.description}</p>
-          )}
+        <div className="listing-page">
+          <ListingBreadcrumb
+            items={[
+              { label: t('home'), href: '/' },
+              { label: cat?.title || category, href: `/${category}` },
+              { label: proj?.title || project, href: `/${category}/${project}` },
+              { label: collection.title },
+            ]}
+          />
+          <CollectionHero collection={collection} labels={labels} />
 
           {posts.length === 0 ? (
             <EmptyState message={t('emptyCollections')} />
           ) : (
-            <div className="space-y-4">
-              {posts.map((post) => (
-                <Link
-                  key={post._id}
-                  href={`/${category}/${project}/${collection.slug}/${post.slug}`}
-                  className="block p-4 border rounded-lg hover:border-zinc-400 transition-colors"
-                >
-                  <h2 className="font-medium mb-1">{post.title}</h2>
-                  {post.excerpt && (
-                    <p className="text-sm text-zinc-500 line-clamp-2">{post.excerpt}</p>
-                  )}
-                  <time className="text-xs text-zinc-400" dateTime={post.publishedAt}>
-                    {formatDate(post.publishedAt)}
-                  </time>
-                </Link>
-              ))}
-            </div>
+            <section className="listing-section listing-section-narrow">
+              <div className="listing-section-head">
+                <h2>{t('posts')}</h2>
+                <span>{posts.length}</span>
+              </div>
+              <PostList posts={posts} category={category} project={project} labels={labels} compact />
+            </section>
           )}
         </div>
       );

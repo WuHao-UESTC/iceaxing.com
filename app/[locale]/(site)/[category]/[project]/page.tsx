@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { Link } from '@/lib/i18n/navigation';
 import {
   getProjectBySlug,
   getBlogPostsByProject,
@@ -13,6 +12,12 @@ import { BlogThemeWrapper } from '@/components/blog/blog-theme-wrapper';
 import { BlogStructuredData, PostArticle, getPostMetadata } from '@/components/blog/post-article';
 import { getCanonicalByContentLanguage, getStaticAlternates, localizedUrl } from '@/lib/seo';
 import { intlLocale } from '@/lib/i18n/locales';
+import {
+  CollectionList,
+  ListingBreadcrumb,
+  PostList,
+  ProjectHero,
+} from '@/components/site/listing-cards';
 
 interface Props {
   params: Promise<{ locale: string; category: string; project: string }>;
@@ -74,71 +79,52 @@ export default async function ProjectPage({ params }: Props) {
     );
   }
 
-  const posts = await getBlogPostsByProject(project, locale);
-  const collections = await getCollectionsByProject(project, locale);
+  const [posts, collections] = await Promise.all([
+    getBlogPostsByProject(project, locale),
+    getCollectionsByProject(project, locale),
+  ]);
+  const labels = {
+    locale,
+    home: t('home'),
+    posts: t('posts'),
+    collections: t('collections'),
+    postCountUnit: t('postCountUnit'),
+  };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <nav className="text-sm text-zinc-400 mb-8">
-        <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
-        <span className="mx-2">/</span>
-        <Link href={`/${category}`} className="hover:text-zinc-600">
-          {cat?.title || category}
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-zinc-700">{proj.title}</span>
-      </nav>
+    <div className="listing-page">
+      <ListingBreadcrumb
+        items={[
+          { label: t('home'), href: '/' },
+          { label: cat?.title || category, href: `/${category}` },
+          { label: proj.title },
+        ]}
+      />
+      <ProjectHero project={proj} labels={labels} />
 
-      <h1 className="text-3xl font-bold mb-2">{proj.title}</h1>
-      {proj.description && (
-        <p className="text-zinc-500 mb-8">{proj.description}</p>
-      )}
-
-      {collections.length > 0 && (
-        <section className="mb-10">
-          <h2 className="text-lg font-semibold mb-3">{t('collections')}</h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {collections.map((col) => (
-              <Link
-                key={col._id}
-                href={`/${category}/${project}/${col.slug}`}
-                className="block p-4 border rounded-lg hover:border-zinc-400 transition-colors"
-              >
-                <h3 className="font-medium">{col.title}</h3>
-                {col.description && (
-                  <p className="text-sm text-zinc-500">{col.description}</p>
-                )}
-                <span className="text-xs text-zinc-400">{col.postCount} {t('postCountUnit')}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <h2 className="text-lg font-semibold mb-3">{t('posts')}</h2>
-        {posts.length === 0 ? (
-          <EmptyState message={t('emptyPosts')} />
-        ) : (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <Link
-                key={post._id}
-                href={`/${category}/${project}/${post.slug}`}
-                className="block p-4 border rounded-lg hover:border-zinc-400 transition-colors"
-              >
-                <h3 className="font-medium mb-1">{post.title}</h3>
-                {post.excerpt && (
-                  <p className="text-sm text-zinc-500 line-clamp-2">{post.excerpt}</p>
-                )}
-                <time className="text-xs text-zinc-400" dateTime={post.publishedAt}>
-                  {new Date(post.publishedAt).toLocaleDateString(intlLocale(locale))}
-                </time>
-              </Link>
-            ))}
-          </div>
+      <div className="listing-stack listing-project-stack">
+        {collections.length > 0 && (
+          <section className="listing-section">
+            <div className="listing-section-head">
+              <h2>{t('collections')}</h2>
+              <span>{collections.length}</span>
+            </div>
+            <CollectionList collections={collections} category={category} project={project} labels={labels} />
+          </section>
         )}
-      </section>
+
+        <section className="listing-section listing-section-narrow">
+          <div className="listing-section-head">
+            <h2>{t('posts')}</h2>
+            <span>{posts.length}</span>
+          </div>
+          {posts.length === 0 ? (
+            <EmptyState message={t('emptyPosts')} />
+          ) : (
+            <PostList posts={posts} category={category} project={project} labels={labels} compact />
+          )}
+        </section>
+      </div>
     </div>
   );
 }

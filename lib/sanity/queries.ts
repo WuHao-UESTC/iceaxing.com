@@ -106,11 +106,39 @@ const projectProjection = groq`{
   "intro": ${localizedString('intro')},
   "description": ${localizedString('description')},
   order,
+  tags,
   status,
   progress,
   createdAt,
   "coverImage": coverImage ${homeImageProjection},
-  "category": category->{"title": ${localizedString('title')}, "slug": slug.current}
+  "category": category->{"title": ${localizedString('title')}, "slug": slug.current},
+  "postCount": count(*[_type == "blog" && project._ref == ^._id]),
+  "collectionCount": count(*[_type == "collection" && project._ref == ^._id]),
+  "latestCollections": *[_type == "collection" && project._ref == ^._id] | order(order asc, _updatedAt desc)[0...3] {
+    _id,
+    "title": ${localizedString('title')},
+    "slug": slug.current,
+    "intro": ${localizedString('intro')},
+    "description": ${localizedString('description')},
+    tags,
+    "postCount": count(*[_type == "blog" && collection._ref == ^._id])
+  },
+  "latestPosts": *[_type == "blog" && project._ref == ^._id] | order(publishedAt desc)[0...3] {
+    _id,
+    "title": ${localizedString('title')},
+    "slug": slug.current,
+    "language": ${localizedBlogLanguage},
+    theme,
+    "excerpt": ${localizedString('excerpt')},
+    "bodyText": pt::text(${localizedBlocks('body')}),
+    publishedAt,
+    tags,
+    authorName,
+    "coverImage": coverImage ${homeImageProjection},
+    "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+    "category": project->category->{"title": ${localizedString('title')}, "slug": slug.current},
+    "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
+  }
 }`;
 
 export async function getProjectsByCategory(categorySlug: string, locale = 'zh'): Promise<ProjectDoc[]> {
@@ -134,6 +162,7 @@ const blogListProjection = groq`{
   "language": ${localizedBlogLanguage},
   theme,
   "excerpt": ${localizedString('excerpt')},
+  "bodyText": pt::text(${localizedBlocks('body')}),
   publishedAt,
   tags,
   authorName,
@@ -346,7 +375,11 @@ export async function getCollectionsByProject(projectSlug: string, locale = 'zh'
       "slug": slug.current,
       "intro": ${localizedString('intro')},
       "description": ${localizedString('description')},
-      "postCount": count(*[_type == "blog" && references(^._id)])
+      tags,
+      createdAt,
+      "coverImage": coalesce(coverImage, *[_type == "blog" && collection._ref == ^._id] | order(publishedAt desc)[0].coverImage, project->coverImage) ${homeImageProjection},
+      "postCount": count(*[_type == "blog" && collection._ref == ^._id]),
+      "latestPosts": *[_type == "blog" && collection._ref == ^._id] | order(publishedAt desc)[0...3] ${blogListProjection}
     }`,
     { projectSlug, locale }
   );

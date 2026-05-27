@@ -83,6 +83,32 @@ export default defineType({
       rows: 3,
     }),
     defineField({
+      name: 'createdAt',
+      title: 'Created at',
+      type: 'datetime',
+      initialValue: () => new Date().toISOString(),
+    }),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover image',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt text',
+          type: 'string',
+        }),
+      ],
+    }),
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: { layout: 'tags' },
+    }),
+    defineField({
       name: 'order',
       title: '排序',
       type: 'number',

@@ -21,10 +21,15 @@ export interface ProjectDoc {
   description?: string;
   order?: number;
   category?: { title: string; slug: string };
+  tags?: string[];
   status?: 'ongoing' | 'completed' | 'planned';
   progress?: number;
   createdAt?: string;
   coverImage?: HomeImage;
+  postCount?: number;
+  collectionCount?: number;
+  latestPosts?: BlogListItem[];
+  latestCollections?: CollectionPreview[];
 }
 
 export interface BlogListItem {
@@ -75,7 +80,21 @@ export interface CollectionDoc {
   slug: string;
   intro?: string;
   description?: string;
+  tags?: string[];
+  createdAt?: string;
+  coverImage?: HomeImage;
   postCount: number;
+  latestPosts?: BlogListItem[];
+}
+
+export interface CollectionPreview {
+  _id: string;
+  title: string;
+  slug: string;
+  intro?: string;
+  description?: string;
+  tags?: string[];
+  postCount?: number;
 }
 
 export interface HomeCollectionEntry {
