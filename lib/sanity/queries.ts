@@ -266,9 +266,14 @@ export async function getFriends(): Promise<FriendDoc[]> {
 }
 
 export async function getProfile(): Promise<ProfileDoc | null> {
-  return client.fetch(groq`*[_type == "profile"] | order(_id == "site-profile" desc, _updatedAt desc)[0] {
-    _id, name, avatar, bio, socialLinks
-  }`);
+  return client.fetch(groq`coalesce(
+    *[_id == "site-profile"][0] {
+      _id, name, avatar, bio, socialLinks
+    },
+    *[_type == "profile"] | order(_updatedAt desc)[0] {
+      _id, name, avatar, bio, socialLinks
+    }
+  )`);
 }
 
 export async function getAbout(locale = 'zh'): Promise<AboutDoc | null> {
@@ -440,13 +445,22 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       "title": ${localizedString('title')},
       "intro": ${localizedString('intro')}
     },
-    "profile": *[_type == "profile"] | order(_id == "site-profile" desc, _updatedAt desc)[0] {
-      _id,
-      name,
-      "entryTitle": ${localizedString('entryTitle')},
-      "entryIntro": ${localizedString('entryIntro')},
-      "bioText": pt::text(bio)
-    },
+    "profile": coalesce(
+      *[_id == "site-profile"][0] {
+        _id,
+        name,
+        "entryTitle": ${localizedString('entryTitle')},
+        "entryIntro": ${localizedString('entryIntro')},
+        "bioText": pt::text(bio)
+      },
+      *[_type == "profile"] | order(_updatedAt desc)[0] {
+        _id,
+        name,
+        "entryTitle": ${localizedString('entryTitle')},
+        "entryIntro": ${localizedString('entryIntro')},
+        "bioText": pt::text(bio)
+      }
+    ),
     "friendCount": count(*[_type == "friend"]),
     "latestLog": *[_type == "log"] | order(date desc)[0] {
       _id,
