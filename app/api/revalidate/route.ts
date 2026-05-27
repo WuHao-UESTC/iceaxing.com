@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       case 'blog':
         revalidatePath('/', 'layout');
         revalidatePath('/en', 'layout');
+        revalidatePath('/de', 'layout');
 
         if (body._id) {
           try {
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
       case 'collection':
         revalidatePath('/', 'layout');
         revalidatePath('/en', 'layout');
+        revalidatePath('/de', 'layout');
 
         if (body._id && body.notified !== true) {
           try {
@@ -90,16 +92,38 @@ export async function POST(request: NextRequest) {
       case 'log':
         revalidatePath('/log', 'layout');
         revalidatePath('/en/log', 'layout');
+        revalidatePath('/de/log', 'layout');
         break;
 
       case 'friend':
         revalidatePath('/friends', 'layout');
         revalidatePath('/en/friends', 'layout');
+        revalidatePath('/de/friends', 'layout');
         break;
 
       case 'profile':
         revalidatePath('/profile', 'layout');
         revalidatePath('/en/profile', 'layout');
+        revalidatePath('/de/profile', 'layout');
+        revalidatePath('/', 'layout');
+        revalidatePath('/en', 'layout');
+        revalidatePath('/de', 'layout');
+        break;
+
+      case 'motto':
+      case 'siteSettings':
+        revalidatePath('/', 'layout');
+        revalidatePath('/en', 'layout');
+        revalidatePath('/de', 'layout');
+        break;
+
+      case 'about':
+        revalidatePath('/about', 'layout');
+        revalidatePath('/en/about', 'layout');
+        revalidatePath('/de/about', 'layout');
+        revalidatePath('/', 'layout');
+        revalidatePath('/en', 'layout');
+        revalidatePath('/de', 'layout');
         break;
 
       default:

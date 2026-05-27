@@ -8,7 +8,9 @@ import type {
   LogDoc,
   CollectionDoc,
   FriendDoc,
+  AboutDoc,
   HomeEntryGroup,
+  HomePayload,
   ProfileDoc,
   SubscriptionOption,
   SpecialCategorySection,
@@ -21,6 +23,12 @@ function localizedString(field: string) {
 function localizedBlocks(field: string) {
   return groq`coalesce(select($locale == "de" => ${field}De, $locale == "en" => ${field}En), ${field})`;
 }
+
+const homeImageProjection = groq`{
+  "url": asset->url,
+  "lqip": asset->metadata.lqip,
+  "alt": alt
+}`;
 
 const localizedBlogLanguage = groq`select(
   $locale == "de" && (defined(titleDe) || defined(excerptDe) || defined(bodyDe)) => "de",
@@ -35,7 +43,10 @@ const categoryProjection = groq`{
   "intro": ${localizedString('intro')},
   "description": ${localizedString('description')},
   order,
-  icon
+  icon,
+  tags,
+  createdAt,
+  "coverImage": coverImage ${homeImageProjection}
 }`;
 
 export async function getAllCategories(locale = 'zh'): Promise<CategoryDoc[]> {
@@ -68,6 +79,8 @@ export async function getSpecialBlogsByCategory(locale = 'zh'): Promise<SpecialC
         "excerpt": ${localizedString('excerpt')},
         publishedAt,
         tags,
+        authorName,
+        "coverImage": coverImage ${homeImageProjection},
         "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
         "category": coalesce(
           category->{"title": ${localizedString('title')}, "slug": slug.current},
@@ -93,6 +106,10 @@ const projectProjection = groq`{
   "intro": ${localizedString('intro')},
   "description": ${localizedString('description')},
   order,
+  status,
+  progress,
+  createdAt,
+  "coverImage": coverImage ${homeImageProjection},
   "category": category->{"title": ${localizedString('title')}, "slug": slug.current}
 }`;
 
@@ -119,6 +136,8 @@ const blogListProjection = groq`{
   "excerpt": ${localizedString('excerpt')},
   publishedAt,
   tags,
+  authorName,
+  "coverImage": coverImage ${homeImageProjection},
   "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
   "category": coalesce(
     category->{"title": ${localizedString('title')}, "slug": slug.current},
@@ -252,6 +271,15 @@ export async function getProfile(): Promise<ProfileDoc | null> {
   }`);
 }
 
+export async function getAbout(locale = 'zh'): Promise<AboutDoc | null> {
+  return client.fetch(groq`*[_type == "about"][0] {
+    _id,
+    "title": ${localizedString('title')},
+    "intro": ${localizedString('intro')},
+    "body": ${localizedBlocks('body')}
+  }`, { locale });
+}
+
 export interface SearchResult {
   _id: string;
   title: string;
@@ -346,6 +374,140 @@ export async function getHomeEntryGroups(locale = 'zh'): Promise<HomeEntryGroup[
       }
     }
   `, { locale });
+}
+
+export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
+  const blogCardProjection = groq`{
+    _id,
+    "title": ${localizedString('title')},
+    "slug": slug.current,
+    "language": ${localizedBlogLanguage},
+    theme,
+    "excerpt": ${localizedString('excerpt')},
+    publishedAt,
+    tags,
+    authorName,
+    "coverImage": coverImage ${homeImageProjection},
+    "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+    "category": coalesce(
+      category->{"title": ${localizedString('title')}, "slug": slug.current},
+      project->category->{"title": ${localizedString('title')}, "slug": slug.current}
+    ),
+    "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
+  }`;
+
+  const categoryCardProjection = groq`{
+    _id,
+    "title": ${localizedString('title')},
+    "slug": slug.current,
+    "intro": coalesce(${localizedString('intro')}, ${localizedString('description')}),
+    "description": ${localizedString('description')},
+    tags,
+    createdAt,
+    "coverImage": coalesce(coverImage, icon) ${homeImageProjection}
+  }`;
+
+  const projectCardProjection = groq`{
+    _id,
+    "title": ${localizedString('title')},
+    "slug": slug.current,
+    "intro": coalesce(${localizedString('intro')}, ${localizedString('description')}),
+    "description": ${localizedString('description')},
+    status,
+    progress,
+    createdAt,
+    "coverImage": coverImage ${homeImageProjection},
+    "category": category->{"title": ${localizedString('title')}, "slug": slug.current}
+  }`;
+
+  return client.fetch(groq`{
+    "siteIntro": *[_type == "siteSettings"][0]{
+      "text": ${localizedString('homeIntro')}
+    }.text,
+    "mottos": *[_type == "motto"] | order(order asc, _createdAt desc) {
+      _id,
+      "text": ${localizedString('text')},
+      source
+    },
+    "specialPosts": *[_type == "blog" && "special" in tags[]] | order(publishedAt desc)[0...18] ${blogCardProjection},
+    "calendarPosts": *[_type == "blog" && defined(publishedAt)] | order(publishedAt desc)[0...80] ${blogCardProjection},
+    "about": *[_type == "about"][0] {
+      _id,
+      "title": ${localizedString('title')},
+      "intro": ${localizedString('intro')}
+    },
+    "profile": *[_id == "site-profile"][0] {
+      _id,
+      name,
+      "intro": pt::text(bio)
+    },
+    "friendCount": count(*[_type == "friend"]),
+    "latestLog": *[_type == "log"] | order(date desc)[0] {
+      _id,
+      title,
+      description,
+      date
+    },
+    "skillCategories": *[_type == "category" && "skill" in tags[]] | order(coalesce(createdAt, _createdAt) desc) ${categoryCardProjection},
+    "ongoingProjects": *[_type == "project" && status == "ongoing"] | order(coalesce(createdAt, _createdAt) desc)[0...12] ${projectCardProjection},
+    "completedProjects": *[_type == "project" && status == "completed"] | order(coalesce(createdAt, _createdAt) desc)[0...12] ${projectCardProjection},
+    "ramblingPosts": *[
+      _type == "blog" &&
+      (
+        "daily-ramblings" in category->tags[] ||
+        "daily-ramblings" in project->category->tags[]
+      )
+    ] | order(publishedAt desc)[0...9] ${blogCardProjection},
+    "lifeCategories": *[_type == "category" && "life" in tags[]] | order(order asc, coalesce(createdAt, _createdAt) desc) ${categoryCardProjection},
+    "lifeRecentPosts": *[
+      _type == "blog" &&
+      (
+        "life" in category->tags[] ||
+        "life" in project->category->tags[]
+      )
+    ] | order(publishedAt desc)[0...18] ${blogCardProjection}
+  }{
+    siteIntro,
+    mottos,
+    specialPosts,
+    calendarPosts,
+    "entryCards": [
+      {
+        "_id": "home-entry-log",
+        "title": "Log",
+        "href": "/log",
+        "kind": "log",
+        "intro": coalesce(latestLog.description, latestLog.title)
+      },
+      {
+        "_id": "home-entry-about",
+        "title": coalesce(about.title, "About"),
+        "href": "/about",
+        "kind": "about",
+        "intro": about.intro
+      },
+      {
+        "_id": "home-entry-friends",
+        "title": "Friends",
+        "href": "/friends",
+        "kind": "friends",
+        "intro": select(friendCount > 0 => string(friendCount) + " links", "No links yet")
+      },
+      {
+        "_id": "home-entry-profile",
+        "title": coalesce(profile.name, "Profile"),
+        "href": "/profile",
+        "kind": "profile",
+        "intro": profile.intro
+      }
+    ],
+    skillCategories,
+    ongoingProjects,
+    completedProjects,
+    ramblingPosts,
+    lifeCategories,
+    lifeRecentPosts
+  }`, { locale });
 }
 
 export async function getSubscriptionOptions(locale = 'zh'): Promise<SubscriptionOption[]> {

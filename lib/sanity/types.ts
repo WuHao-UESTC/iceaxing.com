@@ -8,6 +8,9 @@ export interface CategoryDoc {
   description?: string;
   order?: number;
   icon?: SanityImage;
+  tags?: string[];
+  createdAt?: string;
+  coverImage?: HomeImage;
 }
 
 export interface ProjectDoc {
@@ -18,6 +21,10 @@ export interface ProjectDoc {
   description?: string;
   order?: number;
   category?: { title: string; slug: string };
+  status?: 'ongoing' | 'completed' | 'planned';
+  progress?: number;
+  createdAt?: string;
+  coverImage?: HomeImage;
 }
 
 export interface BlogListItem {
@@ -29,6 +36,8 @@ export interface BlogListItem {
   excerpt?: string;
   publishedAt: string;
   tags?: string[];
+  authorName?: string;
+  coverImage?: HomeImage;
   project?: { title: string; slug: string };
   category?: { title: string; slug: string };
   collection?: { title: string; slug: string };
@@ -105,6 +114,71 @@ export interface ProfileDoc {
   avatar?: SanityImage;
   bio: PortableTextBlock[];
   socialLinks?: { label: string; url: string }[];
+}
+
+export interface AboutDoc {
+  _id: string;
+  title: string;
+  intro: string;
+  body?: PortableTextBlock[];
+}
+
+export interface MottoDoc {
+  _id: string;
+  text: string;
+  source?: string;
+}
+
+export interface HomeImage {
+  url?: string;
+  alt?: string;
+  lqip?: string;
+}
+
+export interface HomeProjectCard {
+  _id: string;
+  title: string;
+  slug: string;
+  intro?: string;
+  description?: string;
+  status?: 'ongoing' | 'completed' | 'planned';
+  progress?: number;
+  createdAt?: string;
+  category?: { title: string; slug: string };
+  coverImage?: HomeImage;
+}
+
+export interface HomeCategoryCard {
+  _id: string;
+  title: string;
+  slug: string;
+  intro?: string;
+  description?: string;
+  tags?: string[];
+  createdAt?: string;
+  coverImage?: HomeImage;
+}
+
+export interface HomeEntryCard {
+  _id: string;
+  title: string;
+  href: string;
+  intro?: string;
+  kind: 'log' | 'about' | 'friends' | 'profile';
+}
+
+export interface HomePayload {
+  siteIntro?: string;
+  mottos: MottoDoc[];
+  specialPosts: SpecialBlogItem[];
+  calendarPosts: SpecialBlogItem[];
+  entryCards: HomeEntryCard[];
+  skillCategories: HomeCategoryCard[];
+  ongoingProjects: HomeProjectCard[];
+  completedProjects: HomeProjectCard[];
+  ramblingPosts: SpecialBlogItem[];
+  lifeCategories: HomeCategoryCard[];
+  lifeRecentPosts: SpecialBlogItem[];
 }
 
 export interface SanityImage {

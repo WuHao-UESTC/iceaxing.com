@@ -83,6 +83,47 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Ongoing', value: 'ongoing' },
+          { title: 'Completed', value: 'completed' },
+          { title: 'Planned', value: 'planned' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'planned',
+    }),
+    defineField({
+      name: 'progress',
+      title: 'Progress',
+      type: 'number',
+      description: 'Fill with an integer from 1 to 5.',
+      initialValue: 1,
+      validation: (Rule) => Rule.integer().min(1).max(5),
+    }),
+    defineField({
+      name: 'createdAt',
+      title: 'Created at',
+      type: 'datetime',
+      initialValue: () => new Date().toISOString(),
+    }),
+    defineField({
+      name: 'coverImage',
+      title: 'Cover image',
+      type: 'image',
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alt text',
+          type: 'string',
+        }),
+      ],
+    }),
+    defineField({
       name: 'order',
       title: '排序',
       type: 'number',

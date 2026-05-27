@@ -6,6 +6,9 @@ import blog from './blog';
 import log from './log';
 import profile from './profile';
 import friend from './friend';
+import motto from './motto';
+import about from './about';
+import siteSettings from './site-settings';
 import mindmap from './custom-blocks/mindmap';
 import mathBlock from './custom-blocks/math-block';
 import codeBlock from './custom-blocks/code-block';
@@ -19,6 +22,9 @@ export const schemaTypes = [
   log,
   profile,
   friend,
+  motto,
+  about,
+  siteSettings,
   mindmap,
   mathBlock,
   codeBlock,
