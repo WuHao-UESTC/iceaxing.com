@@ -1,6 +1,9 @@
 {
   "nav": {
     "categories": "分类",
+    "techStack": "技术栈",
+    "lifeSlices": "生活切片",
+    "ramblings": "碎碎念",
     "log": "日志",
     "about": "关于",
     "friends": "友链",

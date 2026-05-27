@@ -2042,3 +2042,53 @@
   color: color-mix(in srgb, var(--color-sand) 88%, white 12%);
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.42);
 }
+
+.home-entry-strip {
+  padding: clamp(8px, 1.2vw, 12px) clamp(18px, 3vw, 30px);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-soft) 28%, transparent), color-mix(in srgb, var(--color-copper) 12%, transparent)),
+    color-mix(in srgb, var(--color-panel) 28%, transparent);
+}
+
+.home-entry-strip-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  justify-content: stretch;
+  gap: clamp(10px, 2vw, 18px);
+}
+
+.home-entry-tile {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 72px;
+  padding: clamp(10px, 1.6vw, 14px);
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+
+.home-entry-tile h3 {
+  margin-top: 8px;
+}
+
+.home-entry-tile p {
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+.home-entry-tile:hover {
+  background: color-mix(in srgb, var(--color-panel-soft) 30%, transparent);
+}
+
+@media (max-width: 860px) {
+  .home-entry-strip-grid {
+    grid-template-columns: repeat(2, minmax(120px, 0.5fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .home-entry-strip-grid {
+    grid-template-columns: 1fr;
+  }
+}

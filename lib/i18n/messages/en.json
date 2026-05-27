@@ -1,6 +1,9 @@
 {
   "nav": {
     "categories": "Categories",
+    "techStack": "Tech Stack",
+    "lifeSlices": "Life",
+    "ramblings": "Ramblings",
     "log": "Log",
     "about": "About",
     "friends": "Friends",
