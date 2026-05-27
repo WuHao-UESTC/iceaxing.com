@@ -8,9 +8,9 @@ const storageKey = 'iceaxing-theme';
 const changeEvent = 'iceaxing-theme-change';
 
 function readTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') return 'light';
   const stored = window.localStorage.getItem(storageKey);
-  return stored === 'light' || stored === 'dark' ? stored : 'dark';
+  return stored === 'light' || stored === 'dark' ? stored : 'light';
 }
 
 function subscribe(callback: () => void) {
@@ -27,7 +27,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore<Theme>(subscribe, readTheme, () => 'dark');
+  const theme = useSyncExternalStore<Theme>(subscribe, readTheme, () => 'light');
 
   useEffect(() => {
     applyTheme(theme);
