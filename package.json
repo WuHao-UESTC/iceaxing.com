@@ -13,6 +13,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/newsreader": "^5.2.10",
     "@fontsource/noto-serif-sc": "^5.2.9",
+    "@fontsource/source-serif-4": "^5.2.9",
     "@giscus/react": "^3.1.0",
     "@portabletext/react": "^6.2.0",
     "@react-email/components": "^0.5.7",

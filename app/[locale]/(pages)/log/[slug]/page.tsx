@@ -5,6 +5,7 @@ import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { GiscusComments } from '@/components/comments/giscus';
 import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
+import { intlLocale } from '@/lib/i18n/locales';
 
 interface Props {
   params: Promise<{ locale: string; slug: string }>;
@@ -74,7 +75,7 @@ export default async function LogDetailPage({ params }: Props) {
         <h1 className="text-2xl font-bold mb-2">{log.title}</h1>
         <div className="flex items-center gap-3 text-sm text-zinc-400">
           <time dateTime={log.date}>
-            {new Date(log.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
+            {new Date(log.date).toLocaleDateString(intlLocale(locale))}
           </time>
           <span className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
             {categoryLabels[log.category] || log.category}

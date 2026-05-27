@@ -9,14 +9,15 @@ import {
   Hr,
 } from '@react-email/components';
 import { emailStyles } from './styles';
+import type { AppLocale } from '@/lib/i18n/locales';
 
 interface Props {
   postTitle: string;
   postUrl: string;
   category: string;
-  project: string;
+  project?: string;
   postExcerpt?: string;
-  locale?: 'zh' | 'en';
+  locale?: AppLocale;
   unsubscribeUrl: string;
 }
 
@@ -38,6 +39,15 @@ const content = {
     readNow: 'Read Now',
     footer: "Don't want these notifications?",
     unsubscribe: 'Unsubscribe',
+  },
+  de: {
+    preview: (title: string) => `iceaxing - Neuer Artikel: ${title}`,
+    heading: 'iceaxing Update',
+    intro: 'Neue Inhalte aus deinem iceaxing-Abonnement:',
+    article: (title: string) => `"${title}"`,
+    readNow: 'Jetzt lesen',
+    footer: 'Du möchtest diese Benachrichtigungen nicht mehr erhalten?',
+    unsubscribe: 'Abmelden',
   },
 };
 
@@ -61,7 +71,7 @@ export function NewPostNotificationEmail({
           <Text style={emailStyles.heading}>{m.heading}</Text>
           <Text style={emailStyles.text}>{m.intro}</Text>
           <Text style={emailStyles.text}>
-            {category} &gt; {project}
+            {project ? `${category} > ${project}` : category}
           </Text>
           <Text style={emailStyles.text}>
             {m.article(postTitle)}

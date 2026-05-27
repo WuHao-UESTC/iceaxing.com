@@ -9,6 +9,7 @@ import {
   Hr,
 } from '@react-email/components';
 import { emailStyles } from './styles';
+import type { AppLocale } from '@/lib/i18n/locales';
 
 interface Props {
   contentType: 'category' | 'project' | 'collection';
@@ -16,7 +17,7 @@ interface Props {
   contentDescription?: string;
   parentName?: string;
   contentUrl: string;
-  locale?: 'zh' | 'en';
+  locale?: AppLocale;
   isGlobal: boolean;
   unsubscribeUrl: string;
 }
@@ -24,6 +25,7 @@ interface Props {
 const typeLabels = {
   zh: { category: '分类', project: '项目', collection: '合集' },
   en: { category: 'Category', project: 'Project', collection: 'Collection' },
+  de: { category: 'Kategorie', project: 'Projekt', collection: 'Sammlung' },
 };
 
 const content = {
@@ -40,7 +42,7 @@ const content = {
     unsubscribe: '退订',
   },
   en: {
-    preview: (name: string) => `iceaxing — New Content: ${name}`,
+    preview: (name: string) => `iceaxing - New Content: ${name}`,
     heading: 'iceaxing Content Update',
     globalIntro: "You're subscribed to all content on iceaxing. New posts under the following addition will be sent to you automatically:",
     targetedIntro: (parent: string) => `New content has been added under "${parent}" in your iceaxing subscription:`,
@@ -50,6 +52,18 @@ const content = {
     prefsHint: 'Click the button above to add this to your subscription preferences.',
     footer: "Don't want these notifications?",
     unsubscribe: 'Unsubscribe',
+  },
+  de: {
+    preview: (name: string) => `iceaxing - Neuer Inhalt: ${name}`,
+    heading: 'iceaxing Inhaltsupdate',
+    globalIntro: 'Du hast alle Inhalte auf iceaxing abonniert. Neue Artikel unter diesem Eintrag werden automatisch gesendet:',
+    targetedIntro: (parent: string) => `Unter "${parent}" wurde neuer Inhalt in deinem iceaxing-Abonnement hinzugefügt:`,
+    nameIntro: (type: string, name: string) => `Neue ${type}: ${name}`,
+    viewDetails: 'Details ansehen',
+    updatePrefs: 'Einstellungen aktualisieren',
+    prefsHint: 'Klicke oben, um diesen Eintrag zu deinen Abo-Einstellungen hinzuzufügen.',
+    footer: 'Du möchtest diese Benachrichtigungen nicht mehr erhalten?',
+    unsubscribe: 'Abmelden',
   },
 };
 

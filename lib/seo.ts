@@ -1,17 +1,21 @@
 import type { Metadata } from 'next';
+import { normalizeLocale } from '@/lib/i18n/locales';
 
 export const SITE_NAME = 'iceaxing';
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://iceaxing.com';
 
-export type Locale = 'zh' | 'en';
+export type Locale = 'zh' | 'en' | 'de';
 
 export function withLocalePath(locale: string, path = '/') {
+  const normalizedLocale = normalizeLocale(locale);
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const cleanPath =
     normalizedPath !== '/' ? normalizedPath.replace(/\/$/, '') : normalizedPath;
 
-  return locale === 'en' ? `/en${cleanPath === '/' ? '' : cleanPath}` : cleanPath;
+  return normalizedLocale === 'zh'
+    ? cleanPath
+    : `/${normalizedLocale}${cleanPath === '/' ? '' : cleanPath}`;
 }
 
 export function absoluteUrl(path = '/') {
@@ -29,13 +33,14 @@ export function getStaticAlternates(locale: string, path = '/'): Metadata['alter
     languages: {
       zh: localizedUrl('zh', path),
       en: localizedUrl('en', path),
+      de: localizedUrl('de', path),
       'x-default': localizedUrl('zh', path),
     },
   };
 }
 
 export function getCanonicalByContentLanguage(language: string | undefined, path = '/') {
-  return localizedUrl(language === 'en' ? 'en' : 'zh', path);
+  return localizedUrl(normalizeLocale(language), path);
 }
 
 export function getDescriptionFallback(title: string, text?: string) {

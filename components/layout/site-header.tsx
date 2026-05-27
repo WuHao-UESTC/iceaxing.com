@@ -4,11 +4,12 @@ import { SearchDialog } from '@/components/ui/search-dialog';
 import { SubscribeDialog } from '@/components/subscribe/subscribe-dialog';
 import { MobileNav } from './mobile-nav';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { ThemeToggle } from './theme-toggle';
 
 export async function SiteHeader() {
-  const categories = await getAllCategories();
+  const locale = await getLocale();
+  const categories = await getAllCategories(locale);
   const t = await getTranslations('nav');
 
   return (

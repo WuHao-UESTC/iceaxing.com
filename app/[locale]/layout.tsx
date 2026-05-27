@@ -6,6 +6,7 @@ import { getMessages, setRequestLocale, getTranslations } from 'next-intl/server
 import { routing } from '@/lib/i18n/routing';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL, getStaticAlternates } from '@/lib/seo';
+import { htmlLocale, isAppLocale, openGraphLocale } from '@/lib/i18n/locales';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -30,8 +31,8 @@ export async function generateMetadata({
       siteName: SITE_NAME,
       title: SITE_NAME,
       description: t('metaDescription'),
-      url: locale === 'en' ? `${SITE_URL}/en` : SITE_URL,
-      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      url: locale === 'zh' ? SITE_URL : `${SITE_URL}/${locale}`,
+      locale: openGraphLocale(locale),
     },
     twitter: {
       card: 'summary',
@@ -65,7 +66,7 @@ export default async function LocaleLayout({
 }>) {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale as 'zh' | 'en')) {
+  if (!isAppLocale(locale)) {
     notFound();
   }
 
@@ -73,7 +74,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} data-theme="dark">
+    <html lang={htmlLocale(locale)} data-theme="dark">
       <body className="site-shell min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SiteHeader />

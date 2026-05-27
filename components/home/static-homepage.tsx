@@ -1,6 +1,7 @@
 import { getHomeEntryGroups, getSpecialBlogsByCategory } from '@/lib/sanity/queries';
 import { Link } from '@/lib/i18n/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { intlLocale } from '@/lib/i18n/locales';
 import type {
   HomeCollectionEntry,
   HomeEntryGroup,
@@ -12,15 +13,16 @@ import type {
 function postHref(post: SpecialBlogItem) {
   const category = post.category?.slug;
   const project = post.project?.slug;
-  if (!category || !project) return '/';
-  if (post.collection?.slug) {
+  if (!category) return '/';
+  if (project && post.collection?.slug) {
     return `/${category}/${project}/${post.collection.slug}/${post.slug}`;
   }
-  return `/${category}/${project}/${post.slug}`;
+  if (project) return `/${category}/${project}/${post.slug}`;
+  return `/${category}/${post.slug}`;
 }
 
 function formatDate(date: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -216,27 +218,36 @@ function CategoryShowcase({
 }
 
 export async function StaticHomePage() {
+  const locale = await getLocale();
   const [entryGroups, specialSections] = await Promise.all([
-    getHomeEntryGroups(),
-    getSpecialBlogsByCategory().catch(() => []),
+    getHomeEntryGroups(locale),
+    getSpecialBlogsByCategory(locale).catch(() => []),
   ]);
   const t = await getTranslations('home');
   const tn = await getTranslations('nav');
-  const locale = await getLocale();
   const isZh = locale === 'zh';
-  const eyebrow = isZh ? '深海夜幕下的蓝色档案' : 'Blue archive under a night sea';
-  const viewAllLabel = isZh ? '查看全部' : 'View all';
+  const isDe = locale === 'de';
+  const eyebrow = isZh
+    ? '深海夜幕下的蓝色档案'
+    : isDe
+      ? 'Blaues Archiv unter einem Nachtmeer'
+      : 'Blue archive under a night sea';
+  const viewAllLabel = isZh ? '查看全部' : isDe ? 'Alle ansehen' : 'View all';
   const emptySpecials = isZh
     ? '还没有 special 文章。请在 Sanity 中为想展示的 blog 添加 special 标签。'
-    : 'No special posts yet. Add the special tag to featured blog posts in Sanity.';
+    : isDe
+      ? 'Noch keine Special-Artikel. Füge in Sanity den Tag special zu hervorgehobenen Blogposts hinzu.'
+      : 'No special posts yet. Add the special tag to featured blog posts in Sanity.';
   const entryLabels = {
-    title: isZh ? '选择一条航线' : 'Choose a passage',
+    title: isZh ? '选择一条航线' : isDe ? 'Wähle eine Passage' : 'Choose a passage',
     subtitle: isZh
       ? '分类、项目与合集被收束在同一片星图里。'
-      : 'Categories, projects, and collections arranged as one quiet star map.',
-    category: isZh ? '分类' : 'Category',
-    project: isZh ? '项目' : 'Project',
-    collection: isZh ? '合集' : 'Collection',
+      : isDe
+        ? 'Kategorien, Projekte und Sammlungen liegen in einer stillen Sternkarte.'
+        : 'Categories, projects, and collections arranged as one quiet star map.',
+    category: isZh ? '分类' : isDe ? 'Kategorie' : 'Category',
+    project: isZh ? '项目' : isDe ? 'Projekt' : 'Project',
+    collection: isZh ? '合集' : isDe ? 'Sammlung' : 'Collection',
     log: tn('log'),
     about: tn('about'),
     friends: tn('friends'),

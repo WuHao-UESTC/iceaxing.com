@@ -67,8 +67,10 @@ export function TableOfContents({
 
   return (
     <aside className="blog-toc">
-      <h2 className="blog-toc-title">{locale === 'en' ? 'Contents' : '目录'}</h2>
-      <nav aria-label={locale === 'en' ? 'Table of contents' : '文章目录'}>
+      <h2 className="blog-toc-title">
+        {locale === 'de' ? 'Inhalt' : locale === 'en' ? 'Contents' : '目录'}
+      </h2>
+      <nav aria-label={locale === 'de' ? 'Inhaltsverzeichnis' : locale === 'en' ? 'Table of contents' : '文章目录'}>
         <ol className="blog-toc-list">
           {items.map((item) => (
             <li

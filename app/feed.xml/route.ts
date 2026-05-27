@@ -14,7 +14,10 @@ export async function GET() {
         excerpt,
         publishedAt,
         "project": project->{title, "slug": slug.current},
-        "category": project->category->{"slug": slug.current},
+        "category": coalesce(
+          category->{"slug": slug.current},
+          project->category->{"slug": slug.current}
+        ),
         "collection": collection->{"slug": slug.current}
       }
     `);
@@ -32,11 +35,13 @@ export async function GET() {
     });
 
     for (const post of posts) {
-      if (!post.category?.slug || !post.project?.slug || !post.slug) continue;
+      if (!post.category?.slug || !post.slug) continue;
 
-      const link = post.collection?.slug
+      const link = post.project?.slug && post.collection?.slug
         ? `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.collection.slug}/${post.slug}`
-        : `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.slug}`;
+        : post.project?.slug
+          ? `${siteUrl}/${post.category.slug}/${post.project.slug}/${post.slug}`
+          : `${siteUrl}/${post.category.slug}/${post.slug}`;
 
       feed.addItem({
         title: post.title,

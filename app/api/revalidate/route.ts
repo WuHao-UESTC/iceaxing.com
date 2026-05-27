@@ -131,7 +131,10 @@ async function sendNewPostNotification(blogId: string): Promise<void> {
       excerpt,
       "slug": slug.current,
       "project": project->{"slug": slug.current, title},
-      "category": project->category->{"slug": slug.current, title},
+      "category": coalesce(
+        category->{"slug": slug.current, title},
+        project->category->{"slug": slug.current, title}
+      ),
       "collection": collection->{"slug": slug.current}
     }`,
     { id: blogId }
@@ -141,22 +144,23 @@ async function sendNewPostNotification(blogId: string): Promise<void> {
     !post?.title ||
     !post?.category?.slug ||
     !post?.category?.title ||
-    !post?.project?.slug ||
-    !post?.project?.title ||
     !post?.slug
   ) {
     console.warn('[notification] Post not found or missing refs:', blogId);
     return;
   }
 
-  const postUrl = post.collection?.slug
+  const postUrl = post.project?.slug && post.collection?.slug
     ? `${config.siteUrl}/${post.category.slug}/${post.project.slug}/${post.collection.slug}/${post.slug}`
-    : `${config.siteUrl}/${post.category.slug}/${post.project.slug}/${post.slug}`;
+    : post.project?.slug
+      ? `${config.siteUrl}/${post.category.slug}/${post.project.slug}/${post.slug}`
+      : `${config.siteUrl}/${post.category.slug}/${post.slug}`;
 
   const postCatSlug = post.category.slug;
-  const postProjSlug = post.project.slug;
+  const postProjSlug = post.project?.slug ?? null;
   const postColSlug = post.collection?.slug ?? null;
-  const postLocale: 'zh' | 'en' = post.language === 'en' ? 'en' : 'zh';
+  const postLocale: 'zh' | 'en' | 'de' =
+    post.language === 'de' ? 'de' : post.language === 'en' ? 'en' : 'zh';
 
   const { Resend } = await import('resend');
   const { NewPostNotificationEmail } = await import(
@@ -181,7 +185,7 @@ async function sendNewPostNotification(blogId: string): Promise<void> {
         const prefSet = new Set(subs.split(','));
         if (
           prefSet.has(`category:${postCatSlug}`) ||
-          prefSet.has(`project:${postProjSlug}`) ||
+          (postProjSlug && prefSet.has(`project:${postProjSlug}`)) ||
           (postColSlug && prefSet.has(`collection:${postProjSlug}/${postColSlug}`))
         ) {
           matched.push(contact);
@@ -203,7 +207,7 @@ async function sendNewPostNotification(blogId: string): Promise<void> {
   for (let i = 0; i < matched.length; i++) {
     const c = matched[i];
     try {
-      const unsubscribeUrl = `${config.siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}`;
+      const unsubscribeUrl = `${config.siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}&locale=${postLocale}`;
 
       const result = await resend.emails.send({
         from: 'ICEAXING <notify@iceaxing.com>',
@@ -216,7 +220,7 @@ async function sendNewPostNotification(blogId: string): Promise<void> {
           postTitle: post.title,
           postUrl,
           category: post.category.title,
-          project: post.project.title,
+          project: post.project?.title,
           locale: postLocale,
           postExcerpt: post.excerpt ?? undefined,
           unsubscribeUrl,
@@ -359,7 +363,7 @@ async function sendNewContentNotification(
   for (let i = 0; i < allRecipients.length; i++) {
     const c = allRecipients[i];
     try {
-      const unsubscribeUrl = `${config.siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}`;
+      const unsubscribeUrl = `${config.siteUrl}/api/unsubscribe?c=${c.id}&t=${generateUnsubscribeToken(c.id)}&locale=zh`;
 
       const result = await resend.emails.send({
         from: 'ICEAXING <notify@iceaxing.com>',

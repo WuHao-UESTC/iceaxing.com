@@ -1,0 +1,95 @@
+{
+  "nav": {
+    "categories": "Kategorien",
+    "log": "Log",
+    "about": "Über",
+    "friends": "Freunde",
+    "profile": "Profil",
+    "search": "Suche",
+    "subscribe": "Abonnieren",
+    "rss": "RSS",
+    "home": "Start",
+    "menuAriaLabel": "Menü"
+  },
+  "home": {
+    "title": "iceaxing",
+    "subtitle": "Willkommen in iceaxings digitalem Garten",
+    "metaTitle": "iceaxing",
+    "metaDescription": "Willkommen auf iceaxings persönlichem Blog, einem digitalen Garten für technische Gedanken und kreative Arbeiten."
+  },
+  "search": {
+    "placeholder": "Artikel suchen...",
+    "ariaLabel": "Artikel suchen",
+    "triggerLabel": "Suche (Strg+K)",
+    "loading": "Suche läuft...",
+    "noResults": "Keine Artikel gefunden",
+    "allCategories": "Alle Kategorien"
+  },
+  "error": {
+    "title": "Inhalt vorübergehend nicht verfügbar",
+    "description": "Bitte versuche es später erneut",
+    "retry": "Erneut versuchen"
+  },
+  "notFound": {
+    "metaTitle": "Seite nicht gefunden",
+    "heading": "Hier ist nichts...",
+    "description": "Du scheinst an einem Ort gelandet zu sein, der nicht existiert",
+    "backToHome": "Zurück zur Startseite"
+  },
+  "common": {
+    "backToHome": "Zurück zur Startseite",
+    "backToLog": "Zurück zum Log",
+    "home": "Start",
+    "log": "Log",
+    "notFound": "Nicht gefunden",
+    "updatedAt": "Zuletzt aktualisiert am",
+    "posts": "Artikel",
+    "collections": "Sammlungen",
+    "postCountUnit": "Artikel",
+    "emptyPosts": "Noch keine Artikel",
+    "emptyCollections": "Keine Artikel in dieser Sammlung",
+    "emptyFriends": "Noch keine Freundeslinks",
+    "emptyProfile": "Profil noch nicht erstellt",
+    "emptyProjects": "Keine Projekte in dieser Kategorie"
+  },
+  "log": {
+    "title": "Log",
+    "metaDescription": "Website-Updates und Entwicklungsnotizen.",
+    "legendContent": "Inhaltsupdate",
+    "legendSite": "Website-Wartung",
+    "legendOther": "Sonstiges",
+    "categoryContent": "Inhaltsupdate",
+    "categorySite": "Website-Wartung",
+    "categoryOther": "Sonstiges"
+  },
+  "about": {
+    "title": "Über",
+    "metaDescription": "Über iceaxing und die Geschichte hinter diesem Blog."
+  },
+  "friends": {
+    "title": "Freunde",
+    "metaDescription": "Häufig besuchte Blogs und interessante Menschen."
+  },
+  "profile": {
+    "title": "Profil",
+    "metaDescription": "Über iceaxings Tech-Stack, Projekte und Interessen."
+  },
+  "subscribe": {
+    "title": "Updates abonnieren",
+    "placeholder": "deine@email.de",
+    "submit": "Abonnieren",
+    "submitting": "Wird gesendet...",
+    "close": "Schließen",
+    "success": "Abonniert! Bitte bestätige deine E-Mail.",
+    "error": "Abonnement fehlgeschlagen, bitte später erneut versuchen",
+    "networkError": "Netzwerkfehler, bitte später erneut versuchen",
+    "preferencesLabel": "Abo-Umfang (optional)",
+    "preferencesHint": "Optional. Leer lassen, um alle Inhalte zu abonnieren.",
+    "loadingOptions": "Optionen werden geladen...",
+    "emptyOptions": "Keine Kategorien verfügbar"
+  },
+  "pdf": {
+    "download": "PDF herunterladen",
+    "defaultTitle": "PDF"
+  }
+}

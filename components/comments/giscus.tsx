@@ -7,6 +7,8 @@ interface Props {
 }
 
 export function GiscusComments({ locale = 'zh' }: Props) {
+  const giscusLang = locale === 'zh' ? 'zh-CN' : locale === 'de' ? 'de' : 'en';
+
   if (
     !process.env.NEXT_PUBLIC_GISCUS_REPO ||
     !process.env.NEXT_PUBLIC_GISCUS_REPO_ID ||
@@ -27,7 +29,7 @@ export function GiscusComments({ locale = 'zh' }: Props) {
         reactionsEnabled="1"
         emitMetadata="0"
         inputPosition="bottom"
-        lang={locale === 'zh' ? 'zh-CN' : 'en'}
+        lang={giscusLang}
         loading="lazy"
       />
     </div>

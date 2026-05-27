@@ -24,7 +24,8 @@ export function SubscribeForm({ showHeading = true }: Props) {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch('/api/subscription-options');
+        const params = new URLSearchParams({ locale });
+        const res = await fetch(`/api/subscription-options?${params.toString()}`);
         const json = await res.json();
         if (!cancelled && json.success) {
           setOptions(json.data);
@@ -37,7 +38,7 @@ export function SubscribeForm({ showHeading = true }: Props) {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [locale]);
 
   const handleSelectionChange = useCallback((next: Set<string>) => {
     setSubscriptions(next);

@@ -10,7 +10,7 @@ interface SitemapEntry {
 
 interface BlogSitemapDoc {
   slug?: string;
-  language?: 'zh' | 'en';
+  language?: 'zh' | 'en' | 'de';
   publishedAt?: string;
   updatedAt?: string;
   _updatedAt?: string;
@@ -64,7 +64,7 @@ export async function GET() {
           updatedAt,
           _updatedAt,
           "project": project->slug.current,
-          "category": project->category->slug.current,
+          "category": coalesce(category->slug.current, project->category->slug.current),
           "collection": collection->slug.current
         }
       `),
@@ -98,6 +98,7 @@ export async function GET() {
     const staticUrls: SitemapEntry[] = staticPages.flatMap((path) => [
       { url: localizedUrl('zh', path), priority: path === '' ? '1.0' : '0.7' },
       { url: localizedUrl('en', path), priority: path === '' ? '1.0' : '0.7' },
+      { url: localizedUrl('de', path), priority: path === '' ? '1.0' : '0.7' },
     ]);
 
     const zhSectionUrls: SitemapEntry[] = [
@@ -128,22 +129,28 @@ export async function GET() {
       ...entry,
       url: entry.url.replace(siteUrl, `${siteUrl}/en`),
     }));
+    const deSectionUrls = zhSectionUrls.map((entry) => ({
+      ...entry,
+      url: entry.url.replace(siteUrl, `${siteUrl}/de`),
+    }));
 
     const blogUrls: SitemapEntry[] = blogs
-      .filter((b) => b.category && b.project && b.slug)
+      .filter((b) => b.category && b.slug)
       .map((b) => {
-        const path = b.collection
+        const path = b.project && b.collection
           ? `/${b.category}/${b.project}/${b.collection}/${b.slug}`
-          : `/${b.category}/${b.project}/${b.slug}`;
+          : b.project
+            ? `/${b.category}/${b.project}/${b.slug}`
+            : `/${b.category}/${b.slug}`;
 
         return {
-          url: b.language === 'en' ? localizedUrl('en', path) : localizedUrl('zh', path),
+          url: localizedUrl(b.language || 'zh', path),
           priority: '0.8',
           lastmod: b.updatedAt || b.publishedAt || b._updatedAt,
         };
       });
 
-    const urls = [...staticUrls, ...zhSectionUrls, ...enSectionUrls, ...blogUrls];
+    const urls = [...staticUrls, ...zhSectionUrls, ...enSectionUrls, ...deSectionUrls, ...blogUrls];
     const uniqueUrls = Array.from(new Map(urls.map((entry) => [entry.url, entry])).values());
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

@@ -1,6 +1,7 @@
 import { StaticHomePage } from '@/components/home/static-homepage';
 import { getTranslations } from 'next-intl/server';
 import { SITE_NAME, SITE_URL, getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
+import { htmlLocale, openGraphLocale } from '@/lib/i18n/locales';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props) {
       title: t('metaTitle'),
       description: t('metaDescription'),
       url: localizedUrl(locale),
-      locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      locale: openGraphLocale(locale),
     },
     twitter: {
       card: 'summary',
@@ -38,7 +39,7 @@ export default async function HomePage({ params }: Props) {
     name: SITE_NAME,
     url: localizedUrl(locale),
     description: t('metaDescription'),
-    inLanguage: locale === 'en' ? 'en-US' : 'zh-CN',
+    inLanguage: htmlLocale(locale),
     publisher: {
       '@type': 'Person',
       name: SITE_NAME,

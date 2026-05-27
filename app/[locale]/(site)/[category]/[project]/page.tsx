@@ -1,9 +1,18 @@
 import { notFound } from 'next/navigation';
 import { Link } from '@/lib/i18n/navigation';
-import { getProjectBySlug, getBlogPostsByProject, getCollectionsByProject, getCategoryBySlug } from '@/lib/sanity/queries';
+import {
+  getProjectBySlug,
+  getBlogPostsByProject,
+  getCollectionsByProject,
+  getCategoryBySlug,
+  getDirectBlogPostByCategory,
+} from '@/lib/sanity/queries';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getTranslations } from 'next-intl/server';
-import { getStaticAlternates, localizedUrl } from '@/lib/seo';
+import { BlogThemeWrapper } from '@/components/blog/blog-theme-wrapper';
+import { BlogStructuredData, PostArticle, getPostMetadata } from '@/components/blog/post-article';
+import { getCanonicalByContentLanguage, getStaticAlternates, localizedUrl } from '@/lib/seo';
+import { intlLocale } from '@/lib/i18n/locales';
 
 interface Props {
   params: Promise<{ locale: string; category: string; project: string }>;
@@ -12,8 +21,12 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const proj = await getProjectBySlug(project);
-  if (!proj) return { title: t('notFound') };
+  const proj = await getProjectBySlug(project, locale);
+  if (!proj) {
+    const post = await getDirectBlogPostByCategory(category, project, locale);
+    if (!post) return { title: t('notFound') };
+    return getPostMetadata(post, locale, `/${category}/${project}`);
+  }
   const description = proj.description || proj.title;
   const path = `/${category}/${project}`;
   return {
@@ -33,13 +46,36 @@ export default async function ProjectPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'common' });
 
   const [proj, cat] = await Promise.all([
-    getProjectBySlug(project),
-    getCategoryBySlug(category),
+    getProjectBySlug(project, locale),
+    getCategoryBySlug(category, locale),
   ]);
-  if (!proj) notFound();
+  if (!proj) {
+    const post = await getDirectBlogPostByCategory(category, project, locale);
+    if (!post) notFound();
 
-  const posts = await getBlogPostsByProject(project);
-  const collections = await getCollectionsByProject(project);
+    function formatDate(dateStr: string) {
+      return new Date(dateStr).toLocaleDateString(intlLocale(locale));
+    }
+
+    const path = `/${category}/${project}`;
+    const canonical = getCanonicalByContentLanguage(post.language, path);
+
+    return (
+      <BlogThemeWrapper theme={post.theme ?? 'default'}>
+        <BlogStructuredData post={post} canonical={canonical} />
+        <PostArticle
+          post={post}
+          category={category}
+          locale={locale}
+          formatDate={formatDate}
+          t={t}
+        />
+      </BlogThemeWrapper>
+    );
+  }
+
+  const posts = await getBlogPostsByProject(project, locale);
+  const collections = await getCollectionsByProject(project, locale);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -96,7 +132,7 @@ export default async function ProjectPage({ params }: Props) {
                   <p className="text-sm text-zinc-500 line-clamp-2">{post.excerpt}</p>
                 )}
                 <time className="text-xs text-zinc-400" dateTime={post.publishedAt}>
-                  {new Date(post.publishedAt).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US')}
+                  {new Date(post.publishedAt).toLocaleDateString(intlLocale(locale))}
                 </time>
               </Link>
             ))}

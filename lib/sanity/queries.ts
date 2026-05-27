@@ -14,163 +14,210 @@ import type {
   SpecialCategorySection,
 } from './types';
 
-// ═══ Category ═══
+function localizedString(field: string) {
+  return groq`coalesce(select($locale == "de" => ${field}De, $locale == "en" => ${field}En), ${field})`;
+}
 
-const categoryFields = groq`{
+function localizedBlocks(field: string) {
+  return groq`coalesce(select($locale == "de" => ${field}De, $locale == "en" => ${field}En), ${field})`;
+}
+
+const localizedBlogLanguage = groq`select(
+  $locale == "de" && (defined(titleDe) || defined(excerptDe) || defined(bodyDe)) => "de",
+  $locale == "en" && (defined(titleEn) || defined(excerptEn) || defined(bodyEn)) => "en",
+  language
+)`;
+
+const categoryProjection = groq`{
   _id,
-  title,
+  "title": ${localizedString('title')},
   "slug": slug.current,
-  intro,
-  description,
+  "intro": ${localizedString('intro')},
+  "description": ${localizedString('description')},
   order,
   icon
 }`;
 
-export async function getAllCategories(): Promise<CategoryDoc[]> {
-  return client.fetch(groq`*[_type == "category"] | order(order) ${categoryFields}`);
+export async function getAllCategories(locale = 'zh'): Promise<CategoryDoc[]> {
+  return client.fetch(groq`*[_type == "category"] | order(order) ${categoryProjection}`, { locale });
 }
 
-export async function getSpecialBlogsByCategory(): Promise<SpecialCategorySection[]> {
+export async function getSpecialBlogsByCategory(locale = 'zh'): Promise<SpecialCategorySection[]> {
   return client.fetch(groq`
     *[_type == "category"] | order(order) {
       _id,
-      title,
+      "title": ${localizedString('title')},
       "slug": slug.current,
-      intro,
-      description,
+      "intro": ${localizedString('intro')},
+      "description": ${localizedString('description')},
       order,
       icon,
       "specialPosts": *[
         _type == "blog" &&
         "special" in tags[] &&
-        project->category._ref == ^._id
+        (
+          category._ref == ^._id ||
+          project->category._ref == ^._id
+        )
       ] | order(publishedAt desc)[0...6] {
         _id,
-        title,
+        "title": ${localizedString('title')},
         "slug": slug.current,
-        language,
+        "language": ${localizedBlogLanguage},
         theme,
-        excerpt,
+        "excerpt": ${localizedString('excerpt')},
         publishedAt,
         tags,
-        "project": project->{title, "slug": slug.current},
-        "category": project->category->{title, "slug": slug.current},
-        "collection": collection->{title, "slug": slug.current}
+        "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+        "category": coalesce(
+          category->{"title": ${localizedString('title')}, "slug": slug.current},
+          project->category->{"title": ${localizedString('title')}, "slug": slug.current}
+        ),
+        "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
       }
     }[count(specialPosts) > 0]
-  `);
+  `, { locale });
 }
 
-export async function getCategoryBySlug(slug: string): Promise<CategoryDoc | null> {
+export async function getCategoryBySlug(slug: string, locale = 'zh'): Promise<CategoryDoc | null> {
   return client.fetch(
-    groq`*[_type == "category" && slug.current == $slug][0] ${categoryFields}`,
-    { slug }
+    groq`*[_type == "category" && slug.current == $slug][0] ${categoryProjection}`,
+    { slug, locale }
   );
 }
 
-// ═══ Project ═══
-
-const projectFields = groq`{
+const projectProjection = groq`{
   _id,
-  title,
+  "title": ${localizedString('title')},
   "slug": slug.current,
-  intro,
-  description,
+  "intro": ${localizedString('intro')},
+  "description": ${localizedString('description')},
   order,
-  "category": category->{title, "slug": slug.current}
+  "category": category->{"title": ${localizedString('title')}, "slug": slug.current}
 }`;
 
-export async function getProjectsByCategory(categorySlug: string): Promise<ProjectDoc[]> {
+export async function getProjectsByCategory(categorySlug: string, locale = 'zh'): Promise<ProjectDoc[]> {
   return client.fetch(
-    groq`*[_type == "project" && category->slug.current == $categorySlug] | order(order) ${projectFields}`,
-    { categorySlug }
+    groq`*[_type == "project" && category->slug.current == $categorySlug] | order(order) ${projectProjection}`,
+    { categorySlug, locale }
   );
 }
 
-export async function getProjectBySlug(slug: string): Promise<ProjectDoc | null> {
+export async function getProjectBySlug(slug: string, locale = 'zh'): Promise<ProjectDoc | null> {
   return client.fetch(
-    groq`*[_type == "project" && slug.current == $slug][0] ${projectFields}`,
-    { slug }
+    groq`*[_type == "project" && slug.current == $slug][0] ${projectProjection}`,
+    { slug, locale }
   );
 }
 
-// ═══ Blog ═══
-
-const blogListFields = groq`{
+const blogListProjection = groq`{
   _id,
-  title,
+  "title": ${localizedString('title')},
   "slug": slug.current,
-  language,
+  "language": ${localizedBlogLanguage},
   theme,
-  excerpt,
+  "excerpt": ${localizedString('excerpt')},
   publishedAt,
-  tags
+  tags,
+  "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+  "category": coalesce(
+    category->{"title": ${localizedString('title')}, "slug": slug.current},
+    project->category->{"title": ${localizedString('title')}, "slug": slug.current}
+  ),
+  "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
 }`;
 
-export async function getBlogPostsByProject(projectSlug: string): Promise<BlogListItem[]> {
+export async function getBlogPostsByProject(projectSlug: string, locale = 'zh'): Promise<BlogListItem[]> {
   return client.fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && (!defined(collection) || collection == null)]
-       | order(publishedAt desc) ${blogListFields}`,
-    { projectSlug }
+       | order(publishedAt desc) ${blogListProjection}`,
+    { projectSlug, locale }
   );
 }
 
 export async function getBlogPostsByCollection(
   projectSlug: string,
-  collectionSlug: string
+  collectionSlug: string,
+  locale = 'zh'
 ): Promise<BlogListItem[]> {
   return client.fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && collection->slug.current == $collectionSlug]
-       | order(publishedAt desc) ${blogListFields}`,
-    { projectSlug, collectionSlug }
+       | order(publishedAt desc) ${blogListProjection}`,
+    { projectSlug, collectionSlug, locale }
   );
 }
 
-const blogFullFields = groq`{
+export async function getDirectBlogPostsByCategory(categorySlug: string, locale = 'zh'): Promise<BlogListItem[]> {
+  return client.fetch(
+    groq`*[_type == "blog" && category->slug.current == $categorySlug
+       && (!defined(project) || project == null)]
+       | order(publishedAt desc) ${blogListProjection}`,
+    { categorySlug, locale }
+  );
+}
+
+const localizedBody = localizedBlocks('body');
+const blogFullProjection = groq`{
   _id,
-  title,
+  "title": ${localizedString('title')},
   "slug": slug.current,
-  language,
+  "language": ${localizedBlogLanguage},
   theme,
-  body,
-  "bodyText": pt::text(body),
-  excerpt,
+  "body": ${localizedBody},
+  "bodyText": pt::text(${localizedBody}),
+  "excerpt": ${localizedString('excerpt')},
   publishedAt,
   updatedAt,
   tags,
-  "project": project->{title, "slug": slug.current},
-  "category": project->category->{title, "slug": slug.current},
-  "collection": collection->{title, "slug": slug.current}
+  "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+  "category": coalesce(
+    category->{"title": ${localizedString('title')}, "slug": slug.current},
+    project->category->{"title": ${localizedString('title')}, "slug": slug.current}
+  ),
+  "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
 }`;
 
 export async function getBlogPost(
   projectSlug: string,
-  blogSlug: string
+  blogSlug: string,
+  locale = 'zh'
 ): Promise<BlogFull | null> {
   return client.fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && slug.current == $blogSlug
-       && (!defined(collection) || collection == null)][0] ${blogFullFields}`,
-    { projectSlug, blogSlug }
+       && (!defined(collection) || collection == null)][0] ${blogFullProjection}`,
+    { projectSlug, blogSlug, locale }
+  );
+}
+
+export async function getDirectBlogPostByCategory(
+  categorySlug: string,
+  blogSlug: string,
+  locale = 'zh'
+): Promise<BlogFull | null> {
+  return client.fetch(
+    groq`*[_type == "blog" && category->slug.current == $categorySlug
+       && slug.current == $blogSlug
+       && (!defined(project) || project == null)][0] ${blogFullProjection}`,
+    { categorySlug, blogSlug, locale }
   );
 }
 
 export async function getBlogPostWithCollection(
   projectSlug: string,
   collectionSlug: string,
-  blogSlug: string
+  blogSlug: string,
+  locale = 'zh'
 ): Promise<BlogFull | null> {
   return client.fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && collection->slug.current == $collectionSlug
-       && slug.current == $blogSlug][0] ${blogFullFields}`,
-    { projectSlug, collectionSlug, blogSlug }
+       && slug.current == $blogSlug][0] ${blogFullProjection}`,
+    { projectSlug, collectionSlug, blogSlug, locale }
   );
 }
-
-// ═══ Log ═══
 
 const logFields = groq`{
   _id,
@@ -183,9 +230,7 @@ const logFields = groq`{
 }`;
 
 export async function getAllLogs(): Promise<LogDoc[]> {
-  return client.fetch(
-    groq`*[_type == "log"] | order(date desc) ${logFields}`
-  );
+  return client.fetch(groq`*[_type == "log"] | order(date desc) ${logFields}`);
 }
 
 export async function getLogBySlug(slug: string): Promise<LogDoc | null> {
@@ -195,15 +240,11 @@ export async function getLogBySlug(slug: string): Promise<LogDoc | null> {
   );
 }
 
-// ═══ Friend ═══
-
 export async function getFriends(): Promise<FriendDoc[]> {
   return client.fetch(groq`*[_type == "friend"] | order(order) {
     _id, name, url, avatar, description, order
   }`);
 }
-
-// ═══ Profile ═══
 
 export async function getProfile(): Promise<ProfileDoc | null> {
   return client.fetch(groq`*[_id == "site-profile"][0] {
@@ -211,116 +252,131 @@ export async function getProfile(): Promise<ProfileDoc | null> {
   }`);
 }
 
-// ═══ Search ═══
-
 export interface SearchResult {
   _id: string;
   title: string;
   slug: string;
   excerpt?: string;
   publishedAt: string;
-  project: { title: string; slug: string };
+  project?: { title: string; slug: string };
   category: { title: string; slug: string };
 }
 
 export async function searchBlogs(
   query: string,
   categorySlug?: string,
+  locale = 'zh',
 ): Promise<SearchResult[]> {
+  const localizedTitle = localizedString('title');
+  const localizedExcerpt = localizedString('excerpt');
+  const localizedSearchBody = localizedBlocks('body');
   const filter = categorySlug
-    ? groq`*[_type == "blog" && project->category->slug.current == $categorySlug && (
-      title match $q ||
-      excerpt match $q ||
-      pt::text(body) match $q
+    ? groq`*[_type == "blog" && (
+      category->slug.current == $categorySlug ||
+      project->category->slug.current == $categorySlug
+    ) && (
+      ${localizedTitle} match $q ||
+      ${localizedExcerpt} match $q ||
+      pt::text(${localizedSearchBody}) match $q
     )] | order(publishedAt desc) [0...10]`
     : groq`*[_type == "blog" && (
-      title match $q ||
-      excerpt match $q ||
-      pt::text(body) match $q
+      ${localizedTitle} match $q ||
+      ${localizedExcerpt} match $q ||
+      pt::text(${localizedSearchBody}) match $q
     )] | order(publishedAt desc) [0...10]`;
 
-  const params: Record<string, string> = { q: query };
+  const params: Record<string, string> = { q: query, locale };
   if (categorySlug) params.categorySlug = categorySlug;
 
   return client.fetch(
     groq`${filter} {
-      _id, title, "slug": slug.current, excerpt, publishedAt,
-      "project": project->{title, "slug": slug.current},
-      "category": project->category->{title, "slug": slug.current}
+      _id,
+      "title": ${localizedString('title')},
+      "slug": slug.current,
+      "excerpt": ${localizedString('excerpt')},
+      publishedAt,
+      "project": project->{"title": ${localizedString('title')}, "slug": slug.current},
+      "category": coalesce(
+        category->{"title": ${localizedString('title')}, "slug": slug.current},
+        project->category->{"title": ${localizedString('title')}, "slug": slug.current}
+      )
     }`,
     params
   );
 }
 
-// ═══ Collections ═══
-
-export async function getCollectionsByProject(projectSlug: string): Promise<CollectionDoc[]> {
+export async function getCollectionsByProject(projectSlug: string, locale = 'zh'): Promise<CollectionDoc[]> {
   return client.fetch(
     groq`*[_type == "collection" && project->slug.current == $projectSlug] | order(order) {
-      _id, title, "slug": slug.current, intro, description,
+      _id,
+      "title": ${localizedString('title')},
+      "slug": slug.current,
+      "intro": ${localizedString('intro')},
+      "description": ${localizedString('description')},
       "postCount": count(*[_type == "blog" && references(^._id)])
     }`,
-    { projectSlug }
+    { projectSlug, locale }
   );
 }
 
-export async function getHomeEntryGroups(): Promise<HomeEntryGroup[]> {
+export async function getHomeEntryGroups(locale = 'zh'): Promise<HomeEntryGroup[]> {
   return client.fetch(groq`
     *[_type == "category"] | order(order) {
       _id,
-      title,
+      "title": ${localizedString('title')},
       "slug": slug.current,
-      intro,
-      description,
+      "intro": ${localizedString('intro')},
+      "description": ${localizedString('description')},
       order,
       icon,
       "projects": *[_type == "project" && category._ref == ^._id] | order(order) {
         _id,
-        title,
+        "title": ${localizedString('title')},
         "slug": slug.current,
-        intro,
-        description,
+        "intro": ${localizedString('intro')},
+        "description": ${localizedString('description')},
         "collections": *[_type == "collection" && project._ref == ^._id] | order(order) {
           _id,
-          title,
+          "title": ${localizedString('title')},
           "slug": slug.current,
-          intro,
-          description,
+          "intro": ${localizedString('intro')},
+          "description": ${localizedString('description')},
           "postCount": count(*[_type == "blog" && references(^._id)])
         }
       }
     }
-  `);
+  `, { locale });
 }
 
-// ═══ Subscription Options ═══
-
-export async function getSubscriptionOptions(): Promise<SubscriptionOption[]> {
+export async function getSubscriptionOptions(locale = 'zh'): Promise<SubscriptionOption[]> {
   const categories = await client.fetch(
     groq`*[_type == "category"] | order(order) {
       "type": "category",
       "slug": slug.current,
-      title,
-      "intro": coalesce(intro, description)
-    }`
+      "title": ${localizedString('title')},
+      "intro": coalesce(${localizedString('intro')}, ${localizedString('description')})
+    }`,
+    { locale }
   );
   const projects = await client.fetch(
     groq`*[_type == "project"] | order(order) {
       "type": "project",
       "slug": slug.current,
-      title,
-      "intro": coalesce(intro, description),
+      "title": ${localizedString('title')},
+      "intro": coalesce(${localizedString('intro')}, ${localizedString('description')}),
       "parentSlug": category->slug.current
-    }`
+    }`,
+    { locale }
   );
   const collections = await client.fetch(
     groq`*[_type == "collection"] | order(order) {
       "type": "collection",
       "slug": slug.current,
-      title,
-      "intro": coalesce(intro, description),
+      "title": ${localizedString('title')},
+      "intro": coalesce(${localizedString('intro')}, ${localizedString('description')}),
       "parentSlug": project->slug.current
-    }`
+    }`,
+    { locale }
   );
   return [...categories, ...projects, ...collections] as SubscriptionOption[];
 }

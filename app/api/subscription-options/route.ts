@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSubscriptionOptions } from '@/lib/sanity/queries';
 
-export const dynamic = 'force-static';
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const options = await getSubscriptionOptions();
+    const locale = new URL(request.url).searchParams.get('locale') || 'zh';
+    const options = await getSubscriptionOptions(locale);
     return NextResponse.json(
       { success: true, data: options },
       {

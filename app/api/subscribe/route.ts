@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { generateUnsubscribeToken } from '@/lib/auth/token';
 import { ConfirmSubscriptionEmail } from '@/lib/email/templates/confirm-subscription';
+import { normalizeLocale } from '@/lib/i18n/locales';
 
 export async function POST(request: NextRequest) {
   if (!process.env.RESEND_API_KEY) {
@@ -42,14 +43,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const locale: 'zh' | 'en' = body.locale === 'en' ? 'en' : 'zh';
+    const locale = normalizeLocale(body.locale);
     const subscriptions: string[] =
       Array.isArray(body.subscriptions) ? body.subscriptions.filter((s: unknown) => typeof s === 'string') : [];
     const subscriptionValue = subscriptions.join(',');
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // Create or update contact
     let contactId: string | undefined;
     const createResult = await resend.contacts.create({
       email,
@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
 
     if (createResult.error) {
       const err = createResult.error as { statusCode?: number; message?: string };
-      // Duplicate contact — update their subscription preferences
       if (err.statusCode === 422 && err.message?.includes('already')) {
         const updateResult = await resend.contacts.update({
           email,
@@ -86,16 +85,17 @@ export async function POST(request: NextRequest) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
     const unsubscribeUrl = contactId
-      ? `${siteUrl}/api/unsubscribe?c=${contactId}&t=${generateUnsubscribeToken(contactId)}`
+      ? `${siteUrl}/api/unsubscribe?c=${contactId}&t=${generateUnsubscribeToken(contactId)}&locale=${locale}`
       : undefined;
 
-    // Send confirmation email (non-fatal: contact already created/updated)
     const sendResult = await resend.emails.send({
       from: 'ICEAXING <notify@iceaxing.com>',
       to: email,
-      subject: locale === 'en'
-        ? 'iceaxing — Subscription Confirmed'
-        : 'iceaxing — 订阅确认',
+      subject: locale === 'de'
+        ? 'iceaxing - Abonnement bestätigt'
+        : locale === 'en'
+          ? 'iceaxing - Subscription Confirmed'
+          : 'iceaxing - 订阅确认',
       react: ConfirmSubscriptionEmail({
         email,
         locale,
@@ -116,9 +116,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: locale === 'en'
-        ? 'Please check your email to confirm your subscription'
-        : '请查收确认邮件以完成订阅',
+      message: locale === 'de'
+        ? 'Bitte prüfe deine E-Mail, um das Abonnement zu bestätigen'
+        : locale === 'en'
+          ? 'Please check your email to confirm your subscription'
+          : '请查收确认邮件以完成订阅',
     });
   } catch (error: unknown) {
     console.error('[subscribe] Error:', error);

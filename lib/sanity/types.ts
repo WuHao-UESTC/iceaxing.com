@@ -24,18 +24,17 @@ export interface BlogListItem {
   _id: string;
   title: string;
   slug: string;
-  language: 'zh' | 'en';
+  language: 'zh' | 'en' | 'de';
   theme?: 'default' | 'terminal' | 'serif' | 'manga' | 'minimal';
   excerpt?: string;
   publishedAt: string;
   tags?: string[];
-}
-
-export interface SpecialBlogItem extends BlogListItem {
   project?: { title: string; slug: string };
   category?: { title: string; slug: string };
   collection?: { title: string; slug: string };
 }
+
+export type SpecialBlogItem = BlogListItem;
 
 export interface SpecialCategorySection extends CategoryDoc {
   specialPosts: SpecialBlogItem[];

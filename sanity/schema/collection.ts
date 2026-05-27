@@ -25,6 +25,16 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'titleEn',
+      title: 'Title (English)',
+      type: 'string',
+    }),
+    defineField({
+      name: 'titleDe',
+      title: 'Title (Deutsch)',
+      type: 'string',
+    }),
+    defineField({
       name: 'slug',
       title: 'URL 标识',
       type: 'slug',
@@ -44,11 +54,33 @@ export default defineType({
       type: 'text',
     }),
     defineField({
+      name: 'descriptionEn',
+      title: 'Description (English)',
+      type: 'text',
+    }),
+    defineField({
+      name: 'descriptionDe',
+      title: 'Description (Deutsch)',
+      type: 'text',
+    }),
+    defineField({
       name: 'intro',
       title: '入口简介',
       type: 'text',
       rows: 3,
       description: '用于首页入口按钮展示的简短介绍。为空时会使用描述字段。',
+    }),
+    defineField({
+      name: 'introEn',
+      title: 'Entry intro (English)',
+      type: 'text',
+      rows: 3,
+    }),
+    defineField({
+      name: 'introDe',
+      title: 'Entry intro (Deutsch)',
+      type: 'text',
+      rows: 3,
     }),
     defineField({
       name: 'order',

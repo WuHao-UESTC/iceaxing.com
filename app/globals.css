@@ -8,6 +8,9 @@
 @import "@fontsource/newsreader/400.css";
 @import "@fontsource/newsreader/500.css";
 @import "@fontsource/newsreader/600.css";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/500.css";
+@import "@fontsource/source-serif-4/600.css";
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/600.css";
 @import "cn-fontsource-lxgw-wen-kai-screen/font.css";
@@ -53,8 +56,9 @@
   --glow: color-mix(in srgb, var(--color-blue) 30%, transparent);
 
   --font-serif-cn: "Noto Serif SC", "Songti SC", "SimSun", serif;
-  --font-serif-en: "Cormorant Garamond", "Noto Serif SC", serif;
-  --font-reading: "Newsreader", "Noto Serif SC", serif;
+  --font-serif-en: "Cormorant Garamond", "Source Serif 4", "Noto Serif SC", serif;
+  --font-serif-de: "Source Serif 4", "Cormorant Garamond", "Noto Serif SC", serif;
+  --font-reading: "Newsreader", "Source Serif 4", "Noto Serif SC", serif;
   --font-hand: "LXGW WenKai Screen", "Noto Serif SC", serif;
   --font-mono-stack: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
 }

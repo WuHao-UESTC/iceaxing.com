@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from '@/lib/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { SearchResult } from '@/lib/sanity/queries';
 
 interface CategoryOption {
@@ -12,6 +12,9 @@ interface CategoryOption {
 }
 
 function resultUrl(r: SearchResult) {
+  if (!r.project?.slug) {
+    return `/${r.category.slug}/${r.slug}`;
+  }
   return `/${r.category.slug}/${r.project.slug}/${r.slug}`;
 }
 
@@ -28,6 +31,7 @@ export function SearchDialog({ categories = [] }: Props) {
   const [categoryFilter, setCategoryFilter] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('search');
+  const locale = useLocale();
   const router = useRouter();
 
   const resultsRef = useRef(results);
@@ -98,7 +102,7 @@ export function SearchDialog({ categories = [] }: Props) {
       setLoading(true);
       setSelectedIndex(-1);
       try {
-        const params = new URLSearchParams({ q: query });
+        const params = new URLSearchParams({ q: query, locale });
         if (categoryFilter) params.set('category', categoryFilter);
         const res = await fetch(`/api/search?${params.toString()}`);
         if (!res.ok) {
@@ -116,7 +120,7 @@ export function SearchDialog({ categories = [] }: Props) {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, categoryFilter]);
+  }, [query, categoryFilter, locale]);
 
   return (
     <>
@@ -200,7 +204,9 @@ export function SearchDialog({ categories = [] }: Props) {
                   >
                     <div className="font-medium text-sm text-[var(--color-text)]">{result.title}</div>
                     <div className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                      {result.category.title} &gt; {result.project.title}
+                      {result.project?.title
+                        ? `${result.category.title} > ${result.project.title}`
+                        : result.category.title}
                     </div>
                     {result.excerpt && (
                       <div className="text-xs text-[var(--color-text-faint)] mt-1 line-clamp-1">
