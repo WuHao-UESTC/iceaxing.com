@@ -34,6 +34,7 @@ export interface BlogListItem {
   language: 'zh' | 'en' | 'de';
   theme?: 'default' | 'terminal' | 'serif' | 'manga' | 'minimal';
   excerpt?: string;
+  bodyText?: string;
   publishedAt: string;
   tags?: string[];
   authorName?: string;

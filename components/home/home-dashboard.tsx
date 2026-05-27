@@ -74,6 +74,13 @@ function introOf(item: { intro?: string; description?: string; excerpt?: string 
   return item.intro || item.description || item.excerpt || '';
 }
 
+function excerptText(text: string | undefined, length = 100) {
+  if (!text) return '';
+  const trimmed = text.replace(/\s+/g, ' ').trim();
+  if (!trimmed) return '';
+  return `${Array.from(trimmed).slice(0, length).join('')}……`;
+}
+
 function Cover({ image, title }: { image?: { url?: string; alt?: string }; title: string }) {
   if (!image?.url) return <span className="home-cover-placeholder" aria-hidden="true" />;
   return (
@@ -147,6 +154,7 @@ function ArticleCard({
 
 function RamblingItem({ post, labels }: { post: SpecialBlogItem; labels: HomeLabels }) {
   const tags = post.tags?.filter((tag) => tag !== 'daily-ramblings').slice(0, 3) ?? [];
+  const bodyPreview = excerptText(post.bodyText);
 
   return (
     <Link href={postHref(post)} className="home-rambling-item">
@@ -162,6 +170,7 @@ function RamblingItem({ post, labels }: { post: SpecialBlogItem; labels: HomeLab
         <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, labels.dateLocale)}</time>
       </div>
       {post.excerpt && <p>{post.excerpt}</p>}
+      {bodyPreview && <div className="home-rambling-body">{bodyPreview}</div>}
     </Link>
   );
 }
@@ -466,7 +475,7 @@ export function HomeDashboard({
       <section className="home-ramblings" aria-labelledby="home-ramblings-title">
         <SectionTitle title={labels.ramblings} href="/daily-ramblings" labels={labels} />
         <div className="home-rambling-grid">
-          {payload.ramblingPosts.slice(0, 9).map((post) => (
+          {payload.ramblingPosts.slice(0, 3).map((post) => (
             <RamblingItem key={post._id} post={post} labels={labels} />
           ))}
         </div>

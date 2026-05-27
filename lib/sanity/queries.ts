@@ -389,6 +389,7 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
     "language": ${localizedBlogLanguage},
     theme,
     "excerpt": ${localizedString('excerpt')},
+    "bodyText": pt::text(${localizedBlocks('body')}),
     publishedAt,
     tags,
     authorName,
