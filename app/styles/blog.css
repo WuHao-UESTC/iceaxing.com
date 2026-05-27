@@ -103,9 +103,7 @@
 
 .mindmap-svg {
   border-color: var(--line);
-  background:
-    repeating-linear-gradient(35deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 7px),
-    color-mix(in srgb, var(--color-panel) 82%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
 }
 
 .mindmap-svg text,
@@ -121,9 +119,7 @@
 }
 
 [data-theme="light"] .mindmap-svg {
-  background:
-    repeating-linear-gradient(35deg, rgba(0, 0, 0, 0.018) 0 1px, transparent 1px 7px),
-    color-mix(in srgb, var(--color-panel) 88%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
 }
 
 [data-theme="light"] .mindmap-svg text,
@@ -139,9 +135,7 @@
   padding: 1rem;
   font-size: 0.875rem;
   color: var(--color-text-muted);
-  background:
-    repeating-linear-gradient(35deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 7px),
-    color-mix(in srgb, var(--color-panel) 86%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 86%, transparent);
 }
 
 .blog-toc-title {

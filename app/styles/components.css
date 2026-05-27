@@ -14,10 +14,7 @@
   inset: 0;
   z-index: -2;
   pointer-events: none;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.026) 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 13px);
+  background-image: none;
   background-position: 0 0;
   background-size: 19px 19px, 23px 23px, 31px 31px;
   opacity: 0.58;
@@ -202,9 +199,7 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 56%, transparent);
   border-radius: 8px;
   padding: clamp(12px, 1.7vw, 17px);
-  background:
-    repeating-linear-gradient(36deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 84%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 84%, transparent);
   box-shadow: none;
 }
 
@@ -219,16 +214,12 @@
 .home-entry-section-1 {
   grid-column: 8 / span 5;
   margin-top: 54px;
-  background:
-    repeating-linear-gradient(155deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 88%, var(--color-copper) 12%);
+  background: color-mix(in srgb, var(--color-panel) 88%, var(--color-copper) 12%);
 }
 
 .home-entry-section-2 {
   grid-column: 2 / span 5;
-  background:
-    repeating-linear-gradient(44deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 86%, var(--color-blue) 14%);
+  background: color-mix(in srgb, var(--color-panel) 86%, var(--color-blue) 14%);
 }
 
 .home-entry-section-3 {
@@ -306,14 +297,14 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 54%, transparent);
   border-radius: 8px;
   padding: 11px 12px;
-  background: color-mix(in srgb, var(--color-panel-soft) 42%, var(--color-panel) 58%);
+  background: color-mix(in srgb, var(--color-panel-soft) 46%, var(--color-panel) 54%);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
 .home-entry-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--color-gold) 42%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 70%, var(--color-panel) 30%);
+  background: color-mix(in srgb, var(--color-panel-soft) 62%, var(--color-panel) 38%);
 }
 
 .home-entry-card:hover strong,
@@ -390,22 +381,16 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 58%, transparent);
   border-radius: 8px;
   padding: clamp(20px, 4vw, 36px);
-  background:
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 88%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
   box-shadow: none;
 }
 
 .home-special-section-1 {
-  background:
-    repeating-linear-gradient(30deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 86%, var(--color-copper) 14%);
+  background: color-mix(in srgb, var(--color-panel) 86%, var(--color-copper) 14%);
 }
 
 .home-special-section-2 {
-  background:
-    repeating-linear-gradient(150deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 10px),
-    color-mix(in srgb, var(--color-panel) 86%, var(--color-blue) 14%);
+  background: color-mix(in srgb, var(--color-panel) 86%, var(--color-blue) 14%);
 }
 
 .home-section-heading {
@@ -438,7 +423,7 @@
   display: block;
   border: 1px solid color-mix(in srgb, var(--color-line) 54%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-panel-soft) 34%, var(--color-panel) 66%);
+  background: color-mix(in srgb, var(--color-panel-soft) 42%, var(--color-panel) 58%);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
@@ -448,7 +433,7 @@
 .home-orbit-item:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--color-gold) 42%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 66%, var(--color-panel) 34%);
+  background: color-mix(in srgb, var(--color-panel-soft) 58%, var(--color-panel) 42%);
 }
 
 .home-featured {
@@ -658,9 +643,7 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 54%, transparent);
   border-radius: 8px;
   padding: 16px;
-  background:
-    repeating-linear-gradient(40deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 9px),
-    color-mix(in srgb, var(--color-panel) 72%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 72%, transparent);
 }
 
 .log-month h2 {
@@ -982,9 +965,7 @@
 .home-life {
   position: relative;
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 38%),
-    color-mix(in srgb, var(--color-panel) 80%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 80%, transparent);
 }
 
 .home-masthead {
@@ -1110,7 +1091,7 @@
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-panel-soft) 42%, var(--color-panel) 58%);
+  background: color-mix(in srgb, var(--color-panel-soft) 46%, var(--color-panel) 54%);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
@@ -1120,7 +1101,7 @@
 .home-project-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--color-gold) 48%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 68%, var(--color-panel) 32%);
+  background: color-mix(in srgb, var(--color-panel-soft) 62%, var(--color-panel) 38%);
 }
 
 .home-article-card {
@@ -1452,9 +1433,7 @@
   margin: clamp(18px, 3vw, 36px) auto 72px;
   padding: clamp(28px, 5vw, 58px);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-panel) 72%, transparent), color-mix(in srgb, var(--color-ink) 42%, transparent)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 12px);
+  background: color-mix(in srgb, var(--color-panel) 72%, transparent);
 }
 
 .home-masthead,
@@ -1543,7 +1522,7 @@
 .home-entry-tile,
 .home-taxonomy-card,
 .home-project-card {
-  background: color-mix(in srgb, var(--color-panel-soft) 30%, transparent);
+  background: color-mix(in srgb, var(--color-panel-soft) 44%, var(--color-panel) 36%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
@@ -1551,7 +1530,7 @@
 .home-entry-tile:hover,
 .home-taxonomy-card:hover,
 .home-project-card:hover {
-  background: color-mix(in srgb, var(--color-panel-soft) 46%, transparent);
+  background: color-mix(in srgb, var(--color-panel-soft) 58%, var(--color-panel) 26%);
 }
 
 .home-entry-strip {
@@ -1627,10 +1606,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-line) 20%, transparent);
-  background:
-    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-panel-soft) 34%, transparent), transparent 42%),
-    linear-gradient(180deg, color-mix(in srgb, var(--color-panel) 62%, transparent), color-mix(in srgb, var(--color-ink) 34%, transparent)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 12px);
+  background: color-mix(in srgb, var(--color-panel) 62%, transparent);
   box-shadow:
     0 24px 90px color-mix(in srgb, black 34%, transparent),
     0 0 0 1px color-mix(in srgb, white 3%, transparent) inset,
@@ -1867,9 +1843,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 15px 16px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--color-panel-soft) 26%, transparent), transparent 70%),
-    color-mix(in srgb, var(--color-panel-soft) 18%, transparent);
+  background: color-mix(in srgb, var(--color-panel-soft) 38%, var(--color-panel) 34%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
@@ -1909,9 +1883,7 @@
 .home-life-post-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--color-gold) 38%, transparent);
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--color-copper) 18%, transparent), transparent 72%),
-    color-mix(in srgb, var(--color-panel-soft) 36%, transparent);
+  background: color-mix(in srgb, var(--color-panel-soft) 52%, var(--color-panel) 28%);
 }
 
 .home-life-post-card:hover .home-life-post-bg {
@@ -2015,13 +1987,7 @@
   font-size: 0.72rem;
   font-weight: 400;
   line-height: 1.9;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(1.9em - 1px),
-    color-mix(in srgb, var(--color-line) 62%, transparent) calc(1.9em - 1px),
-    color-mix(in srgb, var(--color-line) 62%, transparent) 1.9em
-  );
+  background-image: none;
 }
 
 @media (max-width: 860px) {
@@ -2095,7 +2061,65 @@
 [data-theme="light"] .home-project-card:hover,
 [data-theme="light"] .home-rambling-item:hover {
   border-color: color-mix(in srgb, #2f6f55 42%, transparent);
-  background: color-mix(in srgb, #dfe9df 62%, transparent);
+  background: color-mix(in srgb, #b7c3bd 76%, #d7d1c7 24%);
+}
+
+[data-theme="light"] .home-entry-card,
+[data-theme="light"] .home-featured,
+[data-theme="light"] .home-post-row,
+[data-theme="light"] .home-mosaic-card,
+[data-theme="light"] .home-orbit-item,
+[data-theme="light"] .home-article-card,
+[data-theme="light"] .home-entry-tile,
+[data-theme="light"] .home-taxonomy-card,
+[data-theme="light"] .home-project-card,
+[data-theme="light"] .home-life-post-card,
+[data-theme="light"] .home-rambling-item {
+  border-color: color-mix(in srgb, #7f9189 34%, transparent);
+  background: color-mix(in srgb, #c2ccc6 72%, #ddd8cf 28%);
+}
+
+[data-theme="light"] .home-entry-card:hover,
+[data-theme="light"] .home-featured:hover,
+[data-theme="light"] .home-post-row:hover,
+[data-theme="light"] .home-mosaic-card:hover,
+[data-theme="light"] .home-orbit-item:hover,
+[data-theme="light"] .home-article-card:hover,
+[data-theme="light"] .home-entry-tile:hover,
+[data-theme="light"] .home-taxonomy-card:hover,
+[data-theme="light"] .home-project-card:hover,
+[data-theme="light"] .home-life-post-card:hover,
+[data-theme="light"] .home-rambling-item:hover {
+  border-color: color-mix(in srgb, #2f6f55 42%, transparent);
+  background: color-mix(in srgb, #b7c3bd 76%, #d7d1c7 24%);
+}
+
+[data-theme="light"] .home-entry-strip {
+  border: 1px solid color-mix(in srgb, #afa493 42%, transparent);
+  background: color-mix(in srgb, #cfc3b0 82%, #ddd8cf 18%);
+}
+
+[data-theme="light"] .home-entry-strip .home-entry-tile,
+[data-theme="light"] .home-entry-strip .home-entry-tile:hover {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-theme="light"] .home-entry-strip .home-entry-tile:hover h3 {
+  color: #6f6252;
+}
+
+[data-theme="light"] .home-ramblings {
+  border: 1px solid color-mix(in srgb, #87908d 32%, transparent);
+  background: color-mix(in srgb, #c8cbc7 78%, #ddd8cf 22%);
+}
+
+[data-theme="light"] .home-ramblings .home-rambling-item,
+[data-theme="light"] .home-ramblings .home-rambling-item:hover {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
 }
 
 @media (max-width: 700px) {
@@ -2255,9 +2279,7 @@
 .home-entry-strip {
   padding: clamp(8px, 1.2vw, 12px) clamp(18px, 3vw, 30px);
   border-radius: 8px;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-soft) 28%, transparent), color-mix(in srgb, var(--color-copper) 12%, transparent)),
-    color-mix(in srgb, var(--color-panel) 28%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 28%, transparent);
 }
 
 .home-entry-strip-grid {
@@ -2352,9 +2374,7 @@
   padding: clamp(24px, 4vw, 46px);
   border: 1px solid color-mix(in srgb, var(--color-line) 46%, transparent);
   border-radius: 8px;
-  background:
-    linear-gradient(115deg, color-mix(in srgb, var(--color-panel) 82%, transparent), color-mix(in srgb, var(--color-panel-soft) 30%, transparent)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 11px);
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
 }
 
 .listing-hero::after {
@@ -2362,7 +2382,7 @@
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-gold) 50%, transparent), transparent);
+  background: color-mix(in srgb, var(--color-gold) 50%, transparent);
 }
 
 .listing-hero-copy {
@@ -2426,9 +2446,7 @@
   overflow: hidden;
   min-height: 220px;
   border-radius: 6px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--color-blue) 28%, transparent), transparent 62%),
-    color-mix(in srgb, var(--color-ink) 56%, transparent);
+  background: color-mix(in srgb, var(--color-ink) 56%, var(--color-blue) 14%);
 }
 
 .listing-hero-image,
@@ -2510,14 +2528,14 @@
   min-height: 290px;
   border: 1px solid color-mix(in srgb, var(--color-line) 48%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--color-panel) 54%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 68%, transparent);
   transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
 }
 
 .listing-project-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--color-gold) 48%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 38%, var(--color-panel) 62%);
+  background: color-mix(in srgb, var(--color-panel-soft) 26%, var(--color-panel) 74%);
 }
 
 [data-theme="light"] .listing-project-card:hover,
@@ -2685,14 +2703,14 @@
   border: 1px solid color-mix(in srgb, var(--color-line) 46%, transparent);
   border-radius: 8px;
   padding: 12px;
-  background: color-mix(in srgb, var(--color-panel) 42%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 58%, transparent);
   transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
 }
 
 .listing-collection-card:hover {
   transform: translateX(4px);
   border-color: color-mix(in srgb, var(--color-gold) 42%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 34%, var(--color-panel) 66%);
+  background: color-mix(in srgb, var(--color-panel-soft) 24%, var(--color-panel) 76%);
 }
 
 .listing-collection-index {
@@ -2738,7 +2756,7 @@
 .listing-post-link:hover {
   padding-inline: 14px;
   border-color: color-mix(in srgb, var(--color-gold) 40%, transparent);
-  background: color-mix(in srgb, var(--color-panel-soft) 24%, transparent);
+  background: color-mix(in srgb, var(--color-panel-soft) 16%, transparent);
 }
 
 .listing-post-thumb {
@@ -2779,12 +2797,7 @@
   position: absolute;
   inset: 6px auto 10px 9px;
   width: 1px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-gold) 72%, transparent),
-    color-mix(in srgb, var(--color-line) 54%, transparent) 52%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--color-line) 54%, transparent);
 }
 
 .listing-post-link.is-rambling {
@@ -2812,9 +2825,7 @@
 
 .listing-post-link.is-rambling:hover {
   padding-inline: clamp(18px, 3vw, 28px) 14px;
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--color-panel-soft) 34%, transparent), transparent 74%),
-    color-mix(in srgb, var(--color-panel) 18%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 28%, transparent);
 }
 
 .listing-post-link.is-rambling .listing-post-copy {
