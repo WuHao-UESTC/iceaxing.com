@@ -2031,6 +2031,96 @@
   }
 }
 
+.home-ramblings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(54px, 7vw, 82px);
+  gap: clamp(18px, 4vw, 42px);
+  align-items: stretch;
+}
+
+.home-ramblings-side {
+  position: relative;
+  display: grid;
+  justify-items: end;
+  min-height: 100%;
+}
+
+.home-ramblings-side h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-serif-cn);
+  font-size: clamp(1rem, 1.55vw, 1.34rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: 0;
+}
+
+.home-ramblings-side.is-vertical h2 {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+.home-ramblings-side.is-rotated h2 {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: max-content;
+  transform: rotate(90deg) translateX(100%);
+  transform-origin: top right;
+  font-family: var(--font-serif-en);
+  white-space: nowrap;
+}
+
+.home-ramblings-side h2 a {
+  transition: color 160ms ease;
+}
+
+.home-ramblings-side h2 a:hover {
+  color: var(--color-sand);
+}
+
+[data-theme="light"] .home-view-link:hover,
+[data-theme="light"] .home-refresh:hover,
+[data-theme="light"] .home-entry-tile:hover h3,
+[data-theme="light"] .home-taxonomy-card:hover h3,
+[data-theme="light"] .home-project-card:hover h3,
+[data-theme="light"] .home-article-card:hover h3,
+[data-theme="light"] .home-ramblings-side h2 a:hover {
+  color: #2f6f55;
+}
+
+[data-theme="light"] .home-article-card:hover,
+[data-theme="light"] .home-entry-tile:hover,
+[data-theme="light"] .home-taxonomy-card:hover,
+[data-theme="light"] .home-project-card:hover,
+[data-theme="light"] .home-rambling-item:hover {
+  border-color: color-mix(in srgb, #2f6f55 42%, transparent);
+  background: color-mix(in srgb, #dfe9df 62%, transparent);
+}
+
+@media (max-width: 700px) {
+  .home-ramblings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-ramblings-side {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: auto;
+  }
+
+  .home-ramblings-side.is-vertical h2,
+  .home-ramblings-side.is-rotated h2 {
+    position: static;
+    width: auto;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    transform: none;
+    white-space: normal;
+  }
+}
+
 .home-feature-zone .home-article-card {
   grid-template-columns: minmax(130px, 0.3fr) minmax(0, 1fr);
   grid-template-rows: minmax(84px, auto);

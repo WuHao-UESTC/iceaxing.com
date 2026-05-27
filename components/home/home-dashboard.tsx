@@ -29,6 +29,7 @@ export interface HomeLabels {
   ongoingProjects: string;
   completedProjects: string;
   ramblings: string;
+  ramblingsTitleMode: 'vertical' | 'rotated';
   life: string;
   lifeRecent: string;
   project: string;
@@ -473,11 +474,17 @@ export function HomeDashboard({
       </div>
 
       <section className="home-ramblings" aria-labelledby="home-ramblings-title">
-        <SectionTitle title={labels.ramblings} href="/daily-ramblings" labels={labels} />
-        <div className="home-rambling-grid">
-          {payload.ramblingPosts.slice(0, 3).map((post) => (
-            <RamblingItem key={post._id} post={post} labels={labels} />
-          ))}
+        <div className="home-ramblings-layout">
+          <div className="home-rambling-grid">
+            {payload.ramblingPosts.slice(0, 3).map((post) => (
+              <RamblingItem key={post._id} post={post} labels={labels} />
+            ))}
+          </div>
+          <div className={`home-ramblings-side is-${labels.ramblingsTitleMode}`}>
+            <h2 id="home-ramblings-title">
+              <Link href="/daily-ramblings">{labels.ramblings}</Link>
+            </h2>
+          </div>
         </div>
       </section>
 
