@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { draftMode } from 'next/headers';
 import {
   getBlogPost,
   getBlogPostWithCollection,
@@ -24,6 +25,8 @@ import {
   PostList,
 } from '@/components/site/listing-cards';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string; category: string; project: string; slug: string[] }>;
 }
@@ -35,10 +38,11 @@ function postPath(category: string, project: string, slug: string[]) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
+  const { isEnabled: preview } = await draftMode();
   if (slug.length === 0 || slug.length > 2) return { title: t('notFound') };
 
   if (slug.length === 1) {
-    const collections = await getCollectionsByProject(project, locale);
+    const collections = await getCollectionsByProject(project, locale, preview);
     const collection = collections.find((c) => c.slug === slug[0]);
     const path = postPath(category, project, slug);
 
@@ -56,13 +60,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const post = await getBlogPost(project, slug[0], locale);
+    const post = await getBlogPost(project, slug[0], locale, preview);
     if (!post) return { title: t('notFound') };
     return getPostMetadata(post, locale, path);
   }
 
   const path = postPath(category, project, slug);
-  const post = await getBlogPostWithCollection(project, slug[0], slug[1], locale);
+  const post = await getBlogPostWithCollection(project, slug[0], slug[1], locale, preview);
   if (!post) return { title: t('notFound') };
   return getPostMetadata(post, locale, path);
 }
@@ -70,13 +74,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CatchAllPage({ params }: Props) {
   const { slug, category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
+  const { isEnabled: preview } = await draftMode();
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString(intlLocale(locale));
   }
 
   if (slug.length === 2) {
-    const post = await getBlogPostWithCollection(project, slug[0], slug[1], locale);
+    const post = await getBlogPostWithCollection(project, slug[0], slug[1], locale, preview);
     if (!post) notFound();
     const canonical = getCanonicalByContentLanguage(post.language, postPath(category, project, slug));
 
@@ -97,14 +102,14 @@ export default async function CatchAllPage({ params }: Props) {
   }
 
   if (slug.length === 1) {
-    const collections = await getCollectionsByProject(project, locale);
+    const collections = await getCollectionsByProject(project, locale, preview);
     const collection = collections.find((c) => c.slug === slug[0]);
 
     if (collection) {
       const [posts, cat, proj] = await Promise.all([
-        getBlogPostsByCollection(project, collection.slug, locale),
-        getCategoryBySlug(category, locale),
-        getProjectBySlug(project, locale),
+        getBlogPostsByCollection(project, collection.slug, locale, preview),
+        getCategoryBySlug(category, locale, preview),
+        getProjectBySlug(project, locale, preview),
       ]);
       const labels = {
         locale,
@@ -141,7 +146,7 @@ export default async function CatchAllPage({ params }: Props) {
       );
     }
 
-    const post = await getBlogPost(project, slug[0], locale);
+    const post = await getBlogPost(project, slug[0], locale, preview);
     if (!post) notFound();
     const canonical = getCanonicalByContentLanguage(post.language, postPath(category, project, slug));
 

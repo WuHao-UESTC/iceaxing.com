@@ -6,6 +6,11 @@ import { MindMap } from './custom-blocks/mindmap';
 import { MathBlock } from './custom-blocks/math-block';
 import { CodeBlock } from './custom-blocks/code-block';
 import { PdfEmbed } from './custom-blocks/pdf-embed';
+import { Callout } from './custom-blocks/callout';
+import { Columns } from './custom-blocks/columns';
+import { Toggle } from './custom-blocks/toggle';
+import { Divider } from './custom-blocks/divider';
+import { TableBlock } from './custom-blocks/table-block';
 import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
 import Image from 'next/image';
@@ -42,7 +47,6 @@ function getHeadingId(value: unknown): string {
 /** Split a text string on $...$ delimiters, returning alternating text/math segments. */
 function parseInlineMath(text: string): { type: 'text' | 'math'; content: string }[] {
   const segments: { type: 'text' | 'math'; content: string }[] = [];
-  // Match $...$ where $ is not preceded by a backslash
   const regex = /(?<!\\)\$([^$\n]+?)(?<!\\)\$/g;
 
   let lastIndex = 0;
@@ -86,7 +90,6 @@ function renderSpan(
     return <Fragment key={key}>{seg.content}</Fragment>;
   });
 
-  // Apply marks to the rendered content (wrapping order: innermost marks first)
   return applyMarks(span.marks ?? [], markDefs, rendered, childIndex);
 }
 
@@ -100,7 +103,6 @@ function applyMarks(
   let wrapped = children;
 
   for (const key of markKeys) {
-    // Check if this key is a known decorator (strong, em, code, etc.)
     if (key === 'strong') {
       wrapped = <strong key={`m-${spanIndex}-${key}`}>{wrapped}</strong>;
     } else if (key === 'em') {
@@ -112,7 +114,6 @@ function applyMarks(
     } else if (key === 'strike-through') {
       wrapped = <s key={`m-${spanIndex}-${key}`}>{wrapped}</s>;
     } else {
-      // Check markDefs for link annotations
       const def = markDefs.find((d) => d._key === key);
       if (def?._type === 'link') {
         wrapped = (
@@ -121,14 +122,13 @@ function applyMarks(
           </a>
         );
       }
-      // Unknown marks are silently ignored
     }
   }
 
   return wrapped;
 }
 
-function renderTextBlock(value: unknown, tag: 'p' | `h${HeadingLevel}`) {
+function renderTextBlock(value: unknown, tag: 'p' | `h${HeadingLevel}` | 'blockquote') {
   const raw = value as { children?: SpanData[]; markDefs?: MarkDef[] };
   const spans: SpanData[] = (raw.children ?? []).filter(
     (c: SpanData) => c._type === 'span',
@@ -142,6 +142,7 @@ function renderTextBlock(value: unknown, tag: 'p' | `h${HeadingLevel}`) {
   if (tag === 'h1') return <h1 id={getHeadingId(value)} className="scroll-mt-24">{children}</h1>;
   if (tag === 'h2') return <h2 id={getHeadingId(value)} className="scroll-mt-24">{children}</h2>;
   if (tag === 'h3') return <h3 id={getHeadingId(value)} className="scroll-mt-24">{children}</h3>;
+  if (tag === 'blockquote') return <blockquote className="border-l-4 border-zinc-300 pl-4 my-4 italic text-zinc-600 dark:text-zinc-400">{children}</blockquote>;
   return <p>{children}</p>;
 }
 
@@ -162,6 +163,21 @@ const components: PortableTextComponents = {
     ),
     pdfEmbed: ({ value }) => (
       <PdfEmbed file={value.file} caption={value.caption} />
+    ),
+    callout: ({ value }) => (
+      <Callout variant={value.variant} title={value.title} body={value.body} />
+    ),
+    columns: ({ value }) => (
+      <Columns columns={value.columns} />
+    ),
+    toggle: ({ value }) => (
+      <Toggle title={value.title} open={value.open} body={value.body} />
+    ),
+    divider: ({ value }) => (
+      <Divider style={value.style} />
+    ),
+    table: ({ value }) => (
+      <TableBlock caption={value.caption} headers={value.headers} rows={value.rows} />
     ),
     image: ({ value }: { value: SanityImage }) => {
       const src = urlFor(value).width(1200).format('webp').auto('format').url();
@@ -191,6 +207,28 @@ const components: PortableTextComponents = {
     h1: ({ value }) => renderTextBlock(value, 'h1'),
     h2: ({ value }) => renderTextBlock(value, 'h2'),
     h3: ({ value }) => renderTextBlock(value, 'h3'),
+    blockquote: ({ value }) => renderTextBlock(value, 'blockquote'),
+  },
+
+  list: {
+    task: ({ children }) => <ul className="list-none pl-0 my-2">{children}</ul>,
+  },
+
+  listItem: {
+    task: ({ children, value }) => {
+      const checked = (value as { checked?: boolean }).checked || false;
+      return (
+        <li className="flex items-start gap-2 my-1">
+          <input
+            type="checkbox"
+            checked={checked}
+            readOnly
+            className="mt-1 accent-zinc-600"
+          />
+          <span>{children}</span>
+        </li>
+      );
+    },
   },
 };
 

@@ -1,0 +1,3335 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "name": "titleEn",
+        "type": "string",
+        "title": "Title (English)"
+      },
+      {
+        "name": "titleDe",
+        "type": "string",
+        "title": "Title (Deutsch)"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "URL 标识"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "title": "描述"
+      },
+      {
+        "name": "descriptionEn",
+        "type": "text",
+        "title": "Description (English)"
+      },
+      {
+        "name": "descriptionDe",
+        "type": "text",
+        "title": "Description (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "description": "用于首页入口按钮展示的简短介绍。为空时会使用描述字段。",
+        "name": "intro",
+        "type": "text",
+        "title": "入口简介"
+      },
+      {
+        "rows": 3,
+        "name": "introEn",
+        "type": "text",
+        "title": "Entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "introDe",
+        "type": "text",
+        "title": "Entry intro (Deutsch)"
+      },
+      {
+        "options": {
+          "layout": "tags"
+        },
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "tags",
+        "type": "array"
+      },
+      {
+        "name": "createdAt",
+        "type": "datetime",
+        "title": "Created at"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "fields": [
+          {
+            "name": "alt",
+            "type": "string",
+            "title": "Alt text"
+          }
+        ],
+        "name": "coverImage",
+        "type": "image",
+        "title": "Cover image"
+      },
+      {
+        "initialValue": 0,
+        "name": "order",
+        "type": "number",
+        "title": "排序"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "icon",
+        "type": "image",
+        "title": "图标"
+      },
+      {
+        "initialValue": false,
+        "hidden": true,
+        "name": "notified",
+        "type": "boolean",
+        "title": "已发送通知"
+      }
+    ],
+    "name": "category",
+    "type": "document",
+    "title": "分类"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "name": "titleEn",
+        "type": "string",
+        "title": "Title (English)"
+      },
+      {
+        "name": "titleDe",
+        "type": "string",
+        "title": "Title (Deutsch)"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "URL 标识"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "title": "描述"
+      },
+      {
+        "name": "descriptionEn",
+        "type": "text",
+        "title": "Description (English)"
+      },
+      {
+        "name": "descriptionDe",
+        "type": "text",
+        "title": "Description (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "description": "用于首页入口按钮展示的简短介绍。为空时会使用描述字段。",
+        "name": "intro",
+        "type": "text",
+        "title": "入口简介"
+      },
+      {
+        "rows": 3,
+        "name": "introEn",
+        "type": "text",
+        "title": "Entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "introDe",
+        "type": "text",
+        "title": "Entry intro (Deutsch)"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "to": [
+          {
+            "type": "category"
+          }
+        ],
+        "name": "category",
+        "type": "reference",
+        "title": "所属分类"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Ongoing",
+              "value": "ongoing"
+            },
+            {
+              "title": "Completed",
+              "value": "completed"
+            },
+            {
+              "title": "Planned",
+              "value": "planned"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "planned",
+        "name": "status",
+        "type": "string"
+      },
+      {
+        "initialValue": 1,
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 1
+              },
+              {
+                "flag": "max",
+                "constraint": 5
+              }
+            ]
+          }
+        ],
+        "description": "Fill with an integer from 1 to 5.",
+        "name": "progress",
+        "type": "number"
+      },
+      {
+        "name": "createdAt",
+        "type": "datetime",
+        "title": "Created at"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "fields": [
+          {
+            "name": "alt",
+            "type": "string",
+            "title": "Alt text"
+          }
+        ],
+        "name": "coverImage",
+        "type": "image",
+        "title": "Cover image"
+      },
+      {
+        "options": {
+          "layout": "tags"
+        },
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "tags",
+        "type": "array"
+      },
+      {
+        "initialValue": 0,
+        "name": "order",
+        "type": "number",
+        "title": "排序"
+      },
+      {
+        "initialValue": false,
+        "hidden": true,
+        "name": "notified",
+        "type": "boolean",
+        "title": "已发送通知"
+      }
+    ],
+    "name": "project",
+    "type": "document",
+    "title": "项目"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "rows": 3,
+        "description": "用于首页入口按钮展示的简短介绍。为空时会使用描述字段。",
+        "name": "intro",
+        "type": "text",
+        "title": "入口简介"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "title": "描述"
+      },
+      {
+        "name": "titleEn",
+        "type": "string",
+        "title": "Title (English)"
+      },
+      {
+        "rows": 3,
+        "name": "introEn",
+        "type": "text",
+        "title": "Entry intro (English)"
+      },
+      {
+        "name": "descriptionEn",
+        "type": "text",
+        "title": "Description (English)"
+      },
+      {
+        "name": "titleDe",
+        "type": "string",
+        "title": "Title (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "name": "introDe",
+        "type": "text",
+        "title": "Entry intro (Deutsch)"
+      },
+      {
+        "name": "descriptionDe",
+        "type": "text",
+        "title": "Description (Deutsch)"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "URL 标识"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "to": [
+          {
+            "type": "project"
+          }
+        ],
+        "name": "project",
+        "type": "reference",
+        "title": "所属项目"
+      },
+      {
+        "name": "createdAt",
+        "type": "datetime",
+        "title": "Created at"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "fields": [
+          {
+            "name": "alt",
+            "type": "string",
+            "title": "Alt text"
+          }
+        ],
+        "name": "coverImage",
+        "type": "image",
+        "title": "Cover image"
+      },
+      {
+        "options": {
+          "layout": "tags"
+        },
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "tags",
+        "type": "array"
+      },
+      {
+        "initialValue": 0,
+        "name": "order",
+        "type": "number",
+        "title": "排序"
+      },
+      {
+        "initialValue": false,
+        "hidden": true,
+        "name": "notified",
+        "type": "boolean",
+        "title": "已发送通知"
+      }
+    ],
+    "name": "collection",
+    "type": "document",
+    "title": "合集"
+  },
+  {
+    "validation": [
+      {
+        "level": "error",
+        "rules": [
+          {
+            "flag": "custom"
+          }
+        ]
+      }
+    ],
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "description": "可选。显示在图片下方。",
+                "name": "caption",
+                "type": "string",
+                "title": "图名"
+              }
+            ],
+            "type": "image"
+          }
+        ],
+        "name": "body",
+        "type": "array",
+        "title": "正文"
+      },
+      {
+        "description": "用于列表页和 SEO description",
+        "name": "excerpt",
+        "type": "text",
+        "title": "摘要"
+      },
+      {
+        "name": "titleEn",
+        "type": "string",
+        "title": "Title (English)"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "name": "caption",
+                "type": "string"
+              }
+            ],
+            "type": "image"
+          }
+        ],
+        "name": "bodyEn",
+        "type": "array",
+        "title": "Body (English)"
+      },
+      {
+        "name": "excerptEn",
+        "type": "text",
+        "title": "Excerpt (English)"
+      },
+      {
+        "name": "titleDe",
+        "type": "string",
+        "title": "Title (Deutsch)"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          },
+          {
+            "options": {
+              "hotspot": true
+            },
+            "fields": [
+              {
+                "name": "caption",
+                "type": "string",
+                "title": "Bildunterschrift"
+              }
+            ],
+            "type": "image"
+          }
+        ],
+        "name": "bodyDe",
+        "type": "array",
+        "title": "Body (Deutsch)"
+      },
+      {
+        "name": "excerptDe",
+        "type": "text",
+        "title": "Excerpt (Deutsch)"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "URL 标识"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "中文",
+              "value": "zh"
+            },
+            {
+              "title": "English",
+              "value": "en"
+            },
+            {
+              "title": "Deutsch",
+              "value": "de"
+            }
+          ]
+        },
+        "initialValue": "zh",
+        "name": "language",
+        "type": "string",
+        "title": "语言"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Default",
+              "value": "default"
+            },
+            {
+              "title": "Terminal",
+              "value": "terminal"
+            },
+            {
+              "title": "Serif",
+              "value": "serif"
+            },
+            {
+              "title": "Manga",
+              "value": "manga"
+            },
+            {
+              "title": "Minimal",
+              "value": "minimal"
+            }
+          ]
+        },
+        "initialValue": "default",
+        "name": "theme",
+        "type": "string",
+        "title": "文章主题"
+      },
+      {
+        "description": "可选。项目文章选择项目；独立文章留空并选择直属分类。",
+        "to": [
+          {
+            "type": "project"
+          }
+        ],
+        "name": "project",
+        "type": "reference",
+        "title": "所属项目"
+      },
+      {
+        "description": "仅用于不属于任何项目的独立文章。",
+        "to": [
+          {
+            "type": "category"
+          }
+        ],
+        "hidden": "conditional",
+        "name": "category",
+        "type": "reference",
+        "title": "直属分类"
+      },
+      {
+        "to": [
+          {
+            "type": "collection"
+          }
+        ],
+        "hidden": "conditional",
+        "name": "collection",
+        "type": "reference",
+        "title": "所属合集"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "publishedAt",
+        "type": "datetime",
+        "title": "发布日期"
+      },
+      {
+        "name": "updatedAt",
+        "type": "datetime",
+        "title": "更新日期"
+      },
+      {
+        "name": "authorName",
+        "type": "string",
+        "title": "Author name"
+      },
+      {
+        "options": {
+          "layout": "tags"
+        },
+        "of": [
+          {
+            "options": {
+              "list": [
+                "前端",
+                "后端",
+                "DevOps",
+                "设计",
+                "读书",
+                "随笔",
+                "教程",
+                "复盘",
+                "翻译",
+                "AI",
+                "性能",
+                "工具",
+                "开源"
+              ]
+            },
+            "type": "string"
+          }
+        ],
+        "name": "tags",
+        "type": "array",
+        "title": "标签"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "fields": [
+          {
+            "name": "alt",
+            "type": "string",
+            "title": "Alt text"
+          }
+        ],
+        "name": "coverImage",
+        "type": "image",
+        "title": "封面图"
+      }
+    ],
+    "name": "blog",
+    "type": "document",
+    "title": "博客"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "date",
+        "type": "date",
+        "title": "日期"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "slug",
+        "type": "slug",
+        "title": "URL 标识"
+      },
+      {
+        "description": "展示在农田地块 hover 提示",
+        "name": "description",
+        "type": "text",
+        "title": "短摘要"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "body",
+        "type": "array",
+        "title": "正文"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "🌾 内容更新",
+              "value": "content"
+            },
+            {
+              "title": "🌽 网站维护",
+              "value": "site"
+            },
+            {
+              "title": "🥕 其他",
+              "value": "other"
+            }
+          ]
+        },
+        "initialValue": "content",
+        "name": "category",
+        "type": "string",
+        "title": "类别"
+      }
+    ],
+    "name": "log",
+    "type": "document",
+    "title": "日志"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "name",
+        "type": "string",
+        "title": "名称"
+      },
+      {
+        "name": "avatar",
+        "type": "image",
+        "title": "头像"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "bio",
+        "type": "array",
+        "title": "简介"
+      },
+      {
+        "name": "entryTitle",
+        "type": "string",
+        "title": "Entry title"
+      },
+      {
+        "name": "entryTitleEn",
+        "type": "string",
+        "title": "Entry title (English)"
+      },
+      {
+        "name": "entryTitleDe",
+        "type": "string",
+        "title": "Entry title (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "name": "entryIntro",
+        "type": "text",
+        "title": "Entry intro"
+      },
+      {
+        "rows": 3,
+        "name": "entryIntroEn",
+        "type": "text",
+        "title": "Entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "entryIntroDe",
+        "type": "text",
+        "title": "Entry intro (Deutsch)"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "name": "label",
+                "type": "string",
+                "title": "名称"
+              },
+              {
+                "validation": [
+                  {
+                    "level": "error",
+                    "rules": [
+                      {
+                        "flag": "uri",
+                        "constraint": {
+                          "options": {
+                            "scheme": [
+                              "/^http$/",
+                              "/^https$/"
+                            ],
+                            "allowRelative": false,
+                            "relativeOnly": false,
+                            "allowCredentials": false
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "name": "url",
+                "type": "url",
+                "title": "链接"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "socialLinks",
+        "type": "array",
+        "title": "社交链接"
+      }
+    ],
+    "name": "profile",
+    "type": "document",
+    "title": "个人简介"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "name",
+        "type": "string",
+        "title": "名称"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^http$/",
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "url",
+        "type": "url",
+        "title": "链接"
+      },
+      {
+        "name": "avatar",
+        "type": "image",
+        "title": "头像"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "title": "简介"
+      },
+      {
+        "initialValue": 0,
+        "name": "order",
+        "type": "number",
+        "title": "排序"
+      }
+    ],
+    "name": "friend",
+    "type": "document",
+    "title": "友链"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "text",
+        "type": "string"
+      },
+      {
+        "name": "textEn",
+        "type": "string",
+        "title": "Text (English)"
+      },
+      {
+        "name": "textDe",
+        "type": "string",
+        "title": "Text (Deutsch)"
+      },
+      {
+        "name": "source",
+        "type": "string"
+      },
+      {
+        "initialValue": 0,
+        "name": "order",
+        "type": "number"
+      }
+    ],
+    "name": "motto",
+    "type": "document",
+    "title": "主页格言"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "name": "titleEn",
+        "type": "string",
+        "title": "Title (English)"
+      },
+      {
+        "name": "titleDe",
+        "type": "string",
+        "title": "Title (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "intro",
+        "type": "text",
+        "title": "Entry intro"
+      },
+      {
+        "rows": 3,
+        "name": "introEn",
+        "type": "text",
+        "title": "Entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "introDe",
+        "type": "text",
+        "title": "Entry intro (Deutsch)"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "body",
+        "type": "array"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "bodyEn",
+        "type": "array",
+        "title": "Body (English)"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "bodyDe",
+        "type": "array",
+        "title": "Body (Deutsch)"
+      }
+    ],
+    "name": "about",
+    "type": "document",
+    "title": "关于"
+  },
+  {
+    "fields": [
+      {
+        "rows": 3,
+        "name": "homeIntro",
+        "type": "text",
+        "title": "Home intro"
+      },
+      {
+        "rows": 3,
+        "name": "homeIntroEn",
+        "type": "text",
+        "title": "Home intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "homeIntroDe",
+        "type": "text",
+        "title": "Home intro (Deutsch)"
+      },
+      {
+        "name": "logEntryTitle",
+        "type": "string",
+        "title": "Log entry title"
+      },
+      {
+        "name": "logEntryTitleEn",
+        "type": "string",
+        "title": "Log entry title (English)"
+      },
+      {
+        "name": "logEntryTitleDe",
+        "type": "string",
+        "title": "Log entry title (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "name": "logEntryIntro",
+        "type": "text",
+        "title": "Log entry intro"
+      },
+      {
+        "rows": 3,
+        "name": "logEntryIntroEn",
+        "type": "text",
+        "title": "Log entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "logEntryIntroDe",
+        "type": "text",
+        "title": "Log entry intro (Deutsch)"
+      },
+      {
+        "name": "friendsEntryTitle",
+        "type": "string",
+        "title": "Friends entry title"
+      },
+      {
+        "name": "friendsEntryTitleEn",
+        "type": "string",
+        "title": "Friends entry title (English)"
+      },
+      {
+        "name": "friendsEntryTitleDe",
+        "type": "string",
+        "title": "Friends entry title (Deutsch)"
+      },
+      {
+        "rows": 3,
+        "name": "friendsEntryIntro",
+        "type": "text",
+        "title": "Friends entry intro"
+      },
+      {
+        "rows": 3,
+        "name": "friendsEntryIntroEn",
+        "type": "text",
+        "title": "Friends entry intro (English)"
+      },
+      {
+        "rows": 3,
+        "name": "friendsEntryIntroDe",
+        "type": "text",
+        "title": "Friends entry intro (Deutsch)"
+      }
+    ],
+    "name": "siteSettings",
+    "type": "document",
+    "title": "主页设置"
+  },
+  {
+    "fields": [
+      {
+        "description": "粘贴 Markdown 内容（markmap-lib 会将其渲染为交互式思维导图）。使用 ## / ### / - 等标准 Markdown 语法组织层级。",
+        "name": "data",
+        "type": "text",
+        "title": "Markdown 内容"
+      },
+      {
+        "name": "caption",
+        "type": "string",
+        "title": "标题"
+      }
+    ],
+    "name": "mindmap",
+    "type": "object",
+    "title": "思维导图"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "formula",
+        "type": "text",
+        "title": "LaTeX 公式"
+      }
+    ],
+    "name": "mathBlock",
+    "type": "object",
+    "title": "数学公式"
+  },
+  {
+    "fields": [
+      {
+        "options": {
+          "list": [
+            {
+              "title": "javascript",
+              "value": "javascript"
+            },
+            {
+              "title": "typescript",
+              "value": "typescript"
+            },
+            {
+              "title": "python",
+              "value": "python"
+            },
+            {
+              "title": "rust",
+              "value": "rust"
+            },
+            {
+              "title": "go",
+              "value": "go"
+            },
+            {
+              "title": "bash",
+              "value": "bash"
+            },
+            {
+              "title": "json",
+              "value": "json"
+            },
+            {
+              "title": "yaml",
+              "value": "yaml"
+            },
+            {
+              "title": "html",
+              "value": "html"
+            },
+            {
+              "title": "css",
+              "value": "css"
+            },
+            {
+              "title": "sql",
+              "value": "sql"
+            },
+            {
+              "title": "text",
+              "value": "text"
+            }
+          ]
+        },
+        "initialValue": "text",
+        "name": "language",
+        "type": "string",
+        "title": "语言"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "code",
+        "type": "text",
+        "title": "代码"
+      },
+      {
+        "name": "filename",
+        "type": "string",
+        "title": "文件名"
+      }
+    ],
+    "name": "codeBlock",
+    "type": "object",
+    "title": "代码块"
+  },
+  {
+    "fields": [
+      {
+        "options": {
+          "accept": ".pdf"
+        },
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ]
+          }
+        ],
+        "name": "file",
+        "type": "file",
+        "title": "PDF 文件"
+      },
+      {
+        "name": "caption",
+        "type": "string",
+        "title": "标题"
+      }
+    ],
+    "name": "pdfEmbed",
+    "type": "object",
+    "title": "PDF 嵌入"
+  },
+  {
+    "fields": [
+      {
+        "options": {
+          "list": [
+            {
+              "title": "💬 信息",
+              "value": "info"
+            },
+            {
+              "title": "⚠️ 警告",
+              "value": "warning"
+            },
+            {
+              "title": "✅ 成功",
+              "value": "success"
+            },
+            {
+              "title": "🚫 危险",
+              "value": "danger"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "info",
+        "name": "variant",
+        "type": "string",
+        "title": "类型"
+      },
+      {
+        "description": "可选。提示框的标题。",
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "image"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "body",
+        "type": "array",
+        "title": "内容"
+      }
+    ],
+    "name": "callout",
+    "type": "object",
+    "title": "提示框"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 2
+              },
+              {
+                "flag": "max",
+                "constraint": 3
+              }
+            ],
+            "message": "栏数必须在 2 到 3 之间"
+          }
+        ],
+        "of": [
+          {
+            "fields": [
+              {
+                "of": [
+                  {
+                    "lists": [
+                      {
+                        "value": "bullet",
+                        "title": "Bulleted list"
+                      },
+                      {
+                        "value": "number",
+                        "title": "Numbered list"
+                      }
+                    ],
+                    "marks": {
+                      "annotations": [
+                        {
+                          "i18nTitleKey": "inputs.portable-text.annotation.link",
+                          "options": {
+                            "modal": {
+                              "type": "popover"
+                            }
+                          },
+                          "fields": [
+                            {
+                              "validation": [
+                                {
+                                  "level": "error",
+                                  "rules": [
+                                    {
+                                      "flag": "uri",
+                                      "constraint": {
+                                        "options": {
+                                          "scheme": [
+                                            "/^http$/",
+                                            "/^https$/",
+                                            "/^tel$/",
+                                            "/^mailto$/"
+                                          ],
+                                          "allowRelative": true,
+                                          "relativeOnly": false,
+                                          "allowCredentials": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ],
+                              "description": "A valid web, email, phone, or relative link.",
+                              "name": "href",
+                              "type": "url",
+                              "title": "Link"
+                            }
+                          ],
+                          "name": "link",
+                          "type": "object"
+                        }
+                      ],
+                      "decorators": [
+                        {
+                          "value": "strong",
+                          "title": "Strong"
+                        },
+                        {
+                          "value": "em",
+                          "title": "Italic"
+                        },
+                        {
+                          "value": "code",
+                          "title": "Code"
+                        },
+                        {
+                          "value": "underline",
+                          "title": "Underline"
+                        },
+                        {
+                          "value": "strike-through",
+                          "title": "Strike"
+                        }
+                      ]
+                    },
+                    "of": [],
+                    "styles": [
+                      {
+                        "value": "normal",
+                        "title": "Normal"
+                      },
+                      {
+                        "value": "h1",
+                        "title": "Heading 1"
+                      },
+                      {
+                        "value": "h2",
+                        "title": "Heading 2"
+                      },
+                      {
+                        "value": "h3",
+                        "title": "Heading 3"
+                      },
+                      {
+                        "value": "h4",
+                        "title": "Heading 4"
+                      },
+                      {
+                        "value": "h5",
+                        "title": "Heading 5"
+                      },
+                      {
+                        "value": "h6",
+                        "title": "Heading 6"
+                      },
+                      {
+                        "value": "blockquote",
+                        "title": "Quote"
+                      }
+                    ],
+                    "type": "block"
+                  },
+                  {
+                    "type": "image"
+                  },
+                  {
+                    "type": "mindmap",
+                    "title": "思维导图"
+                  },
+                  {
+                    "type": "mathBlock",
+                    "title": "数学公式"
+                  },
+                  {
+                    "type": "codeBlock",
+                    "title": "代码块"
+                  },
+                  {
+                    "type": "pdfEmbed",
+                    "title": "PDF 嵌入"
+                  },
+                  {
+                    "type": "callout",
+                    "title": "提示框"
+                  },
+                  {
+                    "type": "columns",
+                    "title": "多栏布局"
+                  },
+                  {
+                    "type": "toggle",
+                    "title": "折叠块"
+                  },
+                  {
+                    "type": "divider",
+                    "title": "分隔线"
+                  },
+                  {
+                    "type": "table",
+                    "title": "表格"
+                  }
+                ],
+                "name": "content",
+                "type": "array",
+                "title": "内容"
+              }
+            ],
+            "type": "object",
+            "name": "column",
+            "title": "栏"
+          }
+        ],
+        "name": "columns",
+        "type": "array",
+        "title": "栏"
+      }
+    ],
+    "name": "columns",
+    "type": "object",
+    "title": "多栏布局"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "message": "折叠块必须有标题"
+          }
+        ],
+        "name": "title",
+        "type": "string",
+        "title": "标题"
+      },
+      {
+        "initialValue": false,
+        "description": "开启后，折叠块在页面加载时默认展开。",
+        "name": "open",
+        "type": "boolean",
+        "title": "默认展开"
+      },
+      {
+        "of": [
+          {
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "level": "error",
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "of": [],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "type": "block"
+          },
+          {
+            "type": "image"
+          },
+          {
+            "type": "mindmap",
+            "title": "思维导图"
+          },
+          {
+            "type": "mathBlock",
+            "title": "数学公式"
+          },
+          {
+            "type": "codeBlock",
+            "title": "代码块"
+          },
+          {
+            "type": "pdfEmbed",
+            "title": "PDF 嵌入"
+          },
+          {
+            "type": "callout",
+            "title": "提示框"
+          },
+          {
+            "type": "columns",
+            "title": "多栏布局"
+          },
+          {
+            "type": "toggle",
+            "title": "折叠块"
+          },
+          {
+            "type": "divider",
+            "title": "分隔线"
+          },
+          {
+            "type": "table",
+            "title": "表格"
+          }
+        ],
+        "name": "body",
+        "type": "array",
+        "title": "内容"
+      }
+    ],
+    "name": "toggle",
+    "type": "object",
+    "title": "折叠块"
+  },
+  {
+    "fields": [
+      {
+        "options": {
+          "list": [
+            {
+              "title": "实线",
+              "value": "solid"
+            },
+            {
+              "title": "虚线",
+              "value": "dashed"
+            },
+            {
+              "title": "点线",
+              "value": "dotted"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "solid",
+        "name": "style",
+        "type": "string",
+        "title": "样式"
+      }
+    ],
+    "name": "divider",
+    "type": "object",
+    "title": "分隔线"
+  },
+  {
+    "fields": [
+      {
+        "description": "可选。表格上方的标题文字。",
+        "name": "caption",
+        "type": "string",
+        "title": "表格标题"
+      },
+      {
+        "validation": [
+          {
+            "level": "error",
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 1
+              }
+            ],
+            "message": "至少需要一个表头列"
+          }
+        ],
+        "of": [
+          {
+            "type": "string"
+          }
+        ],
+        "name": "headers",
+        "type": "array",
+        "title": "表头"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "of": [
+                  {
+                    "type": "string"
+                  }
+                ],
+                "name": "cells",
+                "type": "array",
+                "title": "单元格"
+              }
+            ],
+            "type": "object",
+            "name": "tableRow",
+            "title": "行"
+          }
+        ],
+        "name": "rows",
+        "type": "array",
+        "title": "数据行"
+      }
+    ],
+    "name": "table",
+    "type": "object",
+    "title": "表格"
+  }
+]

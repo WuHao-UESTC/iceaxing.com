@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { draftMode } from 'next/headers';
 import {
   getProjectBySlug,
   getBlogPostsByProject,
@@ -19,6 +20,8 @@ import {
   ProjectHero,
 } from '@/components/site/listing-cards';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string; category: string; project: string }>;
 }
@@ -26,9 +29,10 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const proj = await getProjectBySlug(project, locale);
+  const { isEnabled: preview } = await draftMode();
+  const proj = await getProjectBySlug(project, locale, preview);
   if (!proj) {
-    const post = await getDirectBlogPostByCategory(category, project, locale);
+    const post = await getDirectBlogPostByCategory(category, project, locale, preview);
     if (!post) return { title: t('notFound') };
     return getPostMetadata(post, locale, `/${category}/${project}`);
   }
@@ -49,13 +53,14 @@ export async function generateMetadata({ params }: Props) {
 export default async function ProjectPage({ params }: Props) {
   const { category, project, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
+  const { isEnabled: preview } = await draftMode();
 
   const [proj, cat] = await Promise.all([
-    getProjectBySlug(project, locale),
-    getCategoryBySlug(category, locale),
+    getProjectBySlug(project, locale, preview),
+    getCategoryBySlug(category, locale, preview),
   ]);
   if (!proj) {
-    const post = await getDirectBlogPostByCategory(category, project, locale);
+    const post = await getDirectBlogPostByCategory(category, project, locale, preview);
     if (!post) notFound();
 
     function formatDate(dateStr: string) {
@@ -80,8 +85,8 @@ export default async function ProjectPage({ params }: Props) {
   }
 
   const [posts, collections] = await Promise.all([
-    getBlogPostsByProject(project, locale),
-    getCollectionsByProject(project, locale),
+    getBlogPostsByProject(project, locale, preview),
+    getCollectionsByProject(project, locale, preview),
   ]);
   const labels = {
     locale,

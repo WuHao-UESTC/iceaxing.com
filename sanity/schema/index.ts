@@ -13,6 +13,11 @@ import mindmap from './custom-blocks/mindmap';
 import mathBlock from './custom-blocks/math-block';
 import codeBlock from './custom-blocks/code-block';
 import pdfEmbed from './custom-blocks/pdf-embed';
+import callout from './custom-blocks/callout';
+import columns from './custom-blocks/columns';
+import toggle from './custom-blocks/toggle';
+import divider from './custom-blocks/divider';
+import table from './custom-blocks/table';
 
 export const schemaTypes = [
   category,
@@ -29,4 +34,9 @@ export const schemaTypes = [
   mathBlock,
   codeBlock,
   pdfEmbed,
+  callout,
+  columns,
+  toggle,
+  divider,
+  table,
 ];

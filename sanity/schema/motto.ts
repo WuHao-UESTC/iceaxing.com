@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity';
 
 export default defineType({
   name: 'motto',
-  title: 'Motto',
+  title: '主页格言',
   type: 'document',
   fields: [
     defineField({

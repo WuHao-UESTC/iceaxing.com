@@ -6,6 +6,8 @@ import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 import Image from 'next/image';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string }>;
 }

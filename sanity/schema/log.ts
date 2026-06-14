@@ -1,5 +1,7 @@
 // sanity/schema/log.ts
 import { defineField, defineType } from 'sanity';
+import { SlashCommandInput } from '../components/slash-commands/SlashCommandInput';
+import { customBlockOf } from './custom-blocks/shared-block-of';
 
 export default defineType({
   name: 'log',
@@ -35,7 +37,8 @@ export default defineType({
       name: 'body',
       title: '正文',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: customBlockOf,
+      components: { input: SlashCommandInput },
     }),
     defineField({
       name: 'category',

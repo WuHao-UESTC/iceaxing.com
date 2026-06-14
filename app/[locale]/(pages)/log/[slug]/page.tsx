@@ -7,6 +7,8 @@ import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
 import { intlLocale } from '@/lib/i18n/locales';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string; slug: string }>;
 }

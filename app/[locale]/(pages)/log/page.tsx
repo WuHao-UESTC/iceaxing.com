@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { LogGrid } from '@/components/log/log-grid';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string }>;
 }

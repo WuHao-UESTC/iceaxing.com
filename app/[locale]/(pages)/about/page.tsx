@@ -5,6 +5,8 @@ import { getAbout } from '@/lib/sanity/queries';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { EmptyState } from '@/components/ui/empty-state';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string }>;
 }

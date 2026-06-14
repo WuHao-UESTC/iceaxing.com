@@ -1,5 +1,5 @@
 import { groq } from 'next-sanity';
-import { client } from './client';
+import { client, getClient } from './client';
 import type {
   CategoryDoc,
   ProjectDoc,
@@ -92,8 +92,8 @@ export async function getSpecialBlogsByCategory(locale = 'zh'): Promise<SpecialC
   `, { locale });
 }
 
-export async function getCategoryBySlug(slug: string, locale = 'zh'): Promise<CategoryDoc | null> {
-  return client.fetch(
+export async function getCategoryBySlug(slug: string, locale = 'zh', usePreview = false): Promise<CategoryDoc | null> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "category" && slug.current == $slug][0] ${categoryProjection}`,
     { slug, locale }
   );
@@ -141,15 +141,15 @@ const projectProjection = groq`{
   }
 }`;
 
-export async function getProjectsByCategory(categorySlug: string, locale = 'zh'): Promise<ProjectDoc[]> {
-  return client.fetch(
+export async function getProjectsByCategory(categorySlug: string, locale = 'zh', usePreview = false): Promise<ProjectDoc[]> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "project" && category->slug.current == $categorySlug] | order(order) ${projectProjection}`,
     { categorySlug, locale }
   );
 }
 
-export async function getProjectBySlug(slug: string, locale = 'zh'): Promise<ProjectDoc | null> {
-  return client.fetch(
+export async function getProjectBySlug(slug: string, locale = 'zh', usePreview = false): Promise<ProjectDoc | null> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "project" && slug.current == $slug][0] ${projectProjection}`,
     { slug, locale }
   );
@@ -175,8 +175,8 @@ const blogListProjection = groq`{
   "collection": collection->{"title": ${localizedString('title')}, "slug": slug.current}
 }`;
 
-export async function getBlogPostsByProject(projectSlug: string, locale = 'zh'): Promise<BlogListItem[]> {
-  return client.fetch(
+export async function getBlogPostsByProject(projectSlug: string, locale = 'zh', usePreview = false): Promise<BlogListItem[]> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && (!defined(collection) || collection == null)]
        | order(publishedAt desc) ${blogListProjection}`,
@@ -187,9 +187,10 @@ export async function getBlogPostsByProject(projectSlug: string, locale = 'zh'):
 export async function getBlogPostsByCollection(
   projectSlug: string,
   collectionSlug: string,
-  locale = 'zh'
+  locale = 'zh',
+  usePreview = false,
 ): Promise<BlogListItem[]> {
-  return client.fetch(
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && collection->slug.current == $collectionSlug]
        | order(publishedAt desc) ${blogListProjection}`,
@@ -197,8 +198,8 @@ export async function getBlogPostsByCollection(
   );
 }
 
-export async function getDirectBlogPostsByCategory(categorySlug: string, locale = 'zh'): Promise<BlogListItem[]> {
-  return client.fetch(
+export async function getDirectBlogPostsByCategory(categorySlug: string, locale = 'zh', usePreview = false): Promise<BlogListItem[]> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && category->slug.current == $categorySlug
        && (!defined(project) || project == null)]
        | order(publishedAt desc) ${blogListProjection}`,
@@ -230,9 +231,10 @@ const blogFullProjection = groq`{
 export async function getBlogPost(
   projectSlug: string,
   blogSlug: string,
-  locale = 'zh'
+  locale = 'zh',
+  usePreview = false,
 ): Promise<BlogFull | null> {
-  return client.fetch(
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && slug.current == $blogSlug
        && (!defined(collection) || collection == null)][0] ${blogFullProjection}`,
@@ -243,9 +245,10 @@ export async function getBlogPost(
 export async function getDirectBlogPostByCategory(
   categorySlug: string,
   blogSlug: string,
-  locale = 'zh'
+  locale = 'zh',
+  usePreview = false,
 ): Promise<BlogFull | null> {
-  return client.fetch(
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && category->slug.current == $categorySlug
        && slug.current == $blogSlug
        && (!defined(project) || project == null)][0] ${blogFullProjection}`,
@@ -257,9 +260,10 @@ export async function getBlogPostWithCollection(
   projectSlug: string,
   collectionSlug: string,
   blogSlug: string,
-  locale = 'zh'
+  locale = 'zh',
+  usePreview = false,
 ): Promise<BlogFull | null> {
-  return client.fetch(
+  return getClient(usePreview).fetch(
     groq`*[_type == "blog" && project->slug.current == $projectSlug
        && collection->slug.current == $collectionSlug
        && slug.current == $blogSlug][0] ${blogFullProjection}`,
@@ -367,8 +371,8 @@ export async function searchBlogs(
   );
 }
 
-export async function getCollectionsByProject(projectSlug: string, locale = 'zh'): Promise<CollectionDoc[]> {
-  return client.fetch(
+export async function getCollectionsByProject(projectSlug: string, locale = 'zh', usePreview = false): Promise<CollectionDoc[]> {
+  return getClient(usePreview).fetch(
     groq`*[_type == "collection" && project->slug.current == $projectSlug] | order(order) {
       _id,
       "title": ${localizedString('title')},

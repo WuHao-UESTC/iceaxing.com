@@ -32,7 +32,13 @@
       "Bash(curl -sI http://localhost:3000)",
       "Bash(curl *)",
       "mcp__Sanity__create_documents_from_json",
-      "mcp__Sanity__publish_documents"
+      "mcp__Sanity__publish_documents",
+      "mcp__plugin_vercel_vercel__list_projects",
+      "mcp__plugin_vercel_vercel__list_teams",
+      "mcp__plugin_vercel_vercel__get_project",
+      "mcp__plugin_vercel_vercel__search_vercel_documentation",
+      "mcp__Sanity__read_docs",
+      "mcp__Sanity__search_docs"
     ]
   }
 }

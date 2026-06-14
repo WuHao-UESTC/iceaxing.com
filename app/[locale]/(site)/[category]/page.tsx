@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { draftMode } from 'next/headers';
 import {
   getCategoryBySlug,
   getDirectBlogPostsByCategory,
@@ -14,6 +15,8 @@ import {
   ProjectGrid,
 } from '@/components/site/listing-cards';
 
+export const revalidate = 60;
+
 interface Props {
   params: Promise<{ locale: string; category: string }>;
 }
@@ -21,7 +24,8 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { category, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const cat = await getCategoryBySlug(category, locale);
+  const { isEnabled: preview } = await draftMode();
+  const cat = await getCategoryBySlug(category, locale, preview);
   if (!cat) return { title: t('notFound') };
   return {
     title: cat.title,
@@ -38,12 +42,13 @@ export async function generateMetadata({ params }: Props) {
 export default async function CategoryPage({ params }: Props) {
   const { category, locale } = await params;
   const t = await getTranslations({ locale, namespace: 'common' });
-  const cat = await getCategoryBySlug(category, locale);
+  const { isEnabled: preview } = await draftMode();
+  const cat = await getCategoryBySlug(category, locale, preview);
   if (!cat) notFound();
 
   const [projects, directPosts] = await Promise.all([
-    getProjectsByCategory(category, locale),
-    getDirectBlogPostsByCategory(category, locale),
+    getProjectsByCategory(category, locale, preview),
+    getDirectBlogPostsByCategory(category, locale, preview),
   ]);
   const hasContent = projects.length > 0 || directPosts.length > 0;
   const isDailyRamblings = category === 'daily-ramblings' || cat.tags?.includes('daily-ramblings');

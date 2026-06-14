@@ -7,6 +7,7 @@ import { routing } from '@/lib/i18n/routing';
 import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL, getStaticAlternates } from '@/lib/seo';
 import { htmlLocale, isAppLocale, openGraphLocale } from '@/lib/i18n/locales';
+import { VisualEditing } from '@/components/sanity/VisualEditing';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -80,6 +81,7 @@ export default async function LocaleLayout({
           <SiteHeader />
           <main className="min-h-[calc(100vh-12rem)]">{children}</main>
           <SiteFooter />
+          <VisualEditing />
         </NextIntlClientProvider>
       </body>
     </html>
