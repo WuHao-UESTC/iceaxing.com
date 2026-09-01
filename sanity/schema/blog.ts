@@ -1,9 +1,10 @@
 // sanity/schema/blog.ts
 import { defineField, defineType } from 'sanity';
 import { SlashCommandInput } from '../components/slash-commands/SlashCommandInput';
+import { portableTextBlock } from './portable-text-block';
 
 const bodyOf = [
-  { type: 'block' },
+  portableTextBlock(),
   { type: 'mindmap' },
   { type: 'mathBlock' },
   { type: 'codeBlock' },
@@ -28,7 +29,7 @@ const bodyOf = [
 ];
 
 const bodyOfEn = [
-  { type: 'block' },
+  portableTextBlock(),
   { type: 'mindmap' },
   { type: 'mathBlock' },
   { type: 'codeBlock' },
@@ -52,7 +53,7 @@ const bodyOfEn = [
 ];
 
 const bodyOfDe = [
-  { type: 'block' },
+  portableTextBlock(),
   { type: 'mindmap' },
   { type: 'mathBlock' },
   { type: 'codeBlock' },

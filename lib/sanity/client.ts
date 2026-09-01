@@ -13,6 +13,8 @@ export const client = createClient({
   useCdn: false,
   perspective: 'published',
   token: process.env.SANITY_API_READ_TOKEN,
+  timeout: 8000,
+  maxRetries: 1,
 });
 
 export const writeClient = createClient({
@@ -21,6 +23,8 @@ export const writeClient = createClient({
   apiVersion: '2024-01-01',
   useCdn: false,
   token: process.env.SANITY_API_WRITE_TOKEN,
+  timeout: 8000,
+  maxRetries: 1,
 });
 
 export const previewClient = createClient({
@@ -30,6 +34,8 @@ export const previewClient = createClient({
   useCdn: false,
   perspective: 'previewDrafts',
   token: process.env.SANITY_API_READ_TOKEN,
+  timeout: 8000,
+  maxRetries: 1,
   stega: {
     enabled: true,
     studioUrl: process.env.NEXT_PUBLIC_SANITY_STUDIO_URL || 'http://localhost:3333',

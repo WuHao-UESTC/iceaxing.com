@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PortableText, type PortableTextComponents } from '@portabletext/react';
 import type { PortableTextBlock } from '@portabletext/react';
+import katex from 'katex';
 import { MindMap } from './mindmap';
 import { MathBlock } from './math-block';
 import { CodeBlock } from './code-block';
@@ -126,5 +127,16 @@ export const nestedComponents: PortableTextComponents = {
         {children}
       </blockquote>
     ),
+  },
+  marks: {
+    inlineMath: ({ children }) => {
+      const formula = String(children);
+      const html = katex.renderToString(formula, {
+        displayMode: false,
+        throwOnError: false,
+        strict: false,
+      });
+      return <span className="katex-inline" dangerouslySetInnerHTML={{ __html: html }} />;
+    },
   },
 };

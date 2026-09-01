@@ -73,7 +73,30 @@ function renderSpan(
   markDefs: MarkDef[],
   childIndex: number,
 ): React.ReactNode {
-  const segments = parseInlineMath(span.text);
+  const markKeys = span.marks ?? [];
+  const isInlineMath = markKeys.includes('inlineMath');
+  const isCode = markKeys.includes('code');
+
+  if (isInlineMath) {
+    const html = katex.renderToString(span.text, {
+      displayMode: false,
+      throwOnError: false,
+      strict: false,
+    });
+    const rendered = (
+      <span className="katex-inline" dangerouslySetInnerHTML={{ __html: html }} />
+    );
+    return applyMarks(
+      markKeys.filter((mark) => mark !== 'inlineMath'),
+      markDefs,
+      rendered,
+      childIndex,
+    );
+  }
+
+  const segments = isCode
+    ? [{ type: 'text' as const, content: span.text }]
+    : parseInlineMath(span.text);
 
   const rendered = segments.map((seg, i) => {
     const key = `s-${childIndex}-${i}`;
@@ -90,7 +113,7 @@ function renderSpan(
     return <Fragment key={key}>{seg.content}</Fragment>;
   });
 
-  return applyMarks(span.marks ?? [], markDefs, rendered, childIndex);
+  return applyMarks(markKeys, markDefs, rendered, childIndex);
 }
 
 /** Wrap content with the HTML tags corresponding to Portable Text marks. */

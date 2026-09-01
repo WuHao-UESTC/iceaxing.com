@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { markdownToPortableText } from './markdownHandler';
+import { hasMarkdownSyntax, markdownToPortableText } from './markdownHandler';
 
 type PtBlock = {
   _key: string;
@@ -8,10 +8,6 @@ type PtBlock = {
   children?: Array<{ _key: string; _type: string; text: string; marks?: string[] }>;
   [key: string]: unknown;
 };
-
-function isMarkdown(text: string): boolean {
-  return /(\*\*|__|~~|`|^#{1,3}\s|^[\-\*]\s|^\d+\.\s|^\>\s|^```|\[.*\]\(.*\)|^[-*_]{3,}|\|[^|]+\|)/m.test(text);
-}
 
 function findBlockElement(el: Node | null): Element | null {
   let current: Node | null = el;
@@ -47,7 +43,7 @@ export function useMarkdownPaste(
       if (!clipboardData) return;
 
       const text = clipboardData.getData('text/plain');
-      if (!text || !isMarkdown(text)) return;
+      if (!text || !hasMarkdownSyntax(text)) return;
 
       try {
         const newBlocks = markdownToPortableText(text);

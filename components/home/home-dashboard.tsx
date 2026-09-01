@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import type {
@@ -34,7 +33,19 @@ export interface HomeLabels {
   lifeRecent: string;
   project: string;
   progress: string;
+  route: string;
+  dispatch: string;
+  nextCamp: string;
+  fieldNotes: string;
+  chapterNames: [string, string, string, string];
 }
+
+const chapters = [
+  { id: 'base-camp', altitude: '3200m' },
+  { id: 'technical-ridge', altitude: '4200m' },
+  { id: 'snowfield-traverse', altitude: '5100m' },
+  { id: 'night-camp', altitude: '6200m' },
+] as const;
 
 function postHref(post: SpecialBlogItem) {
   const category = post.category?.slug;
@@ -75,103 +86,84 @@ function introOf(item: { intro?: string; description?: string; excerpt?: string 
   return item.intro || item.description || item.excerpt || '';
 }
 
-function excerptText(text: string | undefined, length = 100) {
+function excerptText(text: string | undefined, length = 120) {
   if (!text) return '';
   const trimmed = text.replace(/\s+/g, ' ').trim();
   if (!trimmed) return '';
-  return `${Array.from(trimmed).slice(0, length).join('')}……`;
+  const excerpt = Array.from(trimmed).slice(0, length).join('');
+  return excerpt.length < trimmed.length ? `${excerpt}...` : excerpt;
 }
 
-function Cover({ image, title }: { image?: { url?: string; alt?: string }; title: string }) {
-  if (!image?.url) return <span className="home-cover-placeholder" aria-hidden="true" />;
-  return (
-    <Image
-      src={image.url}
-      alt={image.alt || title}
-      width={800}
-      height={450}
-      className="home-cover-image"
-      unoptimized
-    />
-  );
-}
-
-function SectionTitle({
+function ChapterHeading({
+  index,
   title,
-  href,
-  labels,
-  action,
+  detail,
 }: {
+  index: number;
   title: string;
-  href?: string;
-  labels: HomeLabels;
-  action?: ReactNode;
+  detail: string;
 }) {
+  const chapter = chapters[index];
   return (
-    <div className="home-grid-heading">
-      <h2>{title}</h2>
-      <div className="home-heading-actions">
-        {action}
-        {href && (
-          <Link href={href} className="home-view-link">
-            {labels.viewAll}
-          </Link>
+    <header className="mountain-chapter-heading">
+      <span className="mountain-chapter-index">0{index + 1}</span>
+      <div>
+        <span className="mountain-altitude">{chapter.altitude}</span>
+        <h2>{title}</h2>
+        <p>{detail}</p>
+      </div>
+    </header>
+  );
+}
+
+function RouteNavigation({ activeChapter, labels }: { activeChapter: string; labels: HomeLabels }) {
+  return (
+    <nav className="mountain-route-nav" aria-label={labels.route}>
+      <span className="mountain-route-title">{labels.route}</span>
+      <ol>
+        {chapters.map((chapter, index) => (
+          <li key={chapter.id} className={activeChapter === chapter.id ? 'is-active' : ''}>
+            <a href={`#${chapter.id}`} aria-current={activeChapter === chapter.id ? 'location' : undefined}>
+              <span className="mountain-route-dot" aria-hidden="true" />
+              <span className="mountain-route-copy">
+                <b>{chapter.altitude}</b>
+                <small>{labels.chapterNames[index]}</small>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+function PostLogRow({ post, labels, index }: { post: SpecialBlogItem; labels: HomeLabels; index: number }) {
+  return (
+    <Link href={postHref(post)} className="mountain-post-row">
+      <span className="mountain-post-number">{String(index + 1).padStart(2, '0')}</span>
+      <span className="mountain-post-thumb">
+        {post.coverImage?.url ? (
+          <Image
+            src={post.coverImage.url}
+            alt={post.coverImage.alt || post.title}
+            width={160}
+            height={120}
+            className="mountain-post-image"
+            unoptimized
+          />
+        ) : (
+          <span className="mountain-post-placeholder" aria-hidden="true" />
         )}
-      </div>
-    </div>
-  );
-}
-
-function ArticleCard({
-  post,
-  labels,
-  compact = false,
-}: {
-  post: SpecialBlogItem;
-  labels: HomeLabels;
-  compact?: boolean;
-}) {
-  return (
-    <Link href={postHref(post)} className={`home-article-card ${compact ? 'is-compact' : ''}`}>
-      <div className="home-card-media">
-        <Cover image={post.coverImage} title={post.title} />
-      </div>
-      <div className="home-card-copy">
-        <div className="home-card-meta">
-          <span>{post.authorName || 'iceaxing'}</span>
-          {post.category?.title && <span>{post.category.title}</span>}
-          {post.project?.title && <span>{post.project.title}</span>}
-        </div>
-        <h3>{post.title}</h3>
-        {post.excerpt && <p>{post.excerpt}</p>}
-        <div className="home-card-foot">
+      </span>
+      <span className="mountain-post-copy">
+        <span className="mountain-post-meta">
+          {post.category?.title || post.authorName || 'iceaxing'}
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, labels.dateLocale)}</time>
-          {post.tags?.slice(0, 3).map((tag) => <span key={tag}>#{tag}</span>)}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function RamblingItem({ post, labels }: { post: SpecialBlogItem; labels: HomeLabels }) {
-  const tags = post.tags?.filter((tag) => tag !== 'daily-ramblings').slice(0, 3) ?? [];
-  const bodyPreview = excerptText(post.bodyText);
-
-  return (
-    <Link href={postHref(post)} className="home-rambling-item">
-      {tags.length > 0 && (
-        <div className="home-rambling-tags">
-          {tags.map((tag) => (
-            <span key={tag}>#{tag}</span>
-          ))}
-        </div>
-      )}
-      <div className="home-rambling-line">
-        <h3>{post.title}</h3>
-        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, labels.dateLocale)}</time>
-      </div>
-      {post.excerpt && <p>{post.excerpt}</p>}
-      {bodyPreview && <div className="home-rambling-body">{bodyPreview}</div>}
+        </span>
+        <strong>{post.title}</strong>
+        {post.excerpt && <span className="mountain-post-excerpt">{post.excerpt}</span>}
+      </span>
+      <span className="mountain-link-arrow" aria-hidden="true">↗</span>
     </Link>
   );
 }
@@ -189,9 +181,7 @@ function MiniCalendar({
 }) {
   const postDates = useMemo(() => new Set(posts.map((post) => dateKey(post.publishedAt))), [posts]);
   const base = selectedDate ? new Date(selectedDate) : new Date();
-  const [monthCursor, setMonthCursor] = useState(
-    new Date(base.getFullYear(), base.getMonth(), 1),
-  );
+  const [monthCursor, setMonthCursor] = useState(new Date(base.getFullYear(), base.getMonth(), 1));
 
   const year = monthCursor.getFullYear();
   const month = monthCursor.getMonth();
@@ -206,33 +196,36 @@ function MiniCalendar({
   ];
 
   return (
-    <section className="home-calendar" aria-labelledby="home-calendar-title">
-      <div className="home-calendar-head">
-        <h2 id="home-calendar-title">{labels.calendar}</h2>
-        <div className="home-calendar-controls">
+    <section className="mountain-calendar" aria-labelledby="mountain-calendar-title">
+      <div className="mountain-calendar-head">
+        <div>
+          <span>{labels.fieldNotes}</span>
+          <h3 id="mountain-calendar-title">{labels.calendar}</h3>
+        </div>
+        <div className="mountain-calendar-controls">
           <button
             type="button"
+            title={labels.previousMonth}
             aria-label={labels.previousMonth}
             onClick={() => setMonthCursor(new Date(year, month - 1, 1))}
           >
-            &lsaquo;
+            ‹
           </button>
+          <strong>{year}.{String(month + 1).padStart(2, '0')}</strong>
           <button
             type="button"
+            title={labels.nextMonth}
             aria-label={labels.nextMonth}
             onClick={() => setMonthCursor(new Date(year, month + 1, 1))}
           >
-            &rsaquo;
+            ›
           </button>
         </div>
       </div>
-      <strong className="home-calendar-month">
-        {year}.{String(month + 1).padStart(2, '0')}
-      </strong>
-      <div className="home-calendar-week" aria-hidden="true">
-        {labels.weekDays.map((day) => <span key={day}>{day}</span>)}
+      <div className="mountain-calendar-week" aria-hidden="true">
+        {labels.weekDays.map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
       </div>
-      <div className="home-calendar-days">
+      <div className="mountain-calendar-days">
         {cells.map((cell, index) => {
           if (!cell) return <span key={`empty-${index}`} />;
           const hasPost = postDates.has(cell);
@@ -254,84 +247,113 @@ function MiniCalendar({
   );
 }
 
-function EntryCard({ entry, labels }: { entry: HomeEntryCard; labels: HomeLabels }) {
+function SkillMarker({ category, index }: { category: HomeCategoryCard; index: number }) {
   return (
-    <Link href={entry.href} className={`home-entry-tile is-${entry.kind}`}>
-      <span>{labels.entryKinds[entry.kind]}</span>
-      <h3>{entry.title}</h3>
-      {entry.intro && <p>{entry.intro}</p>}
-    </Link>
-  );
-}
-
-function CategoryCard({
-  category,
-  labels,
-  variant = 'list',
-}: {
-  category: HomeCategoryCard;
-  labels: HomeLabels;
-  variant?: 'list' | 'photo';
-}) {
-  return (
-    <Link href={`/${category.slug}`} className={`home-taxonomy-card home-taxonomy-card-${variant}`}>
-      <Cover image={category.coverImage} title={category.title} />
+    <Link href={`/${category.slug}`} className="mountain-skill-marker">
+      <span>{String(index + 1).padStart(2, '0')}</span>
       <div>
         <h3>{category.title}</h3>
         {introOf(category) && <p>{introOf(category)}</p>}
-        {category.createdAt && (
-          <time dateTime={category.createdAt}>{formatDate(category.createdAt, labels.dateLocale)}</time>
-        )}
       </div>
+      <i aria-hidden="true" />
     </Link>
   );
 }
 
-function ProjectCard({ project, labels }: { project: HomeProjectCard; labels: HomeLabels }) {
+function ProjectNote({ project, labels, completed = false }: {
+  project: HomeProjectCard;
+  labels: HomeLabels;
+  completed?: boolean;
+}) {
   const progress = Math.max(1, Math.min(5, project.progress || 1));
   return (
-    <Link href={project.category ? `/${project.category.slug}/${project.slug}` : '/'} className="home-project-card">
-      <div>
-        <span>{project.category?.title || labels.project}</span>
-        <h3>{project.title}</h3>
-        {introOf(project) && <p>{introOf(project)}</p>}
-      </div>
-      <div className="home-project-bottom">
-        {project.createdAt && (
-          <time dateTime={project.createdAt}>{formatDate(project.createdAt, labels.dateLocale)}</time>
-        )}
-        <span className="home-progress" aria-label={`${labels.progress} ${progress}/5`}>
-          {Array.from({ length: 5 }, (_, index) => (
-            <i key={index} className={index < progress ? 'is-filled' : ''} />
-          ))}
-        </span>
-      </div>
+    <Link
+      href={project.category ? `/${project.category.slug}/${project.slug}` : '/'}
+      className={`mountain-project-note ${completed ? 'is-completed' : ''}`}
+    >
+      <span className="mountain-project-kicker">
+        {project.category?.title || labels.project}
+        {project.createdAt && <time dateTime={project.createdAt}>{formatDate(project.createdAt, labels.dateLocale)}</time>}
+      </span>
+      <h3>{project.title}</h3>
+      {introOf(project) && <p>{introOf(project)}</p>}
+      <span className="mountain-progress" aria-label={`${labels.progress} ${progress}/5`}>
+        {Array.from({ length: 5 }, (_, index) => (
+          <i key={index} className={index < progress ? 'is-filled' : ''} />
+        ))}
+      </span>
     </Link>
   );
 }
 
-function LifeRecentCard({ post, labels }: { post: SpecialBlogItem; labels: HomeLabels }) {
+function LifeSign({ category, index }: { category: HomeCategoryCard; index: number }) {
   return (
-    <Link href={postHref(post)} className="home-life-post-card">
-      {post.coverImage?.url && (
-        <Image
-          src={post.coverImage.url}
-          alt={post.coverImage.alt || post.title}
-          width={640}
-          height={420}
-          className="home-life-post-bg"
-          unoptimized
-        />
-      )}
-      <div className="home-life-post-copy">
+    <Link href={`/${category.slug}`} className={`mountain-life-sign mountain-life-sign-${(index % 3) + 1}`}>
+      <span>{category.title}</span>
+      <small>{introOf(category)}</small>
+      <i aria-hidden="true" />
+    </Link>
+  );
+}
+
+function LifeJournalCard({ post, labels, index }: {
+  post: SpecialBlogItem;
+  labels: HomeLabels;
+  index: number;
+}) {
+  return (
+    <Link href={postHref(post)} className={`mountain-life-card mountain-life-card-${(index % 3) + 1}`}>
+      <span className="mountain-life-media">
+        {post.coverImage?.url ? (
+          <Image
+            src={post.coverImage.url}
+            alt={post.coverImage.alt || post.title}
+            width={720}
+            height={500}
+            className="mountain-life-image"
+            unoptimized
+          />
+        ) : (
+          <span className="mountain-life-placeholder" aria-hidden="true" />
+        )}
+      </span>
+      <span className="mountain-life-copy">
         <span>{post.category?.title || labels.life}</span>
-        <h3>{post.title}</h3>
-        {post.excerpt && <p>{post.excerpt}</p>}
-      </div>
-      <div className="home-life-post-bottom">
+        <strong>{post.title}</strong>
         <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, labels.dateLocale)}</time>
-        <span className="home-life-post-mark" aria-hidden="true" />
-      </div>
+      </span>
+    </Link>
+  );
+}
+
+function RamblingNote({ post, labels, index }: { post: SpecialBlogItem; labels: HomeLabels; index: number }) {
+  const tags = post.tags?.filter((tag) => tag !== 'daily-ramblings').slice(0, 2) ?? [];
+  return (
+    <Link href={postHref(post)} className="mountain-rambling-note">
+      <span className="mountain-note-index">FIELD NOTE / {String(index + 1).padStart(2, '0')}</span>
+      <h3>{post.title}</h3>
+      {post.excerpt && <p>{post.excerpt}</p>}
+      {!post.excerpt && post.bodyText && <p>{excerptText(post.bodyText)}</p>}
+      <span className="mountain-note-foot">
+        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, labels.dateLocale)}</time>
+        <span>{tags.map((tag) => `#${tag}`).join(' ')}</span>
+      </span>
+    </Link>
+  );
+}
+
+function CampEntry({ entry, labels, index }: {
+  entry: HomeEntryCard;
+  labels: HomeLabels;
+  index: number;
+}) {
+  return (
+    <Link href={entry.href} className="mountain-camp-entry">
+      <span className="mountain-entry-number">0{index + 1}</span>
+      <span className="mountain-entry-kind">{labels.entryKinds[entry.kind]}</span>
+      <h3>{entry.title}</h3>
+      {entry.intro && <p>{entry.intro}</p>}
+      <span className="mountain-link-arrow" aria-hidden="true">↗</span>
     </Link>
   );
 }
@@ -350,6 +372,7 @@ export function HomeDashboard({
   const [lifeSeed, setLifeSeed] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [activeMotto, setActiveMotto] = useState<MottoDoc | undefined>(motto);
+  const [activeChapter, setActiveChapter] = useState<(typeof chapters)[number]['id']>('base-camp');
 
   useEffect(() => {
     if (payload.mottos.length === 0) return;
@@ -358,6 +381,22 @@ export function HomeDashboard({
     }, 0);
     return () => window.clearTimeout(timer);
   }, [payload.mottos]);
+
+  useEffect(() => {
+    const observers = chapters.map((chapter) => {
+      const target = document.getElementById(chapter.id);
+      if (!target) return null;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveChapter(chapter.id);
+        },
+        { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
+      );
+      observer.observe(target);
+      return observer;
+    });
+    return () => observers.forEach((observer) => observer?.disconnect());
+  }, []);
 
   const datePosts = selectedDate
     ? payload.calendarPosts.filter((post) => dateKey(post.publishedAt) === selectedDate).slice(0, 5)
@@ -375,46 +414,58 @@ export function HomeDashboard({
     : pickRandom(payload.lifeRecentPosts, 5, lifeSeed);
 
   return (
-    <div className="home-page">
-      <section className="home-masthead">
-        <div>
-          <h1>iceaxing</h1>
-          {payload.siteIntro && <p className="home-site-intro">{payload.siteIntro}</p>}
-        </div>
-        {activeMotto?.text && (
-          <figure>
-            <blockquote>{activeMotto.text}</blockquote>
-            {activeMotto.source && <figcaption>{activeMotto.source}</figcaption>}
-          </figure>
-        )}
-      </section>
+    <main className="mountain-home">
+      <RouteNavigation activeChapter={activeChapter} labels={labels} />
 
-      <div className="home-top-grid">
-        <section className="home-feature-zone" aria-labelledby="home-special-title">
-          <SectionTitle
-            title={selectedDate ? `${selectedDate} : ${labels.postsOnDate}` : labels.featured}
-            labels={labels}
-            action={(
+      <section id="base-camp" className="mountain-chapter mountain-base-camp" aria-labelledby="mountain-site-title">
+        <div className="mountain-photo-credit" aria-hidden="true">N 46° / BASE ROUTE</div>
+        <div className="mountain-base-layout">
+          <div className="mountain-hero-copy">
+            <span className="mountain-hero-altitude">3200m / {labels.chapterNames[0]}</span>
+            <h1 id="mountain-site-title">iceaxing</h1>
+            {payload.siteIntro && <p className="mountain-site-intro">{payload.siteIntro}</p>}
+            {activeMotto?.text && (
+              <figure className="mountain-motto">
+                <blockquote>{activeMotto.text}</blockquote>
+                {activeMotto.source && <figcaption>{activeMotto.source}</figcaption>}
+              </figure>
+            )}
+            <a href="#technical-ridge" className="mountain-next-link">
+              <span>{labels.nextCamp}</span>
+              <i aria-hidden="true">↓</i>
+            </a>
+          </div>
+
+          <div className="mountain-dispatch-panel">
+            <div className="mountain-section-bar">
+              <div>
+                <span>{labels.dispatch}</span>
+                <h2>{selectedDate ? `${selectedDate} / ${labels.postsOnDate}` : labels.featured}</h2>
+              </div>
               <button
                 type="button"
-                className="home-refresh"
+                className="mountain-icon-button"
+                title={labels.refresh}
+                aria-label={labels.refresh}
                 onClick={() => {
                   setSelectedDate(null);
                   setSpecialSeed((seed) => seed + 1);
                 }}
               >
-                {labels.refresh}
+                ↻
               </button>
-            )}
-          />
-          <div className="home-feature-list">
-            {specialPosts.length > 0 ? (
-              specialPosts.map((post) => <ArticleCard key={post._id} post={post} labels={labels} />)
-            ) : (
-              <p className="home-empty-note">{labels.noPosts}</p>
-            )}
+            </div>
+            <div className="mountain-post-list">
+              {specialPosts.length > 0 ? (
+                specialPosts.map((post, index) => (
+                  <PostLogRow key={post._id} post={post} labels={labels} index={index} />
+                ))
+              ) : (
+                <p className="mountain-empty-note">{labels.noPosts}</p>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
 
         <MiniCalendar
           posts={payload.calendarPosts}
@@ -422,103 +473,154 @@ export function HomeDashboard({
           onSelectDate={setSelectedDate}
           labels={labels}
         />
-      </div>
-
-      <section className="home-entry-strip" aria-label="Entry links">
-        <div className="home-entry-strip-grid">
-          {payload.entryCards.map((entry) => <EntryCard key={entry._id} entry={entry} labels={labels} />)}
-        </div>
       </section>
 
-      <div className="home-mid-grid">
-        <section className="home-skills" aria-labelledby="home-skills-title">
-          <SectionTitle title={labels.skills} labels={labels} />
-          <div className="home-taxonomy-list">
-            {payload.skillCategories.map((category) => (
-              <CategoryCard key={category._id} category={category} labels={labels} />
-            ))}
-          </div>
-        </section>
+      <section id="technical-ridge" className="mountain-chapter mountain-technical-ridge" aria-labelledby="technical-ridge-title">
+        <div className="mountain-chapter-inner">
+          <ChapterHeading
+            index={1}
+            title={labels.chapterNames[1]}
+            detail={`${labels.skills} / ${labels.ongoingProjects} / ${labels.completedProjects}`}
+          />
 
-        <div className="home-project-column">
-          <section className="home-projects" aria-labelledby="home-ongoing-title">
-            <SectionTitle title={labels.ongoingProjects} labels={labels} />
-            <div className="home-project-list">
-              {payload.ongoingProjects.slice(0, 5).map((project) => (
-                <ProjectCard key={project._id} project={project} labels={labels} />
-              ))}
-            </div>
-          </section>
+          <div className="mountain-ridge-layout">
+            <section className="mountain-skill-route" aria-labelledby="technical-ridge-title">
+              <div className="mountain-route-line" aria-hidden="true" />
+              <div className="mountain-subheading">
+                <span>BASE / 01</span>
+                <h3 id="technical-ridge-title">{labels.skills}</h3>
+              </div>
+              <div className="mountain-skill-list">
+                {payload.skillCategories.map((category, index) => (
+                  <SkillMarker key={category._id} category={category} index={index} />
+                ))}
+              </div>
+            </section>
 
-          <section className="home-projects" aria-labelledby="home-completed-title">
-            <SectionTitle
-              title={labels.completedProjects}
-              labels={labels}
-              action={(
+            <section className="mountain-project-route" aria-labelledby="ongoing-projects-title">
+              <div className="mountain-subheading">
+                <span>ASCENT / 02</span>
+                <h3 id="ongoing-projects-title">{labels.ongoingProjects}</h3>
+              </div>
+              <div className="mountain-project-stack">
+                {payload.ongoingProjects.slice(0, 5).map((project) => (
+                  <ProjectNote key={project._id} project={project} labels={labels} />
+                ))}
+              </div>
+            </section>
+
+            <section className="mountain-summit-log" aria-labelledby="completed-projects-title">
+              <div className="mountain-subheading">
+                <span>SUMMIT / 03</span>
+                <h3 id="completed-projects-title">{labels.completedProjects}</h3>
                 <button
                   type="button"
-                  className="home-refresh"
+                  className="mountain-icon-button"
+                  title={labels.refresh}
+                  aria-label={labels.refresh}
                   onClick={() => setCompletedSeed((seed) => seed + 1)}
                 >
-                  {labels.refresh}
+                  ↻
                 </button>
-              )}
-            />
-            <div className="home-project-list">
-              {completedProjects.map((project) => (
-                <ProjectCard key={project._id} project={project} labels={labels} />
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-
-      <section className="home-ramblings" aria-labelledby="home-ramblings-title">
-        <div className="home-ramblings-layout">
-          <div className="home-rambling-grid">
-            {payload.ramblingPosts.slice(0, 3).map((post) => (
-              <RamblingItem key={post._id} post={post} labels={labels} />
-            ))}
-          </div>
-          <div className={`home-ramblings-side is-${labels.ramblingsTitleMode}`}>
-            <h2 id="home-ramblings-title">
-              <Link href="/daily-ramblings">{labels.ramblings}</Link>
-            </h2>
+              </div>
+              <div className="mountain-completed-grid">
+                {completedProjects.map((project) => (
+                  <ProjectNote key={project._id} project={project} labels={labels} completed />
+                ))}
+              </div>
+            </section>
           </div>
         </div>
       </section>
 
-      <div className="home-life-row">
-        <section className="home-life" aria-labelledby="home-life-title">
-          <SectionTitle title={labels.life} labels={labels} />
-          <div className="home-life-grid">
-            {payload.lifeCategories.map((category) => (
-              <CategoryCard key={category._id} category={category} labels={labels} variant="photo" />
-            ))}
-          </div>
-        </section>
-
-        <section className="home-life-recent" aria-labelledby="home-life-recent-title">
-          <SectionTitle
-            title={labels.lifeRecent}
-            labels={labels}
-            action={(
-              <button
-                type="button"
-                className="home-refresh"
-                onClick={() => setLifeSeed((seed) => seed + 1)}
-              >
-                {labels.refresh}
-              </button>
-            )}
+      <section id="snowfield-traverse" className="mountain-chapter mountain-snowfield" aria-labelledby="snowfield-title">
+        <div className="mountain-chapter-inner">
+          <ChapterHeading
+            index={2}
+            title={labels.chapterNames[2]}
+            detail={`${labels.life} / ${labels.lifeRecent}`}
           />
-          <div className="home-life-post-list">
-            {lifeRecentPosts.map((post) => (
-              <LifeRecentCard key={post._id} post={post} labels={labels} />
-            ))}
+
+          <div className="mountain-snowfield-layout">
+            <section className="mountain-life-signs" aria-labelledby="snowfield-title">
+              <div className="mountain-subheading">
+                <span>TRAIL MARKERS</span>
+                <h3 id="snowfield-title">{labels.life}</h3>
+              </div>
+              <div className="mountain-sign-list">
+                {payload.lifeCategories.map((category, index) => (
+                  <LifeSign key={category._id} category={category} index={index} />
+                ))}
+              </div>
+            </section>
+
+            <section className="mountain-life-journal" aria-labelledby="life-journal-title">
+              <div className="mountain-section-bar">
+                <div>
+                  <span>VISUAL JOURNAL</span>
+                  <h3 id="life-journal-title">{labels.lifeRecent}</h3>
+                </div>
+                <button
+                  type="button"
+                  className="mountain-icon-button"
+                  title={labels.refresh}
+                  aria-label={labels.refresh}
+                  onClick={() => setLifeSeed((seed) => seed + 1)}
+                >
+                  ↻
+                </button>
+              </div>
+              <div className="mountain-life-grid">
+                {lifeRecentPosts.map((post, index) => (
+                  <LifeJournalCard key={post._id} post={post} labels={labels} index={index} />
+                ))}
+              </div>
+            </section>
           </div>
-        </section>
-      </div>
-    </div>
+        </div>
+      </section>
+
+      <section id="night-camp" className="mountain-chapter mountain-night-camp" aria-labelledby="night-camp-title">
+        <div className="mountain-stars" aria-hidden="true" />
+        <div className="mountain-chapter-inner">
+          <ChapterHeading
+            index={3}
+            title={labels.chapterNames[3]}
+            detail={`${labels.ramblings} / ${payload.entryCards.map((entry) => labels.entryKinds[entry.kind]).join(' / ')}`}
+          />
+
+          <div className="mountain-night-layout">
+            <section className="mountain-field-notes" aria-labelledby="night-camp-title">
+              <div className="mountain-subheading">
+                <span>{labels.fieldNotes}</span>
+                <h3 id="night-camp-title">
+                  <Link href="/daily-ramblings">{labels.ramblings}</Link>
+                </h3>
+              </div>
+              <div className="mountain-note-list">
+                {payload.ramblingPosts.slice(0, 3).map((post, index) => (
+                  <RamblingNote key={post._id} post={post} labels={labels} index={index} />
+                ))}
+              </div>
+            </section>
+
+            <section className="mountain-camp-map" aria-label="Camp destinations">
+              <span className="mountain-camp-light" aria-hidden="true" />
+              <div className="mountain-entry-grid">
+                {payload.entryCards.map((entry, index) => (
+                  <CampEntry key={entry._id} entry={entry} labels={labels} index={index} />
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <footer className="mountain-home-footer">
+          <span>iceaxing</span>
+          <span>3200m → 6200m</span>
+          <a href="#base-camp">↑ TOP</a>
+        </footer>
+      </section>
+    </main>
   );
 }

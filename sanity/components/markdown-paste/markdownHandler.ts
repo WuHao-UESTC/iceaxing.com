@@ -1,3 +1,8 @@
+import MarkdownIt from 'markdown-it';
+import markdownItKatexExport from '@vscode/markdown-it-katex';
+
+type MarkDef = { _key: string; _type: string; href?: string };
+
 type PtBlock = {
   _key: string;
   _type: string;
@@ -8,95 +13,115 @@ type PtBlock = {
     _type: string;
     marks?: string[];
   }>;
-  markDefs?: Array<{ _key: string; _type: string; href?: string }>;
+  markDefs?: MarkDef[];
   level?: number;
   listItem?: string;
   [key: string]: unknown;
 };
 
-type ParsedSpan = { text: string; marks: string[]; markDef?: { _key: string; _type: string; href: string } };
+type ParsedSpan = { text: string; marks: string[] };
+
+const markdownItKatex = (
+  markdownItKatexExport as typeof markdownItKatexExport & {
+    default?: typeof markdownItKatexExport;
+  }
+).default ?? markdownItKatexExport;
+
+const markdown = new MarkdownIt({
+  html: false,
+  linkify: false,
+  typographer: false,
+}).use(markdownItKatex, { throwOnError: false });
 
 function generateKey() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function parseInline(text: string): ParsedSpan[] {
+function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] } {
   const spans: ParsedSpan[] = [];
-  let cursor = 0;
+  const markDefs: MarkDef[] = [];
+  const activeMarks: string[] = [];
+  const linkMarks: string[] = [];
+  const tokens = markdown.parseInline(text, {})[0]?.children ?? [];
 
-  while (cursor < text.length) {
-    const strikeMatch = text.slice(cursor).match(/^~~(.+?)~~/);
-    const boldStarMatch = text.slice(cursor).match(/^\*\*(.+?)\*\*/);
-    const boldUndMatch = text.slice(cursor).match(/^__(.+?)__/);
-    const italicStarMatch = text.slice(cursor).match(/^\*(.+?)\*/);
-    const italicUndMatch = text.slice(cursor).match(/^_(.+?)_/);
-    const codeMatch = text.slice(cursor).match(/^`(.+?)`/);
-    const linkMatch = text.slice(cursor).match(/^\[([^\]]+)\]\(([^)]+)\)/);
+  const pushSpan = (content: string, extraMarks: string[] = []) => {
+    if (!content) return;
+    spans.push({ text: content, marks: [...activeMarks, ...extraMarks] });
+  };
 
-    type MatchEntry = {
-      type: 'strong' | 'em' | 'code' | 'strike-through' | 'link';
-      match: RegExpMatchArray;
-      len: number;
-      url?: string;
-      markKey?: string;
-    };
+  const closeMark = (mark: string) => {
+    const index = activeMarks.lastIndexOf(mark);
+    if (index >= 0) activeMarks.splice(index, 1);
+  };
 
-    const candidates: MatchEntry[] = [
-      { type: 'strike-through', match: strikeMatch!, len: strikeMatch?.[0]?.length || 0 },
-      { type: 'strong', match: boldStarMatch!, len: boldStarMatch?.[0]?.length || 0 },
-      { type: 'strong', match: boldUndMatch!, len: boldUndMatch?.[0]?.length || 0 },
-      { type: 'em', match: italicStarMatch!, len: italicStarMatch?.[0]?.length || 0 },
-      { type: 'em', match: italicUndMatch!, len: italicUndMatch?.[0]?.length || 0 },
-      { type: 'code', match: codeMatch!, len: codeMatch?.[0]?.length || 0 },
-    ];
-
-    if (linkMatch) {
-      const linkKey = generateKey();
-      candidates.push({ type: 'link', match: linkMatch, len: linkMatch[0].length, markKey: linkKey });
-    }
-
-    const earliest = candidates
-      .filter((x) => x.match)
-      .sort((a, b) => (a.match.index || 999999) - (b.match.index || 999999))[0];
-
-    if (earliest) {
-      const idx = earliest.match.index || 0;
-      if (idx > 0) {
-        spans.push({ text: text.slice(cursor, cursor + idx), marks: [] });
-      }
-      if (earliest.type === 'link') {
-        spans.push({
-          text: earliest.match[1],
-          marks: [earliest.markKey!],
-          markDef: { _key: earliest.markKey!, _type: 'link', href: earliest.match[2] },
+  for (const token of tokens) {
+    switch (token.type) {
+      case 'text':
+        pushSpan(token.content);
+        break;
+      case 'strong_open':
+        activeMarks.push('strong');
+        break;
+      case 'strong_close':
+        closeMark('strong');
+        break;
+      case 'em_open':
+        activeMarks.push('em');
+        break;
+      case 'em_close':
+        closeMark('em');
+        break;
+      case 's_open':
+        activeMarks.push('strike-through');
+        break;
+      case 's_close':
+        closeMark('strike-through');
+        break;
+      case 'code_inline':
+        pushSpan(token.content, ['code']);
+        break;
+      case 'math_inline':
+      case 'math_inline_block':
+        pushSpan(token.content.trim(), ['inlineMath']);
+        break;
+      case 'link_open': {
+        const key = generateKey();
+        markDefs.push({
+          _key: key,
+          _type: 'link',
+          href: token.attrGet('href') ?? '',
         });
-      } else {
-        spans.push({ text: earliest.match[1], marks: [earliest.type] });
+        activeMarks.push(key);
+        linkMarks.push(key);
+        break;
       }
-      cursor += idx + earliest.len;
-    } else {
-      spans.push({ text: text.slice(cursor), marks: [] });
-      break;
+      case 'link_close': {
+        const key = linkMarks.pop();
+        if (key) closeMark(key);
+        break;
+      }
+      case 'softbreak':
+      case 'hardbreak':
+        pushSpan('\n');
+        break;
+      case 'image':
+        pushSpan(token.content);
+        break;
     }
   }
 
   if (spans.length === 0) spans.push({ text, marks: [] });
-  return spans.filter((s) => s.text !== '');
+  return { spans, markDefs };
 }
 
 function textBlock(text: string, style?: string): PtBlock {
   const parsed = parseInline(text);
-  const markDefs: PtBlock['markDefs'] = [];
-
-  const children = parsed.map((s) => {
-    if (s.markDef) {
-      markDefs.push(s.markDef);
-    }
+  const children = parsed.spans.map((span) => {
     return {
-      text: s.text,
+      text: span.text,
       _key: generateKey(),
       _type: 'span' as const,
-      marks: s.marks.length > 0 ? s.marks : undefined,
+      marks: span.marks.length > 0 ? span.marks : undefined,
     };
   });
 
@@ -107,11 +132,57 @@ function textBlock(text: string, style?: string): PtBlock {
     children: children.length > 0 ? children : [{ text: '', _key: generateKey(), _type: 'span' }],
   };
 
-  if (markDefs.length > 0) {
-    block.markDefs = markDefs;
+  if (parsed.markDefs.length > 0) {
+    block.markDefs = parsed.markDefs;
   }
 
   return block;
+}
+
+export function hasMarkdownSyntax(text: string): boolean {
+  const blockSyntax = new Set([
+    'blockquote_open',
+    'bullet_list_open',
+    'fence',
+    'heading_open',
+    'hr',
+    'math_block',
+    'ordered_list_open',
+    'table_open',
+  ]);
+  const inlineSyntax = new Set([
+    'code_inline',
+    'em_open',
+    'image',
+    'link_open',
+    'math_inline',
+    'math_inline_block',
+    's_open',
+    'strong_open',
+  ]);
+
+  return markdown.parse(text, {}).some(
+    (token) =>
+      blockSyntax.has(token.type) ||
+      token.children?.some((child) => inlineSyntax.has(child.type)),
+  );
+}
+
+function readDisplayMath(lines: string[], start: number) {
+  const firstToken = markdown.parse(lines.slice(start).join('\n'), {})[0];
+  if (
+    firstToken?.type !== 'math_block' ||
+    !firstToken.map ||
+    firstToken.map[0] !== 0 ||
+    !firstToken.content.trim()
+  ) {
+    return null;
+  }
+
+  return {
+    formula: firstToken.content.trim(),
+    nextIndex: start + firstToken.map[1],
+  };
 }
 
 /** Count leading whitespace to determine nesting level (1 tab = 2 spaces). */
@@ -132,6 +203,17 @@ export function markdownToPortableText(md: string): PtBlock[] {
 
   while (i < lines.length) {
     const line = lines[i];
+
+    const displayMath = readDisplayMath(lines, i);
+    if (displayMath) {
+      blocks.push({
+        _key: generateKey(),
+        _type: 'mathBlock',
+        formula: displayMath.formula,
+      });
+      i = displayMath.nextIndex;
+      continue;
+    }
 
     // Code fence
     if (line.trim().startsWith('```')) {

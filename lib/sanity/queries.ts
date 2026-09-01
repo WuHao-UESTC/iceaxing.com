@@ -50,7 +50,12 @@ const categoryProjection = groq`{
 }`;
 
 export async function getAllCategories(locale = 'zh'): Promise<CategoryDoc[]> {
-  return client.fetch(groq`*[_type == "category"] | order(order) ${categoryProjection}`, { locale });
+  try {
+    return await client.fetch(groq`*[_type == "category"] | order(order) ${categoryProjection}`, { locale });
+  } catch (error) {
+    console.warn('[sanity] Unable to load categories; rendering without category navigation.', error);
+    return [];
+  }
 }
 
 export async function getSpecialBlogsByCategory(locale = 'zh'): Promise<SpecialCategorySection[]> {
@@ -463,7 +468,8 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
     "category": category->{"title": ${localizedString('title')}, "slug": slug.current}
   }`;
 
-  return client.fetch(groq`{
+  try {
+    return await client.fetch(groq`{
     "siteSettings": *[_type == "siteSettings"][0]{
       "homeIntro": ${localizedString('homeIntro')},
       "logEntryTitle": ${localizedString('logEntryTitle')},
@@ -565,7 +571,23 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
     ramblingPosts,
     lifeCategories,
     lifeRecentPosts
-  }`, { locale });
+    }`, { locale });
+  } catch (error) {
+    console.warn('[sanity] Unable to load homepage content; rendering an empty home state.', error);
+    return {
+      siteIntro: undefined,
+      mottos: [],
+      specialPosts: [],
+      calendarPosts: [],
+      entryCards: [],
+      skillCategories: [],
+      ongoingProjects: [],
+      completedProjects: [],
+      ramblingPosts: [],
+      lifeCategories: [],
+      lifeRecentPosts: [],
+    };
+  }
 }
 
 export async function getSubscriptionOptions(locale = 'zh'): Promise<SubscriptionOption[]> {

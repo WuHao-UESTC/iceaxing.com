@@ -1,4 +1,6 @@
 import { defineField, defineType } from 'sanity';
+import { SlashCommandInput } from '../../components/slash-commands/SlashCommandInput';
+import { portableTextBlock } from '../portable-text-block';
 
 export default defineType({
   name: 'columns',
@@ -19,8 +21,9 @@ export default defineType({
               name: 'content',
               title: '内容',
               type: 'array',
+              components: { input: SlashCommandInput },
               of: [
-                { type: 'block' },
+                portableTextBlock(),
                 { type: 'image' },
                 { type: 'mindmap' },
                 { type: 'mathBlock' },

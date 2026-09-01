@@ -937,6 +937,1323 @@
   }
 }
 
+/* Above the Snowline homepage */
+.mountain-home {
+  --mountain-ink: #f6fbff;
+  --mountain-muted: rgba(246, 251, 255, 0.72);
+  --mountain-line: rgba(246, 251, 255, 0.3);
+  --mountain-panel: rgba(8, 30, 51, 0.78);
+  --mountain-panel-soft: rgba(8, 30, 51, 0.58);
+  position: relative;
+  overflow: clip;
+  color: var(--mountain-ink);
+  background: #09243b;
+}
+
+.mountain-chapter {
+  position: relative;
+  min-height: max(760px, 100svh);
+  isolation: isolate;
+  background-color: #123b5a;
+  background-position: center;
+  background-size: cover;
+  scroll-margin-top: 1rem;
+}
+
+.mountain-chapter::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background: rgba(5, 20, 34, 0.26);
+}
+
+.mountain-base-camp {
+  background-image: url('/images/mountain-home/base-camp.jpg');
+  background-position: center 42%;
+}
+
+.mountain-technical-ridge {
+  background-image: url('/images/mountain-home/technical-ridge.jpg');
+  background-position: center 48%;
+}
+
+.mountain-snowfield {
+  background-image: url('/images/mountain-home/snowfield.jpg');
+  background-position: center 45%;
+}
+
+.mountain-night-camp {
+  background-image: url('/images/mountain-home/night-camp.jpg');
+  background-position: center 46%;
+  background-color: #071324;
+}
+
+.mountain-night-camp::before {
+  background: rgba(3, 12, 25, 0.7);
+}
+
+.mountain-chapter-inner,
+.mountain-base-layout {
+  width: min(1180px, calc(100% - 72px));
+  margin: 0 auto;
+}
+
+.mountain-base-camp {
+  display: grid;
+  align-items: center;
+  padding: 110px 0 72px;
+}
+
+.mountain-base-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(480px, 1.1fr);
+  gap: clamp(42px, 8vw, 140px);
+  align-items: center;
+}
+
+.mountain-photo-credit {
+  position: absolute;
+  top: 112px;
+  right: 28px;
+  color: rgba(246, 251, 255, 0.58);
+  font: 0.68rem/1 var(--font-mono-stack);
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+}
+
+.mountain-hero-copy {
+  max-width: 520px;
+}
+
+.mountain-hero-altitude,
+.mountain-chapter-index,
+.mountain-altitude,
+.mountain-subheading > span,
+.mountain-dispatch-panel > .mountain-section-bar > div > span,
+.mountain-section-bar > div > span,
+.mountain-note-index,
+.mountain-entry-kind,
+.mountain-post-meta,
+.mountain-project-kicker,
+.mountain-route-title,
+.mountain-route-copy,
+.mountain-home-footer {
+  font-family: var(--font-mono-stack);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mountain-hero-altitude {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: #f4c95d;
+  font-size: 0.72rem;
+}
+
+.mountain-hero-copy h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-serif-en);
+  font-size: clamp(5rem, 13vw, 10rem);
+  font-weight: 600;
+  line-height: 0.78;
+  letter-spacing: 0;
+}
+
+.mountain-site-intro {
+  max-width: 36ch;
+  margin: 34px 0 0;
+  color: var(--mountain-muted);
+  font-size: clamp(1rem, 1.6vw, 1.24rem);
+  line-height: 1.8;
+}
+
+.mountain-motto {
+  max-width: 35ch;
+  margin: 42px 0 0;
+  padding-left: 18px;
+  border-left: 2px solid #f4c95d;
+}
+
+.mountain-motto blockquote {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-serif-cn);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.mountain-motto figcaption {
+  margin-top: 10px;
+  color: rgba(246, 251, 255, 0.58);
+  font: 0.72rem/1.5 var(--font-mono-stack);
+}
+
+.mountain-next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 52px;
+  color: #fff;
+  font: 0.72rem/1 var(--font-mono-stack);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mountain-next-link i {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--mountain-line);
+  border-radius: 50%;
+  font-style: normal;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.mountain-next-link:hover i {
+  background: rgba(246, 251, 255, 0.14);
+  transform: translateY(3px);
+}
+
+.mountain-dispatch-panel,
+.mountain-calendar {
+  border: 1px solid var(--mountain-line);
+  background: var(--mountain-panel);
+  backdrop-filter: blur(14px);
+}
+
+.mountain-dispatch-panel {
+  min-width: 0;
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.mountain-section-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--mountain-line);
+}
+
+.mountain-section-bar > div > span,
+.mountain-dispatch-panel > .mountain-section-bar > div > span {
+  color: #f4c95d;
+  font-size: 0.63rem;
+}
+
+.mountain-section-bar h2,
+.mountain-section-bar h3,
+.mountain-subheading h3 {
+  margin: 7px 0 0;
+  color: #fff;
+  font-family: var(--font-serif-cn);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.mountain-icon-button {
+  display: grid;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--mountain-line);
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.mountain-icon-button:hover {
+  background: rgba(246, 251, 255, 0.14);
+  transform: rotate(35deg);
+}
+
+.mountain-post-list {
+  display: grid;
+}
+
+.mountain-post-row {
+  display: grid;
+  grid-template-columns: 28px 78px minmax(0, 1fr) 20px;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(246, 251, 255, 0.16);
+  color: inherit;
+  transition: background-color 180ms ease, padding 180ms ease;
+}
+
+.mountain-post-row:last-child {
+  border-bottom: 0;
+}
+
+.mountain-post-row:hover {
+  padding-right: 8px;
+  padding-left: 8px;
+  background: rgba(246, 251, 255, 0.08);
+}
+
+.mountain-post-number {
+  color: rgba(246, 251, 255, 0.52);
+  font: 0.7rem/1 var(--font-mono-stack);
+}
+
+.mountain-post-thumb {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: rgba(246, 251, 255, 0.12);
+}
+
+.mountain-post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 280ms ease;
+}
+
+.mountain-post-row:hover .mountain-post-image {
+  transform: scale(1.06);
+}
+
+.mountain-post-copy {
+  min-width: 0;
+}
+
+.mountain-post-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(246, 251, 255, 0.56);
+  font-size: 0.58rem;
+}
+
+.mountain-post-copy strong {
+  display: block;
+  margin-top: 7px;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--font-serif-cn);
+  font-size: 1rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mountain-post-excerpt {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: rgba(246, 251, 255, 0.64);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mountain-link-arrow {
+  color: #f4c95d;
+  font-size: 1.1rem;
+}
+
+.mountain-empty-note {
+  margin: 24px 0 8px;
+  color: var(--mountain-muted);
+}
+
+.mountain-calendar {
+  position: absolute;
+  right: max(36px, calc((100vw - 1180px) / 2));
+  bottom: 34px;
+  width: 270px;
+  padding: 18px;
+  background: var(--mountain-panel-soft);
+}
+
+.mountain-calendar-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mountain-calendar-head span {
+  color: #f4c95d;
+  font: 0.58rem/1 var(--font-mono-stack);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mountain-calendar-head h3 {
+  margin: 7px 0 0;
+  color: #fff;
+  font-family: var(--font-serif-cn);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.mountain-calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font: 0.65rem/1 var(--font-mono-stack);
+}
+
+.mountain-calendar-controls button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid var(--mountain-line);
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.mountain-calendar-week,
+.mountain-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.mountain-calendar-week {
+  color: rgba(246, 251, 255, 0.5);
+  font: 0.56rem/1 var(--font-mono-stack);
+}
+
+.mountain-calendar-days {
+  margin-top: 8px;
+}
+
+.mountain-calendar-days > span,
+.mountain-calendar-days button {
+  display: grid;
+  min-height: 25px;
+  place-items: center;
+}
+
+.mountain-calendar-days button {
+  position: relative;
+  border: 0;
+  color: rgba(246, 251, 255, 0.7);
+  background: transparent;
+  cursor: pointer;
+  font: 0.68rem/1 var(--font-mono-stack);
+}
+
+.mountain-calendar-days button.has-post::after {
+  position: absolute;
+  bottom: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f4c95d;
+  content: '';
+}
+
+.mountain-calendar-days button.is-active {
+  color: #08213a;
+  background: #f4c95d;
+}
+
+.mountain-chapter-inner {
+  padding: 110px 0 100px;
+}
+
+.mountain-chapter-heading {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  max-width: 620px;
+}
+
+.mountain-chapter-index {
+  padding-top: 8px;
+  color: #f4c95d;
+  font-size: 0.7rem;
+}
+
+.mountain-altitude {
+  color: rgba(246, 251, 255, 0.66);
+  font-size: 0.65rem;
+}
+
+.mountain-chapter-heading h2 {
+  margin: 10px 0 0;
+  color: #fff;
+  font-family: var(--font-serif-cn);
+  font-size: clamp(2.8rem, 6vw, 5.8rem);
+  font-weight: 500;
+  line-height: 0.98;
+}
+
+.mountain-chapter-heading p {
+  margin: 18px 0 0;
+  color: var(--mountain-muted);
+  font-size: 0.95rem;
+}
+
+.mountain-ridge-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr 0.95fr;
+  gap: 34px;
+  margin-top: 86px;
+}
+
+.mountain-skill-route,
+.mountain-project-route,
+.mountain-summit-log,
+.mountain-life-signs,
+.mountain-life-journal,
+.mountain-field-notes {
+  position: relative;
+}
+
+.mountain-route-line {
+  position: absolute;
+  top: 58px;
+  bottom: 12px;
+  left: 8px;
+  width: 1px;
+  background: rgba(246, 251, 255, 0.48);
+}
+
+.mountain-subheading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--mountain-line);
+}
+
+.mountain-subheading > span {
+  color: #f4c95d;
+  font-size: 0.62rem;
+}
+
+.mountain-subheading h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.55rem;
+}
+
+.mountain-skill-list {
+  display: grid;
+  gap: 3px;
+  margin-top: 28px;
+}
+
+.mountain-skill-marker {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 16px;
+  gap: 12px;
+  align-items: center;
+  padding: 18px 14px 18px 0;
+  color: #fff;
+  transition: background-color 180ms ease, padding-left 180ms ease;
+}
+
+.mountain-skill-marker:hover {
+  padding-left: 10px;
+  background: rgba(246, 251, 255, 0.1);
+}
+
+.mountain-skill-marker > span {
+  color: rgba(246, 251, 255, 0.56);
+  font: 0.65rem/1 var(--font-mono-stack);
+  text-align: center;
+}
+
+.mountain-skill-marker h3,
+.mountain-project-note h3,
+.mountain-life-sign span,
+.mountain-rambling-note h3,
+.mountain-camp-entry h3 {
+  margin: 0;
+  font-family: var(--font-serif-cn);
+  font-weight: 500;
+}
+
+.mountain-skill-marker h3 {
+  color: #fff;
+  font-size: 1.04rem;
+}
+
+.mountain-skill-marker p {
+  display: -webkit-box;
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: var(--mountain-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mountain-skill-marker i {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #f4c95d;
+  border-radius: 50%;
+}
+
+.mountain-project-stack {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.mountain-project-note {
+  display: block;
+  padding: 18px 18px 17px;
+  border: 1px solid rgba(246, 251, 255, 0.25);
+  color: #fff;
+  background: rgba(4, 22, 39, 0.42);
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.mountain-project-note:hover {
+  background: rgba(4, 22, 39, 0.72);
+  transform: translateY(-3px);
+}
+
+.mountain-project-kicker {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(246, 251, 255, 0.58);
+  font-size: 0.58rem;
+}
+
+.mountain-project-note h3 {
+  margin-top: 12px;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.mountain-project-note p {
+  margin: 7px 0 0;
+  color: var(--mountain-muted);
+  font-size: 0.83rem;
+  line-height: 1.65;
+}
+
+.mountain-progress {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.mountain-progress i {
+  display: block;
+  width: 22px;
+  height: 3px;
+  background: rgba(246, 251, 255, 0.25);
+}
+
+.mountain-progress i.is-filled {
+  background: #f4c95d;
+}
+
+.mountain-completed-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.mountain-project-note.is-completed {
+  border-color: rgba(244, 201, 93, 0.5);
+  background: rgba(244, 201, 93, 0.1);
+}
+
+.mountain-project-note.is-completed .mountain-project-kicker {
+  color: #f4c95d;
+}
+
+.mountain-snowfield {
+  color: #0f3148;
+}
+
+.mountain-snowfield::before {
+  background: rgba(229, 243, 251, 0.34);
+}
+
+.mountain-snowfield .mountain-chapter-heading h2,
+.mountain-snowfield .mountain-section-bar h3,
+.mountain-snowfield .mountain-subheading h3,
+.mountain-snowfield .mountain-life-sign span,
+.mountain-snowfield .mountain-life-card strong {
+  color: #102d42;
+}
+
+.mountain-snowfield .mountain-chapter-heading p,
+.mountain-snowfield .mountain-life-card time,
+.mountain-snowfield .mountain-life-sign small {
+  color: rgba(16, 45, 66, 0.7);
+}
+
+.mountain-snowfield .mountain-chapter-index,
+.mountain-snowfield .mountain-altitude,
+.mountain-snowfield .mountain-subheading > span,
+.mountain-snowfield .mountain-section-bar > div > span {
+  color: #1b6b96;
+}
+
+.mountain-snowfield .mountain-subheading,
+.mountain-snowfield .mountain-section-bar {
+  border-color: rgba(16, 45, 66, 0.28);
+}
+
+.mountain-snowfield .mountain-icon-button {
+  border-color: rgba(16, 45, 66, 0.32);
+  color: #102d42;
+}
+
+.mountain-snowfield .mountain-icon-button:hover {
+  background: rgba(16, 45, 66, 0.1);
+}
+
+.mountain-snowfield .mountain-life-journal {
+  padding: 24px;
+  border: 1px solid rgba(16, 45, 66, 0.22);
+  background: rgba(246, 252, 255, 0.64);
+  backdrop-filter: blur(10px);
+}
+
+.mountain-snowfield .mountain-life-signs {
+  padding: 24px 0;
+}
+
+.mountain-snowfield .mountain-sign-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+  align-items: start;
+}
+
+.mountain-life-sign {
+  display: grid;
+  min-width: 130px;
+  max-width: 180px;
+  min-height: 160px;
+  align-content: start;
+  gap: 10px;
+  padding: 16px;
+  border-left: 6px solid #2f78a5;
+  color: #102d42;
+  background: rgba(246, 252, 255, 0.74);
+  box-shadow: 0 12px 26px rgba(16, 45, 66, 0.1);
+  transition: transform 180ms ease;
+}
+
+.mountain-life-sign:hover {
+  transform: translateY(-8px) rotate(-1deg);
+}
+
+.mountain-life-sign-2 {
+  margin-top: 38px;
+  border-color: #679dbb;
+}
+
+.mountain-life-sign-3 {
+  margin-top: 12px;
+  border-color: #1a4e70;
+}
+
+.mountain-life-sign span {
+  font-size: 1.05rem;
+}
+
+.mountain-life-sign small {
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.mountain-life-sign i {
+  width: 28px;
+  height: 1px;
+  margin-top: auto;
+  background: currentColor;
+}
+
+.mountain-life-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.mountain-life-card {
+  position: relative;
+  display: block;
+  min-height: 230px;
+  overflow: hidden;
+  color: #fff;
+  background: #244a62;
+}
+
+.mountain-life-card-1,
+.mountain-life-card-4 {
+  grid-column: span 3;
+}
+
+.mountain-life-card-2,
+.mountain-life-card-3,
+.mountain-life-card-5 {
+  grid-column: span 2;
+}
+
+.mountain-life-media,
+.mountain-life-image,
+.mountain-life-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mountain-life-image {
+  object-fit: cover;
+  transition: transform 320ms ease;
+}
+
+.mountain-life-card:hover .mountain-life-image {
+  transform: scale(1.07);
+}
+
+.mountain-life-card::after {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 20, 34, 0.4);
+  content: '';
+}
+
+.mountain-life-copy {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  left: 16px;
+  z-index: 1;
+}
+
+.mountain-life-copy > span {
+  color: #f4c95d;
+  font: 0.6rem/1 var(--font-mono-stack);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mountain-life-copy strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 1.08rem;
+}
+
+.mountain-life-copy time {
+  display: block;
+  margin-top: 8px;
+  color: rgba(246, 251, 255, 0.76);
+  font: 0.64rem/1 var(--font-mono-stack);
+}
+
+.mountain-night-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  gap: clamp(44px, 9vw, 150px);
+  margin-top: 82px;
+}
+
+.mountain-note-list {
+  display: grid;
+  gap: 26px;
+  margin-top: 28px;
+}
+
+.mountain-rambling-note {
+  display: block;
+  padding: 0 0 22px;
+  border-bottom: 1px solid var(--mountain-line);
+  color: #fff;
+}
+
+.mountain-rambling-note:hover h3 {
+  color: #f4c95d;
+}
+
+.mountain-note-index {
+  color: #f4c95d;
+  font-size: 0.6rem;
+}
+
+.mountain-rambling-note h3 {
+  margin-top: 12px;
+  font-size: clamp(1.35rem, 2.2vw, 2rem);
+}
+
+.mountain-rambling-note p {
+  max-width: 58ch;
+  margin: 10px 0 0;
+  color: var(--mountain-muted);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.mountain-note-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 16px;
+  color: rgba(246, 251, 255, 0.56);
+  font: 0.62rem/1.4 var(--font-mono-stack);
+}
+
+.mountain-camp-map {
+  position: relative;
+  min-height: 420px;
+  align-self: center;
+  padding: 28px;
+  border: 1px solid rgba(244, 201, 93, 0.34);
+  background: rgba(4, 16, 33, 0.52);
+}
+
+.mountain-camp-map::before,
+.mountain-camp-map::after {
+  position: absolute;
+  background: rgba(244, 201, 93, 0.38);
+  content: '';
+}
+
+.mountain-camp-map::before {
+  top: 12%;
+  right: 12%;
+  bottom: 12%;
+  width: 1px;
+}
+
+.mountain-camp-map::after {
+  top: 50%;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+}
+
+.mountain-camp-light {
+  position: absolute;
+  top: calc(50% - 5px);
+  right: calc(12% - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f4c95d;
+  box-shadow: 0 0 0 8px rgba(244, 201, 93, 0.1), 0 0 26px 9px rgba(244, 201, 93, 0.38);
+}
+
+.mountain-entry-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  height: 100%;
+}
+
+.mountain-camp-entry {
+  display: flex;
+  min-height: 160px;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid rgba(246, 251, 255, 0.2);
+  color: #fff;
+  background: rgba(4, 16, 33, 0.58);
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.mountain-camp-entry:hover {
+  border-color: #f4c95d;
+  transform: translateY(-4px);
+}
+
+.mountain-entry-number {
+  color: #f4c95d;
+  font: 0.65rem/1 var(--font-mono-stack);
+}
+
+.mountain-entry-kind {
+  margin-top: 18px;
+  color: rgba(246, 251, 255, 0.56);
+  font-size: 0.57rem;
+}
+
+.mountain-camp-entry h3 {
+  margin-top: 8px;
+  font-size: 1.1rem;
+}
+
+.mountain-camp-entry p {
+  margin: 8px 0 0;
+  color: var(--mountain-muted);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.mountain-camp-entry .mountain-link-arrow {
+  margin-top: auto;
+  align-self: end;
+}
+
+.mountain-route-nav {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  z-index: 10;
+  width: 146px;
+  transform: translateY(-50%);
+}
+
+.mountain-route-title {
+  display: block;
+  margin-bottom: 14px;
+  color: rgba(246, 251, 255, 0.62);
+  font-size: 0.58rem;
+  text-align: right;
+}
+
+.mountain-route-nav ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mountain-route-nav li a {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  color: rgba(246, 251, 255, 0.52);
+}
+
+.mountain-route-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.mountain-route-copy {
+  display: grid;
+  gap: 3px;
+  text-align: right;
+}
+
+.mountain-route-copy b {
+  font-size: 0.6rem;
+  font-weight: 400;
+}
+
+.mountain-route-copy small {
+  font-family: var(--font-serif-cn);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.mountain-route-nav li.is-active a {
+  color: #f4c95d;
+}
+
+.mountain-route-nav li.is-active .mountain-route-dot {
+  box-shadow: 0 0 0 4px rgba(244, 201, 93, 0.15);
+}
+
+.mountain-stars {
+  position: absolute;
+  top: 16%;
+  right: 13%;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #f4c95d;
+  box-shadow: -140px 36px 0 0 #f4c95d, -82px 116px 0 0 #f4c95d, -12px 62px 0 0 #f4c95d, 58px 142px 0 0 #f4c95d, 120px 28px 0 0 #f4c95d, 174px 86px 0 0 #f4c95d, 240px 12px 0 0 #f4c95d, 300px 102px 0 0 #f4c95d, 380px 52px 0 0 #f4c95d, 430px 158px 0 0 #f4c95d, -210px 176px 0 0 rgba(244, 201, 93, 0.7), -30px 212px 0 0 rgba(244, 201, 93, 0.7), 210px 188px 0 0 rgba(244, 201, 93, 0.7);
+  opacity: 0.8;
+}
+
+.mountain-home-footer {
+  display: flex;
+  justify-content: space-between;
+  width: min(1180px, calc(100% - 72px));
+  margin: 100px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--mountain-line);
+  color: rgba(246, 251, 255, 0.54);
+  font-size: 0.6rem;
+}
+
+.mountain-home-footer a:hover {
+  color: #f4c95d;
+}
+
+@media (max-width: 1080px) {
+  .mountain-route-nav {
+    right: 12px;
+    width: 118px;
+  }
+
+  .mountain-base-layout,
+  .mountain-chapter-inner,
+  .mountain-home-footer {
+    width: min(100% - 56px, 960px);
+  }
+
+  .mountain-base-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr);
+    gap: 42px;
+  }
+
+  .mountain-calendar {
+    right: 28px;
+  }
+}
+
+@media (max-width: 860px) {
+  .mountain-route-nav {
+    top: auto;
+    right: 50%;
+    bottom: 16px;
+    width: auto;
+    transform: translateX(50%);
+    padding: 8px 12px;
+    border: 1px solid rgba(246, 251, 255, 0.24);
+    background: rgba(5, 20, 34, 0.78);
+    backdrop-filter: blur(12px);
+  }
+
+  .mountain-route-title {
+    display: none;
+  }
+
+  .mountain-route-nav ol {
+    display: flex;
+    gap: 14px;
+  }
+
+  .mountain-route-nav li a {
+    display: block;
+  }
+
+  .mountain-route-copy {
+    display: none;
+  }
+
+  .mountain-route-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .mountain-base-camp {
+    display: block;
+    padding: 88px 0 118px;
+  }
+
+  .mountain-base-layout,
+  .mountain-chapter-inner,
+  .mountain-home-footer {
+    width: min(100% - 36px, 680px);
+  }
+
+  .mountain-base-layout,
+  .mountain-ridge-layout,
+  .mountain-snowfield-layout,
+  .mountain-night-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mountain-hero-copy {
+    max-width: 620px;
+  }
+
+  .mountain-dispatch-panel {
+    margin-top: 56px;
+  }
+
+  .mountain-calendar {
+    position: static;
+    width: min(100%, 360px);
+    margin: 28px auto 0;
+  }
+
+  .mountain-chapter-inner {
+    padding: 86px 0 116px;
+  }
+
+  .mountain-ridge-layout,
+  .mountain-snowfield-layout,
+  .mountain-night-layout {
+    gap: 56px;
+    margin-top: 56px;
+  }
+
+  .mountain-life-signs {
+    padding: 0;
+  }
+
+  .mountain-snowfield .mountain-life-journal {
+    padding: 18px;
+  }
+
+  .mountain-life-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mountain-life-card-1,
+  .mountain-life-card-2,
+  .mountain-life-card-3,
+  .mountain-life-card-4,
+  .mountain-life-card-5 {
+    grid-column: span 1;
+  }
+
+  .mountain-life-card:first-child {
+    grid-column: span 2;
+  }
+
+  .mountain-camp-map {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 560px) {
+  .mountain-photo-credit {
+    top: 86px;
+    right: 14px;
+    font-size: 0.54rem;
+  }
+
+  .mountain-hero-copy h1 {
+    font-size: clamp(4rem, 22vw, 6.4rem);
+  }
+
+  .mountain-site-intro {
+    margin-top: 26px;
+    font-size: 1rem;
+  }
+
+  .mountain-post-row {
+    grid-template-columns: 22px 60px minmax(0, 1fr) 14px;
+    gap: 9px;
+    padding: 13px 0;
+  }
+
+  .mountain-post-copy strong {
+    font-size: 0.92rem;
+  }
+
+  .mountain-post-excerpt {
+    display: none;
+  }
+
+  .mountain-post-meta {
+    display: block;
+  }
+
+  .mountain-post-meta time {
+    display: block;
+    margin-top: 4px;
+  }
+
+  .mountain-chapter-heading {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .mountain-chapter-heading h2 {
+    font-size: clamp(2.35rem, 13vw, 4rem);
+  }
+
+  .mountain-ridge-layout,
+  .mountain-snowfield-layout,
+  .mountain-night-layout {
+    margin-top: 44px;
+  }
+
+  .mountain-subheading {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .mountain-subheading .mountain-icon-button {
+    position: absolute;
+    right: 0;
+    bottom: 12px;
+  }
+
+  .mountain-life-sign {
+    min-width: 0;
+    max-width: none;
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  .mountain-life-grid {
+    gap: 8px;
+  }
+
+  .mountain-life-card,
+  .mountain-life-card:first-child {
+    grid-column: span 2;
+    min-height: 190px;
+  }
+
+  .mountain-camp-map {
+    min-height: 420px;
+    padding: 14px;
+  }
+
+  .mountain-entry-grid {
+    gap: 8px;
+  }
+
+  .mountain-camp-entry {
+    min-height: 185px;
+    padding: 12px;
+  }
+
+  .mountain-home-footer {
+    margin-top: 72px;
+    padding-bottom: 58px;
+    font-size: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mountain-home *,
+  .mountain-home *::before,
+  .mountain-home *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 .site-shell .blog-theme-default .blog-body,
 .site-shell .blog-theme-default .blog-body p,
 .site-shell .blog-theme-default .blog-body li {

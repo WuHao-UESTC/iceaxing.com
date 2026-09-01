@@ -30,6 +30,11 @@ function getHomeLabels(locale: string): HomeLabels {
       lifeRecent: 'Lately,\nhow is life',
       project: 'Project',
       progress: 'Progress',
+      route: 'Altitude route',
+      dispatch: 'Expedition dispatch',
+      nextCamp: 'Continue the ascent',
+      fieldNotes: 'Field notes',
+      chapterNames: ['Base Camp', 'Technical Ridge', 'Snowfield Traverse', 'Night Camp'],
     };
   }
 
@@ -60,6 +65,11 @@ function getHomeLabels(locale: string): HomeLabels {
       lifeRecent: 'In letzter Zeit,\nwie geht es',
       project: 'Projekt',
       progress: 'Fortschritt',
+      route: 'Höhenroute',
+      dispatch: 'Expeditionsbericht',
+      nextCamp: 'Weiter aufsteigen',
+      fieldNotes: 'Feldnotizen',
+      chapterNames: ['Basislager', 'Technischer Grat', 'Schneefeld', 'Nachtlager'],
     };
   }
 
@@ -89,6 +99,11 @@ function getHomeLabels(locale: string): HomeLabels {
     lifeRecent: '最近，\n过得咋样',
     project: '项目',
     progress: '进度',
+    route: '海拔路线',
+    dispatch: '营地手记',
+    nextCamp: '继续向上',
+    fieldNotes: '野外笔记',
+    chapterNames: ['山脚营地', '技术冰脊', '雪原横渡', '高山夜营'],
   };
 }
 
