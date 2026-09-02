@@ -483,7 +483,6 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       source
     },
     "specialPosts": *[_type == "blog" && "special" in tags[]] | order(publishedAt desc)[0...18] ${blogCardProjection},
-    "calendarPosts": *[_type == "blog" && defined(publishedAt)] | order(publishedAt desc)[0...80] ${blogCardProjection},
     "about": *[_type == "about"][0] {
       _id,
       "title": ${localizedString('title')},
@@ -534,7 +533,6 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
     "siteIntro": siteSettings.homeIntro,
     mottos,
     specialPosts,
-    calendarPosts,
     "entryCards": [
       {
         "_id": "home-entry-log",
@@ -578,7 +576,6 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
       siteIntro: undefined,
       mottos: [],
       specialPosts: [],
-      calendarPosts: [],
       entryCards: [],
       skillCategories: [],
       ongoingProjects: [],

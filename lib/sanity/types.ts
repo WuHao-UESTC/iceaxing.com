@@ -191,7 +191,6 @@ export interface HomePayload {
   siteIntro?: string;
   mottos: MottoDoc[];
   specialPosts: SpecialBlogItem[];
-  calendarPosts: SpecialBlogItem[];
   entryCards: HomeEntryCard[];
   skillCategories: HomeCategoryCard[];
   ongoingProjects: HomeProjectCard[];

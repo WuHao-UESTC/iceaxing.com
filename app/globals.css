@@ -18,6 +18,7 @@
 @import "highlight.js/styles/github-dark.css";
 @import "./styles/blog.css";
 @import "./styles/components.css";
+@import "./styles/home-mountain-redesign.css";
 
 @plugin "@tailwindcss/typography";
 

@@ -1,0 +1,131 @@
+/* Loaded after the legacy component sheet so these homepage structures win the cascade. */
+.mountain-home {
+  --mountain-base-bg: url('/images/mountain-home/base-camp-dark.webp');
+  --mountain-ridge-bg: url('/images/mountain-home/technical-ridge-dark.webp');
+  --mountain-snow-bg: url('/images/mountain-home/snowfield-dark.webp');
+  --mountain-night-bg: url('/images/mountain-home/night-camp-dark.webp');
+  --route-yellow: #f4c95d;
+  --route-cyan: #9fd4df;
+}
+
+[data-theme='light'] .mountain-home {
+  --mountain-base-bg: url('/images/mountain-home/base-camp-light.webp');
+  --mountain-ridge-bg: url('/images/mountain-home/technical-ridge-light.webp');
+  --mountain-snow-bg: url('/images/mountain-home/snowfield-light.webp');
+  --mountain-night-bg: url('/images/mountain-home/night-camp-light.webp');
+}
+
+[data-theme='dark'] .mountain-home {
+  --mountain-base-bg: url('/images/mountain-home/base-camp-dark.webp');
+  --mountain-ridge-bg: url('/images/mountain-home/technical-ridge-dark.webp');
+  --mountain-snow-bg: url('/images/mountain-home/snowfield-dark.webp');
+  --mountain-night-bg: url('/images/mountain-home/night-camp-dark.webp');
+}
+
+.mountain-home .mountain-base-camp { background-image: var(--mountain-base-bg); }
+.mountain-home .mountain-technical-ridge { background-image: var(--mountain-ridge-bg); }
+.mountain-home .mountain-snowfield { background-image: var(--mountain-snow-bg); }
+.mountain-home .mountain-night-camp { background-image: var(--mountain-night-bg); }
+
+.mountain-ridge-route-map {
+  position: relative;
+  grid-template-columns: 0.78fr 1.3fr 0.78fr;
+  gap: clamp(20px, 4vw, 58px);
+  margin-top: 72px;
+  padding-top: 38px;
+}
+
+.mountain-ridge-route-map::before {
+  position: absolute;
+  top: 0;
+  left: 8%;
+  width: 84%;
+  height: 2px;
+  content: '';
+  background: linear-gradient(90deg, transparent, var(--route-yellow) 12%, var(--route-cyan) 52%, var(--route-yellow) 88%, transparent);
+  transform: rotate(-3deg);
+  transform-origin: left center;
+}
+
+.mountain-ridge-route-map .mountain-skill-route { padding-left: 12px; }
+.mountain-ridge-route-map .mountain-route-line { top: 68px; left: 6px; background: var(--route-cyan); transform: rotate(-4deg); transform-origin: top center; }
+.mountain-ridge-route-map .mountain-skill-marker { border-bottom: 1px dashed rgba(183, 216, 230, 0.34); }
+.mountain-ridge-route-map .mountain-project-route { padding-top: 44px; }
+.mountain-ridge-route-map .mountain-project-note { border-width: 0 0 1px; border-color: rgba(183, 216, 230, 0.34); background: transparent; }
+.mountain-ridge-route-map .mountain-project-note:hover { background: rgba(7, 29, 46, 0.42); transform: translateX(8px); }
+.mountain-ridge-route-map .mountain-summit-log { padding-top: 92px; }
+.mountain-ridge-route-map .mountain-summit-log .mountain-project-note { position: relative; border: 1px solid rgba(244, 201, 93, 0.46); background: rgba(244, 201, 93, 0.08); }
+.mountain-ridge-route-map .mountain-summit-log .mountain-project-note::before { position: absolute; top: -7px; left: 18px; width: 12px; height: 12px; border: 2px solid var(--route-yellow); border-radius: 50%; background: #12344a; content: ''; }
+
+.mountain-snowfield-observation-band {
+  grid-template-columns: minmax(180px, 0.52fr) minmax(0, 1.48fr);
+  gap: clamp(28px, 6vw, 92px);
+  align-items: start;
+}
+
+.mountain-snowfield-observation-band .mountain-life-signs { padding-top: 10px; }
+.mountain-snowfield-observation-band .mountain-sign-list { position: relative; display: grid; gap: 0; margin-top: 34px; padding-left: 20px; }
+.mountain-snowfield-observation-band .mountain-sign-list::before { position: absolute; top: 0; bottom: 0; left: 4px; width: 1px; background: rgba(16, 45, 66, 0.38); content: ''; }
+.mountain-snowfield-observation-band .mountain-life-sign { position: relative; min-width: 0; max-width: none; min-height: 0; margin: 0 0 16px; padding: 14px 16px; border-width: 0 0 0 4px; box-shadow: 0 8px 18px rgba(16, 45, 66, 0.08); }
+.mountain-snowfield-observation-band .mountain-life-sign::before { position: absolute; top: 21px; left: -24px; width: 9px; height: 9px; border: 2px solid #1b6b96; border-radius: 50%; background: #eaf4f7; content: ''; }
+.mountain-snowfield-observation-band .mountain-life-sign-2 { margin-top: 0; transform: translateX(28px); }
+.mountain-snowfield-observation-band .mountain-life-sign-3 { margin-top: 0; transform: translateX(8px); }
+.mountain-snowfield-observation-band .mountain-life-sign:hover { transform: translateX(12px) rotate(-1deg); }
+.mountain-snowfield-observation-band .mountain-life-sign-2:hover { transform: translateX(36px) rotate(-1deg); }
+.mountain-snowfield-observation-band .mountain-life-journal { padding: 26px 28px 30px; border: 0; border-top: 1px solid rgba(16, 45, 66, 0.34); border-bottom: 1px solid rgba(16, 45, 66, 0.34); background: rgba(246, 252, 255, 0.46); }
+.mountain-snowfield-observation-band .mountain-life-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.mountain-snowfield-observation-band .mountain-life-card { min-height: 210px; border: 1px solid rgba(16, 45, 66, 0.22); }
+.mountain-snowfield-observation-band .mountain-life-card-1 { grid-column: span 4; min-height: 280px; }
+.mountain-snowfield-observation-band .mountain-life-card-2 { grid-column: span 2; }
+.mountain-snowfield-observation-band .mountain-life-card-3 { grid-column: span 2; }
+.mountain-snowfield-observation-band .mountain-life-card-4 { grid-column: span 4; }
+.mountain-snowfield-observation-band .mountain-life-card-5 { grid-column: span 3; }
+
+.mountain-constellation { overflow: hidden; min-height: 440px; border: 1px solid rgba(244, 201, 93, 0.44); background: rgba(4, 16, 33, 0.54); }
+.mountain-constellation::before { inset: 12% 10%; background: linear-gradient(90deg, transparent 49.8%, rgba(244, 201, 93, 0.28) 50%, transparent 50.2%), linear-gradient(0deg, transparent 49.8%, rgba(244, 201, 93, 0.28) 50%, transparent 50.2%), repeating-radial-gradient(ellipse at 50% 50%, transparent 0 58px, rgba(183, 216, 230, 0.17) 59px 60px, transparent 61px 90px); content: ''; }
+.mountain-constellation::after { top: 18%; right: 14%; bottom: 18%; left: 14%; border: 1px solid rgba(183, 216, 230, 0.2); border-radius: 50%; content: ''; }
+.mountain-constellation .mountain-camp-light { z-index: 2; top: calc(50% - 8px); right: calc(50% - 8px); width: 16px; height: 16px; box-shadow: 0 0 0 10px rgba(244, 201, 93, 0.12), 0 0 34px 12px rgba(244, 201, 93, 0.46); }
+.mountain-constellation .mountain-entry-grid { position: relative; z-index: 3; display: block; height: 100%; }
+.mountain-constellation .mountain-camp-entry { position: absolute; overflow: hidden; width: 42%; height: 142px; padding: 14px; border: 1px solid rgba(183, 216, 230, 0.34); background: rgba(4, 16, 33, 0.7); }
+.mountain-constellation .mountain-camp-entry:nth-child(1) { top: 8%; left: 5%; }
+.mountain-constellation .mountain-camp-entry:nth-child(2) { top: 8%; right: 5%; }
+.mountain-constellation .mountain-camp-entry:nth-child(3) { right: 5%; bottom: 8%; }
+.mountain-constellation .mountain-camp-entry:nth-child(4) { bottom: 8%; left: 5%; }
+.mountain-constellation .mountain-camp-entry::after { position: absolute; top: 50%; width: 42%; height: 1px; background: rgba(244, 201, 93, 0.44); content: ''; }
+.mountain-constellation .mountain-camp-entry:nth-child(odd)::after { right: -42%; }
+.mountain-constellation .mountain-camp-entry:nth-child(even)::after { left: -42%; }
+.mountain-constellation .mountain-camp-entry p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+@media (max-width: 860px) {
+  .mountain-ridge-route-map { gap: 44px; margin-top: 56px; padding-top: 0; }
+  .mountain-ridge-route-map::before { display: none; }
+  .mountain-ridge-route-map .mountain-project-route,
+  .mountain-ridge-route-map .mountain-summit-log { padding-top: 0; }
+  .mountain-snowfield-observation-band .mountain-life-journal { padding: 18px 0 24px; }
+  .mountain-snowfield-observation-band .mountain-life-card-1,
+  .mountain-snowfield-observation-band .mountain-life-card-2,
+  .mountain-snowfield-observation-band .mountain-life-card-3,
+  .mountain-snowfield-observation-band .mountain-life-card-4,
+  .mountain-snowfield-observation-band .mountain-life-card-5 { grid-column: span 1; }
+  .mountain-snowfield-observation-band .mountain-life-card:first-child { grid-column: span 2; }
+}
+
+@media (max-width: 560px) {
+  .mountain-snowfield-observation-band .mountain-life-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(78vw, 280px); overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; }
+  .mountain-snowfield-observation-band .mountain-life-card,
+  .mountain-snowfield-observation-band .mountain-life-card:first-child { grid-column: auto; min-width: 0; min-height: 240px; scroll-snap-align: start; }
+  .mountain-constellation { min-height: 400px; }
+  .mountain-constellation .mountain-camp-entry { width: 44%; height: 136px; }
+  .mountain-constellation .mountain-camp-entry::after { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mountain-home *,
+  .mountain-home *::before,
+  .mountain-home *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
