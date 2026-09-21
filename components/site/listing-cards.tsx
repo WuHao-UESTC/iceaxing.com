@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { SnowRidge } from './snow-ridge';
 import { Link } from '@/lib/i18n/navigation';
 import type { BlogListItem, CategoryDoc, CollectionDoc, ProjectDoc } from '@/lib/sanity/types';
 
@@ -54,7 +55,7 @@ function CoverImage({
   title: string;
   className?: string;
 }) {
-  if (!image?.url) return <span className={`listing-cover-placeholder ${className}`} aria-hidden="true" />;
+  if (!image?.url) return <span className={`listing-cover-placeholder ${className}`} aria-hidden="true"><SnowRidge /></span>;
   return (
     <Image
       src={image.url}

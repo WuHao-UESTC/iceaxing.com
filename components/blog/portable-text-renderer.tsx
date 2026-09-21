@@ -211,6 +211,7 @@ const components: PortableTextComponents = {
             alt={value.alt || ''}
             width={1200}
             height={675}
+            unoptimized
             className="rounded-lg"
           />
           {value.caption && (
@@ -238,6 +239,8 @@ const components: PortableTextComponents = {
   },
 
   listItem: {
+    number: ({ children }) => <li>{children}</li>,
+    bullet: ({ children }) => <li>{children}</li>,
     task: ({ children, value }) => {
       const checked = (value as { checked?: boolean }).checked || false;
       return (

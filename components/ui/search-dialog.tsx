@@ -130,7 +130,7 @@ export function SearchDialog({ categories = [] }: Props) {
         className="hover:text-[var(--color-text)] transition-colors text-sm text-[var(--color-text-muted)]"
         aria-label={t('triggerLabel')}
       >
-        🔍
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
       </button>
 
       {/* Dialog */}
@@ -138,6 +138,9 @@ export function SearchDialog({ categories = [] }: Props) {
         <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('ariaLabel')}
             className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] shadow-xl shadow-black/45"
             onClick={(e) => e.stopPropagation()}
           >

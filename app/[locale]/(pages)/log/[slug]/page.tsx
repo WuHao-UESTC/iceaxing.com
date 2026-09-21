@@ -60,7 +60,7 @@ export default async function LogDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="snowline-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(logJsonLd) }}

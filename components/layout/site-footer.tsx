@@ -1,22 +1,28 @@
-import { Link } from '@/lib/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { Link } from "@/lib/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import { SubscribeDialog } from "@/components/subscribe/subscribe-dialog";
 
 export async function SiteFooter() {
   const currentYear = new Date().getFullYear();
-  const t = await getTranslations('nav');
+  const t = await getTranslations("nav");
 
   return (
-    <footer className="border-t border-[color:var(--line)] py-8 mt-16">
-      <div className="max-w-6xl mx-auto px-4 text-center text-sm text-[var(--color-text-faint)]">
-        <div className="flex justify-center gap-4 mb-2">
-          <Link href="/profile" className="hover:text-[var(--color-text)] transition-colors">
-            {t('profile')}
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div>
+          <Link href="/" className="site-brand">
+            iceaxing
           </Link>
-          <a href="/feed.xml" className="hover:text-[var(--color-text)] transition-colors">
-            {t('rss')}
-          </a>
+          <p>&copy; {currentYear} · Above the snowline</p>
         </div>
-        <p>&copy; {currentYear} iceaxing @ 1.0.0</p>
+        <nav aria-label={t("categories")}>
+          <Link href="/about">{t("about")}</Link>
+          <Link href="/profile">{t("profile")}</Link>
+          <Link href="/log">{t("log")}</Link>
+          <Link href="/friends">{t("friends")}</Link>
+          <a href="/feed.xml">{t("rss")}</a>
+          <SubscribeDialog />
+        </nav>
       </div>
     </footer>
   );

@@ -101,7 +101,7 @@ export function PostArticle({
 }) {
   return (
     <>
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-4 py-12 lg:grid-cols-[minmax(0,48rem)_16rem]">
+      <div className="snowline-article">
         <article className="min-w-0">
           <nav className="text-sm text-zinc-400 mb-8">
             <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>

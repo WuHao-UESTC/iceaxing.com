@@ -40,7 +40,7 @@ export function SubscribeDialog() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-1.5 bg-[var(--color-panel-soft)]/50 text-[var(--color-text)] text-sm rounded-full
+        className="subscribe-trigger px-3 py-1.5 bg-[var(--color-panel-soft)]/50 text-[var(--color-text)] text-sm rounded-full
                    ring-1 ring-[var(--color-line)] hover:bg-[var(--color-blue-deep)] transition-colors font-medium"
         aria-label={tn('subscribe')}
       >

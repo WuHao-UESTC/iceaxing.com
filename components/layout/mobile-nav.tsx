@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Link } from '@/lib/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect, useRef } from "react";
+import { Link } from "@/lib/i18n/navigation";
+import { useTranslations } from "next-intl";
 interface Props {
   sectionLinks: {
     href: string;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function MobileNav({ sectionLinks }: Props) {
-  const t = useTranslations('nav');
+  const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -23,8 +23,15 @@ export function MobileNav({ sectionLinks }: Props) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [open]);
 
   const close = () => setOpen(false);
@@ -34,21 +41,28 @@ export function MobileNav({ sectionLinks }: Props) {
       <button
         onClick={() => setOpen(!open)}
         className="sm:hidden text-lg text-[var(--color-text)] hover:text-[var(--color-sand)]"
-        aria-label={t('menuAriaLabel')}
+        aria-label={t("menuAriaLabel")}
+        aria-expanded={open}
+        aria-controls="mobile-site-menu"
       >
-        {open ? 'x' : '='}
+        {open ? "x" : "="}
       </button>
 
       {open && (
         <div
+          id="mobile-site-menu"
           ref={menuRef}
           className="sm:hidden absolute top-full right-0 mt-3 w-64 rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] px-4 py-4 shadow-xl shadow-black/40"
         >
           <nav className="flex flex-col gap-3 text-[var(--color-text)]">
-            {sectionLinks.map((link) => (
+            {sectionLinks.map((link) =>
               link.categories.length > 0 ? (
                 <div key={link.href} className="grid gap-2">
-                  <Link href={link.href} onClick={close} className="text-sm font-semibold hover:text-[var(--color-sand)]">
+                  <Link
+                    href={link.href}
+                    onClick={close}
+                    className="text-sm font-semibold hover:text-[var(--color-sand)]"
+                  >
                     {link.label}
                   </Link>
                   <div className="grid gap-2 border-l border-[color:var(--line)] pl-3">
@@ -65,16 +79,45 @@ export function MobileNav({ sectionLinks }: Props) {
                   </div>
                 </div>
               ) : (
-                <Link key={link.href} href={link.href} onClick={close} className="text-sm hover:text-[var(--color-sand)]">
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={close}
+                  className="text-sm hover:text-[var(--color-sand)]"
+                >
                   {link.label}
                 </Link>
-              )
-            ))}
+              ),
+            )}
             <hr className="border-[color:var(--line)]" />
-            <Link href="/log" onClick={close} className="text-sm hover:text-[var(--color-sand)]">{t('log')}</Link>
-            <Link href="/about" onClick={close} className="text-sm hover:text-[var(--color-sand)]">{t('about')}</Link>
-            <Link href="/friends" onClick={close} className="text-sm hover:text-[var(--color-sand)]">{t('friends')}</Link>
-            <Link href="/profile" onClick={close} className="text-sm hover:text-[var(--color-sand)]">{t('profile')}</Link>
+            <Link
+              href="/log"
+              onClick={close}
+              className="text-sm hover:text-[var(--color-sand)]"
+            >
+              {t("log")}
+            </Link>
+            <Link
+              href="/about"
+              onClick={close}
+              className="text-sm hover:text-[var(--color-sand)]"
+            >
+              {t("about")}
+            </Link>
+            <Link
+              href="/friends"
+              onClick={close}
+              className="text-sm hover:text-[var(--color-sand)]"
+            >
+              {t("friends")}
+            </Link>
+            <Link
+              href="/profile"
+              onClick={close}
+              className="text-sm hover:text-[var(--color-sand)]"
+            >
+              {t("profile")}
+            </Link>
           </nav>
         </div>
       )}

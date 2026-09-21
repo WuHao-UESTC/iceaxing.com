@@ -33,14 +33,14 @@ export default async function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="snowline-page">
         <EmptyState message={tc('emptyProfile')} />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="snowline-page">
       <div className="flex items-center gap-4 mb-8">
         {profile.avatar && (
           <Image
@@ -48,6 +48,7 @@ export default async function ProfilePage() {
             alt={profile.name}
             width={64}
             height={64}
+            unoptimized
             className="w-16 h-16 rounded-full object-cover"
           />
         )}

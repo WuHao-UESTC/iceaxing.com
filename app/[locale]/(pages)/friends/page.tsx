@@ -32,7 +32,7 @@ export default async function FriendsPage() {
   const friends = await getFriends();
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="snowline-page">
       <h1 className="text-3xl font-bold mb-6">{t('title')}</h1>
 
       {friends.length === 0 ? (
@@ -45,7 +45,7 @@ export default async function FriendsPage() {
               href={friend.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start gap-4 p-4 border rounded-lg hover:border-zinc-400 transition-colors"
+              className="snowline-friend flex items-start gap-4 border transition-colors"
             >
               {friend.avatar && (
                 <Image
@@ -53,6 +53,7 @@ export default async function FriendsPage() {
                   alt={friend.name}
                   width={40}
                   height={40}
+                  unoptimized
                   className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                 />
               )}

@@ -34,14 +34,14 @@ export default async function AboutPage({ params }: Props) {
 
   if (!about) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="snowline-page">
         <EmptyState message="About content has not been created in Sanity yet." />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="snowline-page">
       <h1 className="text-3xl font-bold mb-6">{about.title || t('title')}</h1>
       <div className="prose prose-zinc">
         {about.body && about.body.length > 0 ? (
