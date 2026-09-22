@@ -346,7 +346,12 @@ function RamblingNote({
       data-step={2.2 + index * 0.9}
     >
       <span className="snowline-note-index">
-        FIELD NOTE / {String(index + 1).padStart(2, "0")}
+        <span>
+          {labels.fieldNotes} / {String(index + 1).padStart(2, "0")}
+        </span>
+        <span className="snowline-note-arrow" aria-hidden="true">
+          ↗
+        </span>
       </span>
       <h3>{post.title}</h3>
       {(post.excerpt || post.bodyText) && (
@@ -704,6 +709,7 @@ export function HomeDashboard({
         className="snowline-panel snowline-night"
         aria-labelledby="night-camp-title"
       >
+        <ChapterLandscape scene="camp" />
         <div className="journey-panel-inner">
           <ChapterHeading
             index={3}
@@ -736,9 +742,6 @@ export function HomeDashboard({
                 )}
               </div>
             </div>
-            <div className="journey-camp-trail" aria-hidden="true">
-              <ChapterLandscape scene="camp" />
-            </div>
             <nav
               className="journey-camp-directory"
               aria-labelledby="camp-directory-title"
@@ -764,6 +767,16 @@ export function HomeDashboard({
             </nav>
           </div>
           <div className="journey-camp-letter" data-reveal data-step="5.5">
+            <svg
+              className="journey-letter-mark"
+              viewBox="0 0 64 48"
+              fill="none"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 8H60V40H4ZM4 8L32 29L60 8M4 40L23 23M60 40L41 23" />
+              <path d="M44 3H55M49 0V6" />
+            </svg>
             <p>{labels.campLetter}</p>
             <SubscribeDialog />
           </div>

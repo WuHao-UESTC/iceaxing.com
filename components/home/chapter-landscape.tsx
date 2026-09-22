@@ -11,33 +11,37 @@ export function ChapterLandscape({
       <svg
         className="journey-landscape journey-landscape-camp"
         data-reveal="landscape"
-        viewBox="0 0 440 300"
+        viewBox="0 0 1440 800"
         fill="none"
         aria-hidden="true"
         focusable="false"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="xMidYMid slice"
       >
         <path
           className="camp-ridge-wash"
-          d="M12 252C87 246 122 193 167 151C202 119 236 110 275 42C304 108 327 139 363 158C386 171 407 187 428 214L428 280H12Z"
+          d="M0 690C220 700 360 610 550 626C740 642 816 550 886 416C969 259 1060 270 1148 190C1250 99 1339 126 1440 64V800H0Z"
+        />
+        <path
+          className="landscape-shadow"
+          d="M0 754C251 718 420 690 631 710C879 733 961 561 1126 508C1263 464 1350 493 1440 430V800H0Z"
         />
         <path
           className="landscape-line"
           pathLength="1"
-          d="M12 252C87 246 122 193 167 151C202 119 236 110 275 42C304 108 327 139 363 158C386 171 407 187 428 214"
+          d="M0 690C220 700 360 610 550 626C740 642 816 550 886 416C969 259 1060 270 1148 190C1250 99 1339 126 1440 64"
         />
         <path
           className="landscape-fine"
-          d="M18 272C107 262 143 219 190 181C225 153 254 133 275 87C292 133 327 168 371 184C396 194 412 210 426 233M48 287C143 273 181 231 219 208C263 182 310 218 345 231C375 242 400 250 425 252"
+          d="M0 718C220 728 370 642 556 653C752 665 850 565 915 433C998 287 1090 299 1176 218C1271 135 1353 153 1440 100M0 744C227 748 389 675 579 683C774 691 878 591 948 454C1024 322 1117 327 1204 248C1295 171 1369 183 1440 139"
         />
         <path
           className="camp-ascent-path"
-          d="M89 260C130 241 226 268 248 231C269 195 190 198 211 163C225 139 272 139 275 98"
+          d="M130 800C259 710 421 762 586 716C738 674 718 570 820 524C917 479 891 371 1002 306C1114 240 1210 280 1330 166"
         />
-        <circle className="camp-route-stop" cx="89" cy="260" r="4" />
-        <circle className="camp-route-stop" cx="211" cy="163" r="3" />
-        <circle className="camp-summit-ring" cx="275" cy="42" r="11" />
-        <circle className="landscape-dot" cx="275" cy="42" r="3" />
+        <circle className="camp-route-stop" cx="820" cy="524" r="4" />
+        <circle className="camp-route-stop" cx="1002" cy="306" r="3" />
+        <circle className="landscape-ring" cx="1148" cy="190" r="13" />
+        <circle className="landscape-dot" cx="1148" cy="190" r="3" />
       </svg>
     );
 
