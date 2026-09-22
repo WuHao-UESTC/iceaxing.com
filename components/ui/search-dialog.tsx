@@ -1,9 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from '@/lib/i18n/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import type { SearchResult } from '@/lib/sanity/queries';
+import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/components/ui/use-dialog-focus";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "@/lib/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import type { SearchResult } from "@/lib/sanity/queries";
 
 interface CategoryOption {
   _id: string;
@@ -24,13 +27,15 @@ interface Props {
 
 export function SearchDialog({ categories = [] }: Props) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const dialogRef = useDialogFocus(open);
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const t = useTranslations('search');
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const t = useTranslations("search");
   const locale = useLocale();
   const router = useRouter();
 
@@ -40,10 +45,10 @@ export function SearchDialog({ categories = [] }: Props) {
 
   const closeAndClear = useCallback(() => {
     setOpen(false);
-    setQuery('');
+    setQuery("");
     setResults([]);
     setSelectedIndex(-1);
-    setCategoryFilter('');
+    setCategoryFilter("");
     setLoading(false);
   }, []);
 
@@ -55,14 +60,15 @@ export function SearchDialog({ categories = [] }: Props) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (openRef.current) {
           closeAndClear();
           return;
         }
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        if (!triggerRef.current?.getClientRects().length) return;
         e.preventDefault();
         setOpen(true);
         return;
@@ -72,20 +78,20 @@ export function SearchDialog({ categories = [] }: Props) {
       const r = resultsRef.current;
       const idx = selectedIndexRef.current;
 
-      if (e.key === 'ArrowDown') {
+      if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIndex((prev) => Math.min(prev + 1, r.length - 1));
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedIndex((prev) => Math.max(prev - 1, 0));
-      } else if (e.key === 'Enter' && idx >= 0 && r[idx]) {
+      } else if (e.key === "Enter" && idx >= 0 && r[idx]) {
         e.preventDefault();
         router.push(resultUrl(r[idx]));
         closeAndClear();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [closeAndClear, router]);
 
   useEffect(() => {
@@ -103,10 +109,10 @@ export function SearchDialog({ categories = [] }: Props) {
       setSelectedIndex(-1);
       try {
         const params = new URLSearchParams({ q: query, locale });
-        if (categoryFilter) params.set('category', categoryFilter);
+        if (categoryFilter) params.set("category", categoryFilter);
         const res = await fetch(`/api/search?${params.toString()}`);
         if (!res.ok) {
-          console.error('[search-dialog] API error:', res.status);
+          console.error("[search-dialog] API error:", res.status);
           setResults([]);
           return;
         }
@@ -126,103 +132,122 @@ export function SearchDialog({ categories = [] }: Props) {
     <>
       {/* Trigger button */}
       <button
+        ref={triggerRef}
         onClick={() => setOpen(true)}
         className="hover:text-[var(--color-text)] transition-colors text-sm text-[var(--color-text-muted)]"
-        aria-label={t('triggerLabel')}
+        aria-label={t("triggerLabel")}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden="true"
+        >
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </svg>
       </button>
 
       {/* Dialog */}
-      {open && (
-        <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('ariaLabel')}
-            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] shadow-xl shadow-black/45"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => {
-                const nextQuery = e.target.value;
-                setQuery(nextQuery);
-                if (!nextQuery.trim()) {
-                  setResults([]);
-                  setSelectedIndex(-1);
-                  setLoading(false);
-                }
-              }}
-              placeholder={t('placeholder')}
-              className="w-full px-4 py-3 text-lg border-b border-[color:var(--line)] outline-none"
-              role="search"
-              aria-label={t('ariaLabel')}
-            />
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50" onClick={() => setOpen(false)}>
+            <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("ariaLabel")}
+              className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] shadow-xl shadow-black/45"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  const nextQuery = e.target.value;
+                  setQuery(nextQuery);
+                  if (!nextQuery.trim()) {
+                    setResults([]);
+                    setSelectedIndex(-1);
+                    setLoading(false);
+                  }
+                }}
+                placeholder={t("placeholder")}
+                className="w-full px-4 py-3 text-lg border-b border-[color:var(--line)] outline-none"
+                role="search"
+                aria-label={t("ariaLabel")}
+              />
 
-            {categories.length > 0 && (
-              <div className="px-4 py-2 border-b border-[color:var(--line)] bg-[var(--color-panel-soft)]/80">
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full text-sm border rounded px-2 py-1 outline-none"
-                >
-                  <option value="">{t('allCategories')}</option>
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat.slug}>
-                      {cat.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {loading && (
-              <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
-                {t('loading')}
-              </div>
-            )}
-
-            {!loading && query && results.length === 0 && (
-              <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
-                {t('noResults')}
-              </div>
-            )}
-
-            {results.length > 0 && (
-              <div className="max-h-80 overflow-y-auto py-2">
-                {results.map((result, i) => (
-                  <button
-                    key={result._id}
-                    className={`w-full text-left px-4 py-3 transition-colors ${
-                      i === selectedIndex ? 'bg-[var(--color-panel-soft)]' : 'hover:bg-[var(--color-panel-soft)]'
-                    }`}
-                    onClick={() => {
-                      router.push(resultUrl(result));
-                      closeAndClear();
-                    }}
+              {categories.length > 0 && (
+                <div className="px-4 py-2 border-b border-[color:var(--line)] bg-[var(--color-panel-soft)]/80">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="w-full text-sm border rounded px-2 py-1 outline-none"
                   >
-                    <div className="font-medium text-sm text-[var(--color-text)]">{result.title}</div>
-                    <div className="text-xs text-[var(--color-text-faint)] mt-0.5">
-                      {result.project?.title
-                        ? `${result.category.title} > ${result.project.title}`
-                        : result.category.title}
-                    </div>
-                    {result.excerpt && (
-                      <div className="text-xs text-[var(--color-text-faint)] mt-1 line-clamp-1">
-                        {result.excerpt}
+                    <option value="">{t("allCategories")}</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat.slug}>
+                        {cat.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {loading && (
+                <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
+                  {t("loading")}
+                </div>
+              )}
+
+              {!loading && query && results.length === 0 && (
+                <div className="px-4 py-8 text-center text-[var(--color-text-faint)] text-sm">
+                  {t("noResults")}
+                </div>
+              )}
+
+              {results.length > 0 && (
+                <div className="max-h-80 overflow-y-auto py-2">
+                  {results.map((result, i) => (
+                    <button
+                      key={result._id}
+                      className={`w-full text-left px-4 py-3 transition-colors ${
+                        i === selectedIndex
+                          ? "bg-[var(--color-panel-soft)]"
+                          : "hover:bg-[var(--color-panel-soft)]"
+                      }`}
+                      onClick={() => {
+                        router.push(resultUrl(result));
+                        closeAndClear();
+                      }}
+                    >
+                      <div className="font-medium text-sm text-[var(--color-text)]">
+                        {result.title}
                       </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+                      <div className="text-xs text-[var(--color-text-faint)] mt-0.5">
+                        {result.project?.title
+                          ? `${result.category.title} > ${result.project.title}`
+                          : result.category.title}
+                      </div>
+                      {result.excerpt && (
+                        <div className="text-xs text-[var(--color-text-faint)] mt-1 line-clamp-1">
+                          {result.excerpt}
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -15,16 +15,20 @@ export function MobileNav({ sectionLinks }: Props) {
   const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node) && !triggerRef.current?.contains(e.target as Node)) {
         setOpen(false);
       }
     };
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     };
     document.addEventListener("keydown", handleKey);
     document.addEventListener("mousedown", handleClick);
@@ -39,6 +43,7 @@ export function MobileNav({ sectionLinks }: Props) {
   return (
     <>
       <button
+        ref={triggerRef}
         onClick={() => setOpen(!open)}
         className="sm:hidden text-lg text-[var(--color-text)] hover:text-[var(--color-sand)]"
         aria-label={t("menuAriaLabel")}

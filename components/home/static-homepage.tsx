@@ -1,4 +1,5 @@
 import { getHomePayload } from "@/lib/sanity/queries";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { getLocale } from "next-intl/server";
 import { HomeDashboard, type HomeLabels } from "./home-dashboard";
 
@@ -10,6 +11,12 @@ function getHomeLabels(locale: string): HomeLabels {
       readNotes: "Read the notes",
       meetMe: "About me",
       dateLocale: "en-US",
+      previousArticles: "Previous articles",
+      nextArticles: "Next articles",
+      previousChapter: "Previous chapter",
+      nextChapter: "Next chapter",
+      backToTop: "Back to base camp",
+      moreCategories: "More categories",
       viewAll: "View all",
       refresh: "Shuffle",
       noPosts: "No posts to show yet.",
@@ -49,6 +56,12 @@ function getHomeLabels(locale: string): HomeLabels {
       readNotes: "Notizen lesen",
       meetMe: "Über mich",
       dateLocale: "de-DE",
+      previousArticles: "Vorherige Beiträge",
+      nextArticles: "Nächste Beiträge",
+      previousChapter: "Vorheriges Kapitel",
+      nextChapter: "Nächstes Kapitel",
+      backToTop: "Zurück zum Basislager",
+      moreCategories: "Weitere Kategorien",
       viewAll: "Alle ansehen",
       refresh: "Neu mischen",
       noPosts: "Noch keine Beitrage zum Anzeigen.",
@@ -87,6 +100,12 @@ function getHomeLabels(locale: string): HomeLabels {
     readNotes: "阅读精选",
     meetMe: "认识我",
     dateLocale: "zh-CN",
+    previousArticles: "上一篇精选",
+    nextArticles: "下一篇精选",
+    previousChapter: "上一章节",
+    nextChapter: "下一章节",
+    backToTop: "回到山脚",
+    moreCategories: "更多分类",
     viewAll: "查看全部",
     refresh: "换一组",
     noPosts: "暂无可展示文章。",
@@ -123,6 +142,7 @@ export async function StaticHomePage() {
       payload={payload}
       motto={payload.mottos[0]}
       labels={getHomeLabels(locale)}
+      footer={<SiteFooter />}
     />
   );
 }

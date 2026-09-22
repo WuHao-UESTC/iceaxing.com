@@ -1,0 +1,1224 @@
+/* Four full-viewport chapters. All content is visible without JavaScript. */
+html:has(.snowline-home) {
+  overflow: hidden;
+  scroll-padding: 0;
+}
+.site-shell:has(.snowline-home) {
+  height: 100dvh;
+  overflow: hidden;
+}
+.site-shell:has(.snowline-home) > main {
+  min-height: 0;
+}
+.site-shell:has(.snowline-home) > .site-footer {
+  display: none;
+}
+.snowline-home {
+  --journey-height: calc(100dvh - var(--home-header-height, 81px));
+  position: relative;
+  block-size: var(--journey-height);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  outline: none;
+}
+.snowline-home[data-overflowing="true"] {
+  scroll-snap-type: y proximity;
+}
+body:has([role="dialog"], #mobile-site-menu) .snowline-home {
+  overflow-y: hidden;
+}
+body:has([role="dialog"], #mobile-site-menu) .snowline-route-nav {
+  visibility: hidden;
+}
+#mobile-site-menu {
+  max-height: calc(100dvh - 95px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.snowline-panel {
+  position: relative;
+  isolation: isolate;
+  min-block-size: var(--journey-height);
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: clip;
+}
+.journey-panel-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: clamp(16px, 2.6dvh, 26px);
+  width: min(1120px, calc(100% - 112px));
+  min-block-size: var(--journey-height);
+  margin-inline: auto;
+  padding: clamp(22px, 4dvh, 46px) 0 16px;
+}
+.snowline-panel :where(h1, h2)[tabindex]:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 8px;
+}
+.journey-landscape {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.landscape-wash {
+  fill: var(--ridge-far);
+  opacity: 0.55;
+}
+.landscape-shadow {
+  fill: var(--ridge-mid);
+  opacity: 0.22;
+}
+.landscape-line {
+  stroke: var(--accent);
+  stroke-width: 1;
+  opacity: 0.38;
+}
+.landscape-fine {
+  stroke: var(--accent);
+  stroke-width: 0.7;
+  opacity: 0.15;
+}
+.landscape-dot {
+  fill: var(--accent);
+}
+.landscape-ring {
+  stroke: var(--accent);
+  opacity: 0.4;
+}
+.landscape-halo {
+  fill: var(--accent);
+  opacity: 0.05;
+}
+.journey-landscape-cover {
+  bottom: 150px;
+  height: calc(100% - 150px);
+}
+.journey-landscape-cover .snow-ridge {
+  width: 100%;
+  height: 100%;
+}
+.journey-landscape-ridge {
+  opacity: 0.65;
+}
+.journey-landscape-field {
+  opacity: 0.8;
+}
+.journey-landscape-camp {
+  opacity: 0.65;
+}
+[data-theme="dark"] .landscape-line {
+  opacity: 0.5;
+}
+
+.snowline-eyebrow {
+  display: block;
+  color: var(--accent);
+  font: 10px/1.8 var(--font-mono-stack);
+  letter-spacing: 0.15em;
+}
+.snowline-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+.snowline-text-link:hover {
+  color: var(--accent);
+}
+.snowline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 12px 20px;
+  border-radius: 5px;
+  background: var(--accent);
+  color: var(--color-ink);
+  font-size: 13px;
+}
+.snowline-button:hover {
+  background: var(--color-blue-deep);
+}
+.snowline-icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted-foreground);
+  font: 20px var(--font-ui);
+}
+.snowline-icon-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.snowline-empty-note {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 25px 0;
+}
+.snowline-panel-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-top: auto;
+  padding-top: 12px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.snowline-panel-foot a {
+  display: inline-flex;
+  gap: 14px;
+  align-items: center;
+  color: var(--foreground);
+}
+.snowline-panel-foot a:hover {
+  color: var(--accent);
+}
+.snowline-panel-foot > span:last-child {
+  font: 10px var(--font-mono-stack);
+  letter-spacing: 0.1em;
+}
+
+/* 01 — the mountain rises behind the cover; selected notes sit on its snow shelf. */
+.journey-hero-main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-height: 320px;
+}
+.snowline-hero-copy {
+  width: 48%;
+  max-width: 510px;
+  padding-block: 8px;
+}
+.snowline-hero-copy h1 {
+  margin: 16px 0;
+  font: 500 clamp(44px, 8dvh, 76px)/1.25 var(--font-serif-cn);
+  letter-spacing: -0.05em;
+}
+.snowline-hero-copy h1 > span {
+  color: var(--accent);
+}
+html:not([lang^="zh"]) .snowline-hero-copy h1 {
+  font-family: var(--font-serif-en);
+  font-size: clamp(48px, 9dvh, 86px);
+  line-height: 1.06;
+}
+.snowline-site-intro {
+  max-width: 29rem;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.snowline-motto {
+  margin-top: 14px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
+  font: 11px/1.8 var(--font-serif-cn);
+  color: var(--muted-foreground);
+}
+.snowline-motto figcaption {
+  margin-top: 3px;
+  font-size: 10px;
+}
+.snowline-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin-top: 22px;
+}
+.snowline-featured {
+  flex: 0 0 auto;
+  position: relative;
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+}
+.snowline-featured-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.snowline-featured-heading h2 {
+  font: 500 15px var(--font-ui);
+}
+.snowline-featured-heading h2 > span {
+  margin-left: 10px;
+  color: var(--muted-foreground);
+  font: 9px var(--font-mono-stack);
+  letter-spacing: 0.12em;
+}
+.snowline-strip-controls {
+  display: flex;
+  gap: 8px;
+}
+.snowline-strip-controls button {
+  width: 30px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  color: var(--accent);
+}
+.snowline-strip-controls button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.snowline-strip-controls button:not(:disabled):hover {
+  border-color: var(--accent);
+}
+.snowline-featured-track {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 32px) / 2.8);
+  gap: 16px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  padding: 5px 5px 10px;
+  margin-inline: -5px;
+}
+.snowline-featured-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 86px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--color-panel) 83%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  scroll-snap-align: start;
+}
+.snowline-featured-card:hover {
+  border-color: var(--accent);
+}
+.snowline-featured-number {
+  align-self: start;
+  color: var(--accent);
+  font: 10px var(--font-mono-stack);
+}
+.snowline-featured-image {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.snowline-featured-copy {
+  min-width: 0;
+  flex: 1;
+}
+.snowline-featured-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font: 500 15px/1.65 var(--font-serif-cn);
+}
+.snowline-featured-copy > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 7px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.snowline-featured-arrow {
+  align-self: end;
+  color: var(--accent);
+  font-size: 13px;
+}
+.snowline-featured-track > .snowline-empty-note {
+  grid-column: 1 / -1;
+  min-width: 250px;
+  padding: 16px 0;
+}
+
+/* 02 — a narrow route on the left and an ascending project ledger on the right. */
+.journey-technical-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.45fr);
+  align-items: center;
+  gap: clamp(44px, 8vw, 130px);
+  flex: 1;
+}
+.snowline-chapter-heading {
+  display: flex;
+  gap: 22px;
+  align-items: start;
+}
+.snowline-chapter-index {
+  margin-top: 5px;
+  color: var(--accent);
+  font: 11px var(--font-mono-stack);
+}
+.snowline-altitude {
+  display: block;
+  font: 10px var(--font-mono-stack);
+  letter-spacing: 0.12em;
+  color: var(--muted-foreground);
+}
+.snowline-chapter-heading h2 {
+  margin: 12px 0;
+  font-size: clamp(30px, 3.5vw, 46px);
+  line-height: 1.4;
+}
+.snowline-chapter-heading p {
+  font-size: 13px;
+  line-height: 1.8;
+}
+.snowline-skill-list {
+  margin-top: 34px;
+}
+.snowline-skill-marker {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 7px;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.snowline-skill-marker > span {
+  padding-top: 5px;
+  color: var(--accent);
+  font: 10px var(--font-mono-stack);
+}
+.snowline-skill-marker h3 {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.snowline-skill-marker p {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.snowline-skill-marker i {
+  width: 6px;
+  height: 6px;
+  margin-top: 8px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+.snowline-skill-marker:hover i {
+  background: var(--accent);
+}
+.journey-more-categories {
+  font-size: 12px;
+}
+.journey-more-categories summary {
+  cursor: pointer;
+  color: var(--accent);
+  padding-block: 12px;
+}
+.snowline-subheading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.snowline-subheading h3 {
+  font-size: 18px;
+}
+.snowline-subheading .snowline-eyebrow {
+  margin-bottom: 8px;
+  font-size: 9px;
+}
+.snowline-project-note {
+  position: relative;
+  display: block;
+  padding: 20px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+.snowline-project-stack .snowline-project-note:nth-child(2) {
+  margin-left: 32px;
+}
+.snowline-project-kicker {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.snowline-project-note h3 {
+  font-size: 23px;
+  line-height: 1.5;
+  margin: 9px 0 7px;
+}
+.snowline-project-note p {
+  font-size: 13px;
+  line-height: 1.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.snowline-project-note:hover h3 {
+  color: var(--accent);
+}
+.snowline-progress {
+  display: flex;
+  gap: 5px;
+  max-width: 120px;
+  margin-top: 16px;
+}
+.snowline-progress i {
+  height: 2px;
+  flex: 1;
+  background: var(--line);
+}
+.snowline-progress i.is-filled {
+  background: var(--accent);
+}
+.snowline-completed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+}
+.snowline-completed-heading h3 {
+  font-size: 15px;
+}
+.snowline-completed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.snowline-completed-grid .snowline-project-note {
+  padding: 14px 0;
+}
+.snowline-completed-grid .snowline-project-note h3 {
+  font-size: 16px;
+}
+.snowline-completed-grid .snowline-project-note :is(p, time) {
+  display: none;
+}
+.snowline-completed-grid .snowline-project-kicker {
+  font-size: 9px;
+}
+.snowline-completed-grid .snowline-progress {
+  max-width: 75px;
+  margin-top: 10px;
+}
+.snowline-completed-grid > .snowline-empty-note {
+  grid-column: 1/-1;
+}
+
+/* 03 — wide, low curves and a generous main story, with two smaller observations. */
+.journey-life-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 32px;
+}
+.snowline-life-toolbar {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  max-width: 50%;
+}
+.snowline-sign-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: start;
+}
+.snowline-life-sign {
+  display: inline-block;
+  border: 1px solid var(--line);
+  background: var(--background);
+  border-radius: 30px;
+  padding: 8px 15px;
+  font-size: 12px;
+}
+.snowline-life-sign:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.snowline-life-sign :is(small, i) {
+  display: none;
+}
+.snowline-life-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, auto));
+  align-content: center;
+  flex: 1;
+  gap: 24px 64px;
+}
+.snowline-life-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.snowline-life-card:first-child {
+  grid-row: span 2;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 0;
+}
+.snowline-life-media {
+  display: block;
+  flex: 0 0 110px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.snowline-life-image {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+}
+.snowline-life-card:first-child .snowline-life-media {
+  flex: 0 0 auto;
+}
+.snowline-life-card:first-child .snowline-life-image {
+  height: clamp(160px, 28dvh, 290px);
+}
+.snowline-life-card.is-text-only .snowline-life-media {
+  display: none;
+}
+.snowline-life-card.is-text-only:first-child {
+  min-height: 260px;
+  justify-content: center;
+  padding: 36px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--color-panel) 80%, transparent);
+  border-radius: 6px;
+}
+.snowline-life-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.snowline-life-copy > span,
+.snowline-life-copy time {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.snowline-life-copy strong {
+  font: 500 21px/1.6 var(--font-serif-cn);
+}
+.snowline-life-card:first-child strong {
+  font-size: 28px;
+}
+.snowline-life-card:hover strong {
+  color: var(--accent);
+}
+.snowline-life-copy time {
+  margin-top: auto;
+}
+.journey-empty-landscape {
+  grid-column: 1/-1;
+  align-self: center;
+  padding: 60px 0;
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+
+/* 04 — a sheltered arc around the notes and a small, quiet camp at the bottom. */
+.snowline-night-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 80px;
+  flex: 1;
+  align-content: center;
+  align-items: start;
+}
+.snowline-rambling-note {
+  position: relative;
+  display: block;
+  padding: 20px 0 20px 22px;
+  border-left: 1px solid var(--line);
+}
+.snowline-rambling-note::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  left: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.snowline-note-index {
+  color: var(--muted-foreground);
+  font: 9px var(--font-mono-stack);
+  letter-spacing: 0.1em;
+}
+.snowline-rambling-note h3 {
+  font-size: 21px;
+  margin: 8px 0;
+}
+.snowline-rambling-note p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.85;
+}
+.snowline-note-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  margin-top: 12px;
+}
+.snowline-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 30px;
+}
+.snowline-camp-entry {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+.snowline-entry-number {
+  color: var(--accent);
+  font: 10px var(--font-mono-stack);
+}
+.snowline-entry-kind {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.snowline-camp-entry h3 {
+  font-size: 19px;
+}
+.snowline-camp-entry p {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.snowline-camp-entry .snowline-link-arrow {
+  position: absolute;
+  top: 15px;
+  right: 0;
+  color: var(--accent);
+}
+.snowline-camp-entry:hover h3 {
+  color: var(--accent);
+}
+.journey-camp-footer {
+  margin-top: auto;
+}
+.journey-camp-footer .site-footer {
+  padding: 18px 0 0;
+}
+.journey-camp-footer .site-footer-inner {
+  width: 100%;
+  gap: 18px;
+}
+.journey-camp-footer .site-brand {
+  font-size: 23px;
+}
+.journey-camp-footer .site-footer nav {
+  gap: 16px;
+  font-size: 12px;
+}
+.journey-camp-footer .site-footer p {
+  font-size: 10px;
+  margin-top: 5px;
+}
+
+.snowline-route-nav {
+  position: fixed;
+  right: 18px;
+  top: 45%;
+  z-index: 30;
+}
+.snowline-route-nav ol {
+  display: grid;
+  gap: 16px;
+}
+.snowline-route-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+.snowline-route-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+}
+.snowline-route-nav .is-active .snowline-route-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 5px var(--glow);
+}
+.snowline-route-copy {
+  position: absolute;
+  right: 30px;
+  width: max-content;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--background);
+  font-size: 10px;
+  opacity: 0;
+  pointer-events: none;
+}
+.snowline-route-nav a:is(:hover, :focus-visible) .snowline-route-copy {
+  opacity: 1;
+}
+.journey-mobile-control,
+.journey-mobile-count {
+  display: none;
+}
+
+@media (min-width: 1600px) {
+  .journey-landscape-cover {
+    width: 1440px;
+    left: calc((100% - 1440px) / 2);
+  }
+}
+@media (max-width: 1100px) {
+  .journey-panel-inner {
+    width: calc(100% - 88px);
+  }
+  .journey-technical-grid {
+    gap: 40px;
+  }
+  .snowline-night-layout {
+    gap: 40px;
+  }
+  .snowline-life-grid {
+    gap: 22px 30px;
+  }
+  .snowline-life-media {
+    flex-basis: 80px;
+  }
+  .snowline-life-image {
+    height: 90px;
+  }
+}
+@media (max-width: 800px) {
+  .journey-panel-inner {
+    width: calc(100% - 48px);
+    padding-top: 26px;
+    gap: 20px;
+  }
+  .snowline-hero-copy {
+    width: 64%;
+  }
+  .snowline-featured-track {
+    grid-auto-columns: calc((100% - 16px) / 1.8);
+  }
+  .journey-technical-grid {
+    grid-template-columns: 1fr;
+    align-content: center;
+    flex: 1;
+    gap: 22px;
+  }
+  .snowline-skill-route {
+    display: grid;
+    gap: 16px;
+  }
+  .snowline-skill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0;
+  }
+  .snowline-skill-marker {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--background);
+  }
+  .snowline-skill-marker h3 {
+    font-family: var(--font-ui);
+    font-size: 12px;
+  }
+  .snowline-skill-marker :is(p, i),
+  .snowline-skill-marker > span {
+    display: none;
+  }
+  .snowline-subheading {
+    padding-bottom: 10px;
+  }
+  .snowline-subheading .snowline-eyebrow {
+    display: none;
+  }
+  .snowline-project-note {
+    padding: 13px 0;
+  }
+  .snowline-project-note h3 {
+    font-size: 20px;
+    margin-block: 6px;
+  }
+  .snowline-progress {
+    margin-top: 10px;
+  }
+  .snowline-completed-heading {
+    margin-top: 18px;
+  }
+  .snowline-completed-grid {
+    gap: 16px;
+  }
+  .journey-life-header {
+    align-items: start;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .snowline-life-toolbar {
+    max-width: 100%;
+  }
+  .snowline-life-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    align-content: center;
+    gap: 10px;
+  }
+  .snowline-life-card {
+    padding: 12px 0;
+    gap: 18px;
+  }
+  .snowline-life-card:first-child {
+    grid-row: auto;
+    gap: 14px;
+  }
+  .snowline-life-card:first-child .snowline-life-image {
+    height: clamp(110px, 16dvh, 170px);
+  }
+  .snowline-life-card.is-text-only:first-child {
+    min-height: 160px;
+    padding: 26px;
+  }
+  .snowline-life-card:first-child strong {
+    font-size: 23px;
+  }
+  .snowline-life-copy {
+    gap: 7px;
+  }
+  .snowline-life-copy strong {
+    font-size: 18px;
+  }
+  .snowline-life-card:not(:first-child) .snowline-life-copy strong {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .snowline-life-card:not(:first-child) .snowline-life-image {
+    height: 65px;
+  }
+  .snowline-night-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .snowline-entry-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .snowline-entry-kind,
+  .snowline-camp-entry p {
+    display: none;
+  }
+  .snowline-camp-entry h3 {
+    font-size: 15px;
+  }
+  .snowline-rambling-note {
+    padding-block: 10px;
+  }
+  .snowline-rambling-note p {
+    -webkit-line-clamp: 1;
+  }
+  .snowline-rambling-note::before {
+    top: 20px;
+  }
+  .snowline-rambling-note h3 {
+    font-size: 19px;
+    margin-block: 6px;
+  }
+  .snowline-route-nav {
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 6px;
+    background: var(--background);
+    border: 1px solid var(--line);
+    border-radius: 30px;
+  }
+  .snowline-route-nav ol {
+    display: none;
+  }
+  .journey-mobile-control {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: var(--accent);
+  }
+  .journey-mobile-control:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .journey-mobile-count {
+    display: block;
+    font: 10px var(--font-mono-stack);
+  }
+  .journey-mobile-count > span {
+    color: var(--muted-foreground);
+  }
+  .snowline-panel-foot {
+    min-height: 32px;
+    padding-right: 135px;
+  }
+  .snowline-panel-foot a,
+  .snowline-panel-foot > span:last-child {
+    display: none;
+  }
+  .journey-camp-footer .site-footer-inner {
+    align-items: start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .journey-camp-footer .site-footer nav {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 560px) {
+  .snowline-home {
+    --journey-height: calc(100dvh - var(--home-header-height, 69px));
+  }
+  .journey-panel-inner {
+    width: calc(100% - 40px);
+    padding-top: 22px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    gap: 16px;
+  }
+  .journey-hero-main {
+    align-items: start;
+    min-height: 370px;
+  }
+  .snowline-hero-copy {
+    width: 100%;
+    max-width: none;
+  }
+  .snowline-hero-copy h1 {
+    font-size: clamp(36px, 5.2dvh, 44px);
+    line-height: 1.3;
+    margin-block: 14px;
+  }
+  html:not([lang^="zh"]) .snowline-hero-copy h1 {
+    font-size: clamp(42px, 6.7dvh, 58px);
+  }
+  .snowline-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .snowline-site-intro {
+    max-width: 94%;
+    font-size: 13px;
+  }
+  .snowline-motto {
+    max-width: 90%;
+    margin-top: 10px;
+    font-size: 10px;
+  }
+  .snowline-motto figcaption {
+    font-size: 9px;
+  }
+  .snowline-hero-actions {
+    gap: 22px;
+    margin-top: 18px;
+  }
+  .snowline-button {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+  .snowline-text-link {
+    font-size: 12px;
+  }
+  .journey-landscape-cover {
+    inset: auto -20% 168px auto;
+    width: 145%;
+    height: 260px;
+  }
+  .journey-landscape-ridge {
+    opacity: 0.35;
+  }
+  .journey-landscape-field {
+    opacity: 0.55;
+  }
+  .journey-landscape-camp {
+    opacity: 0.4;
+  }
+  .snowline-featured {
+    padding-top: 12px;
+  }
+  .snowline-featured-heading {
+    margin-bottom: 6px;
+  }
+  .snowline-featured-heading h2 {
+    font-size: 13px;
+  }
+  .snowline-featured-heading h2 > span {
+    display: none;
+  }
+  .snowline-featured-track {
+    grid-auto-columns: 86%;
+    gap: 12px;
+  }
+  .snowline-featured-card {
+    min-height: 85px;
+    padding: 12px;
+    gap: 12px;
+  }
+  .snowline-featured-image {
+    width: 40px;
+    height: 46px;
+  }
+  .snowline-featured-copy strong {
+    font-size: 14px;
+  }
+  .snowline-chapter-heading {
+    gap: 14px;
+  }
+  .snowline-chapter-heading h2 {
+    font-size: 28px;
+    margin-block: 8px;
+  }
+  .snowline-chapter-heading p {
+    font-size: 12px;
+  }
+  .snowline-project-stack .snowline-project-note:nth-child(2) {
+    margin-left: 16px;
+  }
+  .snowline-project-note h3 {
+    font-size: 18px;
+  }
+  .snowline-project-note p {
+    font-size: 12px;
+  }
+  .snowline-completed-grid .snowline-project-note h3 {
+    font-size: 14px;
+  }
+  .snowline-project-kicker {
+    font-size: 9px;
+  }
+  .snowline-life-sign {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  .snowline-entry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+  .snowline-camp-entry {
+    padding: 12px 0;
+    gap: 5px;
+  }
+  .snowline-camp-entry .snowline-link-arrow {
+    top: 10px;
+  }
+  .snowline-note-foot {
+    margin-top: 8px;
+  }
+  .snowline-rambling-note p {
+    font-size: 12px;
+  }
+  .snowline-night-layout {
+    gap: 10px;
+  }
+  .snowline-rambling-note h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .snowline-rambling-note {
+    padding-block: 6px;
+  }
+  .snowline-camp-entry {
+    padding-block: 8px;
+  }
+  .snowline-life-card:first-child strong {
+    font-size: 21px;
+  }
+  .snowline-life-grid {
+    gap: 4px;
+  }
+  .journey-camp-footer .site-brand {
+    font-size: 20px;
+  }
+  .journey-camp-footer .site-footer nav {
+    gap: 12px;
+    font-size: 11px;
+  }
+}
+@media (min-width: 801px) and (max-height: 800px) {
+  .snowline-rambling-note {
+    padding-block: 16px;
+  }
+}
+@media (max-height: 650px) {
+  .snowline-home {
+    scroll-snap-type: y proximity;
+  }
+  .journey-panel-inner {
+    padding-top: 20px;
+  }
+  .journey-hero-main {
+    min-height: 320px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .snowline-home,
+  .snowline-featured-track {
+    scroll-behavior: auto;
+  }
+  .snowline-home *,
+  .snowline-home *::before,
+  .snowline-home *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

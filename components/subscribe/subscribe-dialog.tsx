@@ -1,13 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
-import { SubscribeForm } from './subscribe-form';
+import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/components/ui/use-dialog-focus";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { SubscribeForm } from "./subscribe-form";
 
 export function SubscribeDialog() {
-  const t = useTranslations('subscribe');
-  const tn = useTranslations('nav');
+  const t = useTranslations("subscribe");
+  const tn = useTranslations("nav");
   const [open, setOpen] = useState(false);
+  const dialogRef = useDialogFocus(open);
   const closeRef = useRef<HTMLButtonElement>(null);
   const openRef = useRef(open);
 
@@ -19,12 +23,12 @@ export function SubscribeDialog() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && openRef.current) {
+      if (e.key === "Escape" && openRef.current) {
         close();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [close]);
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export function SubscribeDialog() {
     }
   }, [open]);
 
-  const headingId = 'subscribe-dialog-heading';
+  const headingId = "subscribe-dialog-heading";
 
   return (
     <>
@@ -42,37 +46,45 @@ export function SubscribeDialog() {
         onClick={() => setOpen(true)}
         className="subscribe-trigger px-3 py-1.5 bg-[var(--color-panel-soft)]/50 text-[var(--color-text)] text-sm rounded-full
                    ring-1 ring-[var(--color-line)] hover:bg-[var(--color-blue-deep)] transition-colors font-medium"
-        aria-label={tn('subscribe')}
+        aria-label={tn("subscribe")}
       >
-        {tn('subscribe')}
+        {tn("subscribe")}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50" onClick={close}>
-          <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={headingId}
-            className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-50" onClick={close}>
+            <div className="absolute inset-0 bg-black/54 backdrop-blur-sm" />
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={headingId}
+              className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md
                         rounded-lg border border-[color:var(--line)] bg-[var(--color-panel)] p-6 shadow-xl shadow-black/45"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 id={headingId} className="font-semibold text-lg text-[var(--color-text)]">{t('title')}</h2>
-              <button
-                ref={closeRef}
-                onClick={close}
-                className="text-[var(--color-text-faint)] hover:text-[var(--color-text)] text-xl leading-none"
-                aria-label={t('close')}
-              >
-                ✕
-              </button>
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2
+                  id={headingId}
+                  className="font-semibold text-lg text-[var(--color-text)]"
+                >
+                  {t("title")}
+                </h2>
+                <button
+                  ref={closeRef}
+                  onClick={close}
+                  className="text-[var(--color-text-faint)] hover:text-[var(--color-text)] text-xl leading-none"
+                  aria-label={t("close")}
+                >
+                  ✕
+                </button>
+              </div>
+              <SubscribeForm showHeading={false} />
             </div>
-            <SubscribeForm showHeading={false} />
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
