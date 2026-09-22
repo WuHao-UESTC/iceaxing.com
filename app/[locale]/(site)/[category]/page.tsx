@@ -14,6 +14,7 @@ import {
   PostList,
   ProjectGrid,
 } from '@/components/site/listing-cards';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -62,13 +63,18 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <div className="listing-page">
-      <ListingBreadcrumb items={[{ label: t('home'), href: '/' }, { label: cat.title }]} />
-      <CategoryHero category={cat} />
+      <PageMotionItem step={0}>
+        <ListingBreadcrumb items={[{ label: t('home'), href: '/' }, { label: cat.title }]} />
+      </PageMotionItem>
+      <PageMotionItem step={1}>
+        <CategoryHero category={cat} />
+      </PageMotionItem>
 
-      {!hasContent ? (
-        <EmptyState message={t('emptyProjects')} />
-      ) : (
-        <div className="listing-stack">
+      <PageMotionItem step={2}>
+        {!hasContent ? (
+          <EmptyState message={t('emptyProjects')} />
+        ) : (
+          <div className="listing-stack">
           {projects.length > 0 && (
             <section className="listing-section">
               <div className="listing-section-head">
@@ -88,8 +94,9 @@ export default async function CategoryPage({ params }: Props) {
               <PostList posts={directPosts} category={category} labels={labels} compact rambling={isDailyRamblings} />
             </section>
           )}
-        </div>
-      )}
+          </div>
+        )}
+      </PageMotionItem>
     </div>
   );
 }

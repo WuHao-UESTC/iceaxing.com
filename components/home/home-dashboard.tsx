@@ -8,6 +8,7 @@ import { FeaturedStrip } from "./featured-strip";
 import { chapters, useHomeJourney, type ChapterId } from "./use-home-journey";
 import { formatDate, postHref } from "./home-utils";
 import { Link } from "@/lib/i18n/navigation";
+import { PageMotionItem } from "@/components/layout/page-transition";
 import type {
   HomeCategoryCard,
   HomeEntryCard,
@@ -442,7 +443,8 @@ export function HomeDashboard({
         <ChapterLandscape scene="cover" />
         <div className="journey-panel-inner">
           <div className="journey-hero-main">
-            <div className="snowline-hero-copy">
+            <PageMotionItem step={0} enter={false}>
+              <div className="snowline-hero-copy">
               <span className="snowline-eyebrow" data-reveal data-step="1">
                 ICEAXING / ABOVE THE SNOWLINE
               </span>
@@ -483,10 +485,15 @@ export function HomeDashboard({
                   <span aria-hidden="true">→</span>
                 </Link>
               </div>
-            </div>
+              </div>
+            </PageMotionItem>
           </div>
-          <FeaturedStrip posts={specialPosts} labels={labels} />
-          <PanelEnd index={0} labels={labels} navigate={navigate} />
+          <PageMotionItem step={2} enter={false}>
+            <FeaturedStrip posts={specialPosts} labels={labels} />
+          </PageMotionItem>
+          <PageMotionItem step={4} enter={false}>
+            <PanelEnd index={0} labels={labels} navigate={navigate} />
+          </PageMotionItem>
         </div>
       </section>
 
@@ -497,7 +504,8 @@ export function HomeDashboard({
       >
         <ChapterLandscape scene="ridge" />
         <div className="journey-panel-inner">
-          <div className="journey-technical-grid">
+          <PageMotionItem step={0} enter={false}>
+            <div className="journey-technical-grid">
             <aside className="snowline-skill-route">
               <ChapterHeading
                 index={1}
@@ -576,8 +584,10 @@ export function HomeDashboard({
                 )}
               </div>
             </div>
-          </div>
-          <div className="journey-footprints">
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={2} enter={false}>
+            <div className="journey-footprints">
             <div
               className="snowline-completed-heading"
               data-reveal
@@ -612,8 +622,11 @@ export function HomeDashboard({
                 </p>
               )}
             </div>
-          </div>
-          <PanelEnd index={1} labels={labels} navigate={navigate} />
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={4} enter={false}>
+            <PanelEnd index={1} labels={labels} navigate={navigate} />
+          </PageMotionItem>
         </div>
       </section>
 
@@ -624,14 +637,17 @@ export function HomeDashboard({
       >
         <ChapterLandscape scene="field" />
         <div className="journey-panel-inner">
-          <div className="journey-life-header">
-            <ChapterHeading
-              index={2}
-              title={labels.chapterNames[2]}
-              detail={labels.chapterIntros[1]}
-            />
-          </div>
-          <nav className="journey-life-map" aria-label={labels.chapterNames[2]}>
+          <PageMotionItem step={0} enter={false}>
+            <div className="journey-life-header">
+              <ChapterHeading
+                index={2}
+                title={labels.chapterNames[2]}
+                detail={labels.chapterIntros[1]}
+              />
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={1} enter={false}>
+            <nav className="journey-life-map" aria-label={labels.chapterNames[2]}>
             <svg
               className="journey-map-line"
               viewBox="0 0 1100 260"
@@ -666,8 +682,10 @@ export function HomeDashboard({
                 </div>
               </details>
             )}
-          </nav>
-          <div className="journey-recent-heading" data-reveal data-step="4">
+            </nav>
+          </PageMotionItem>
+          <PageMotionItem step={2} enter={false}>
+            <div className="journey-recent-heading" data-reveal data-step="4">
             <h3>{labels.lifeRecent.replace(/\\n/g, " ")}</h3>
             {payload.lifeRecentPosts.length > 3 && (
               <button
@@ -679,8 +697,10 @@ export function HomeDashboard({
                 ↻
               </button>
             )}
-          </div>
-          <div className="snowline-life-grid">
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={3} enter={false}>
+            <div className="snowline-life-grid">
             {lifeRecentPosts.length ? (
               lifeRecentPosts.map((post, index) => (
                 <LifeJournalCard
@@ -699,8 +719,11 @@ export function HomeDashboard({
                 {labels.noPosts}
               </p>
             )}
-          </div>
-          <PanelEnd index={2} labels={labels} navigate={navigate} />
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={4} enter={false}>
+            <PanelEnd index={2} labels={labels} navigate={navigate} />
+          </PageMotionItem>
         </div>
       </section>
 
@@ -711,12 +734,15 @@ export function HomeDashboard({
       >
         <ChapterLandscape scene="camp" />
         <div className="journey-panel-inner">
-          <ChapterHeading
-            index={3}
-            title={labels.chapterNames[3]}
-            detail={labels.chapterIntros[2]}
-          />
-          <div className="snowline-night-layout">
+          <PageMotionItem step={0} enter={false}>
+            <ChapterHeading
+              index={3}
+              title={labels.chapterNames[3]}
+              detail={labels.chapterIntros[2]}
+            />
+          </PageMotionItem>
+          <PageMotionItem step={1} enter={false}>
+            <div className="snowline-night-layout">
             <div className="snowline-field-notes">
               <div className="snowline-subheading" data-reveal data-step="2">
                 <h3>
@@ -765,8 +791,10 @@ export function HomeDashboard({
                 ))}
               </div>
             </nav>
-          </div>
-          <div className="journey-camp-letter" data-reveal data-step="5.5">
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={3} enter={false}>
+            <div className="journey-camp-letter" data-reveal data-step="5.5">
             <svg
               className="journey-letter-mark"
               viewBox="0 0 64 48"
@@ -779,11 +807,16 @@ export function HomeDashboard({
             </svg>
             <p>{labels.campLetter}</p>
             <SubscribeDialog />
-          </div>
-          <div className="journey-camp-footer" data-reveal data-step="6">
-            {footer}
-          </div>
-          <PanelEnd index={3} labels={labels} navigate={navigate} />
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={4} enter={false}>
+            <div className="journey-camp-footer" data-reveal data-step="6">
+              {footer}
+            </div>
+          </PageMotionItem>
+          <PageMotionItem step={4} enter={false}>
+            <PanelEnd index={3} labels={labels} navigate={navigate} />
+          </PageMotionItem>
         </div>
       </section>
     </div>

@@ -30,20 +30,18 @@ export function useHomeJourney(locale: string) {
     const header = document.querySelector<HTMLElement>(".site-header");
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
     const storageKey = `snowline-journey:${locale}`;
-    const seen = new Set<string>();
     const animations = new Map<HTMLElement, Animation[]>();
+    const armed = new Set<HTMLElement>();
     let current: HTMLElement | undefined;
     let frame = 0;
     let geometryFrame = 0;
     let travelFrame = 0;
     let travelling = false;
-    let returningLandscape: Animation | undefined;
     let settleTimer = 0;
     let suppressFocusReveal = false;
-    let saved: { chapter?: string; offset?: number; seen?: string[] } = {};
+    let saved: { chapter?: string; offset?: number } = {};
     try {
       saved = JSON.parse(sessionStorage.getItem(storageKey) || "{}") || {};
-      if (Array.isArray(saved.seen)) saved.seen.forEach((id) => seen.add(id));
     } catch {
       /* Storage is optional; native scrolling remains available. */
     }
@@ -59,7 +57,6 @@ export function useHomeJourney(locale: string) {
               0,
               (viewport!.scrollTop - current.offsetTop) / current.offsetHeight,
             ),
-            seen: Array.from(seen),
           }),
         );
       } catch {
@@ -67,19 +64,30 @@ export function useHomeJourney(locale: string) {
       }
     }
 
-    function reveal(panel: HTMLElement, animated: boolean) {
-      if (seen.has(panel.id)) return;
-      seen.add(panel.id);
-      panel.dataset.visited = "true";
+    function arm(panel: HTMLElement) {
+      if (motion.matches || armed.has(panel)) return;
       for (const animation of animations.get(panel) || []) {
-        if (animated && !motion.matches) animation.play();
-        else animation.cancel();
+        animation.cancel();
+        animation.currentTime = 0;
+        animation.pause();
+      }
+      armed.add(panel);
+    }
+
+    function reveal(panel: HTMLElement, animated: boolean) {
+      panel.dataset.visited = "true";
+      armed.delete(panel);
+      for (const animation of animations.get(panel) || []) {
+        animation.cancel();
+        if (animated && !motion.matches) {
+          animation.currentTime = 0;
+          animation.play();
+        }
       }
     }
 
     // WAAPI keeps the server-rendered baseline visible: no JS, no hidden content.
     for (const panel of panels) {
-      if (seen.has(panel.id) || motion.matches) continue;
       const group: Animation[] = [];
       for (const element of panel.querySelectorAll<HTMLElement>(
         "[data-reveal]",
@@ -101,8 +109,8 @@ export function useHomeJourney(locale: string) {
             },
           ],
           {
-            duration: landscape ? 1000 : 520,
-            delay: Math.min(Number(element.dataset.step || 0) * 100, 600),
+            duration: landscape ? 900 : 460,
+            delay: Math.min(Number(element.dataset.step || 0) * 65, 390),
             easing: "cubic-bezier(.22,1,.36,1)",
             fill: "both",
           },
@@ -119,7 +127,7 @@ export function useHomeJourney(locale: string) {
             { strokeDasharray: "1", strokeDashoffset: "1" },
             { strokeDasharray: "1", strokeDashoffset: "0" },
           ],
-          { duration: 700, easing: "ease-out", fill: "both" },
+          { duration: 720, easing: "ease-out", fill: "both" },
         );
         drawing.pause();
         drawing.currentTime = 0;
@@ -127,6 +135,7 @@ export function useHomeJourney(locale: string) {
         group.push(drawing);
       }
       animations.set(panel, group);
+      armed.add(panel);
     }
 
     function settle() {
@@ -141,7 +150,6 @@ export function useHomeJourney(locale: string) {
         visible >=
         Math.min(viewport!.clientHeight, panel.offsetHeight) * 0.6
       ) {
-        reveal(panel, true);
         // Preserve Next's history state while keeping native deep links useful.
         if (location.hash !== `#${panel.id}`)
           history.replaceState(history.state, "", `#${panel.id}`);
@@ -158,28 +166,24 @@ export function useHomeJourney(locale: string) {
             node.offsetTop + node.offsetHeight > marker,
         ) || panels[0];
       if (panel !== current) {
-        if (current && seen.has(current.id))
-          animations.get(current)?.forEach((animation) => animation.cancel());
-        returningLandscape?.cancel();
-        if (seen.has(panel.id) && !motion.matches) {
-          returningLandscape = panel
-            .querySelector(".journey-landscape")
-            ?.animate([{ filter: "blur(6px)" }, { filter: "blur(0px)" }], {
-              duration: 850,
-              easing: "cubic-bezier(.22,1,.36,1)",
-            });
-        }
         current = panel;
         setActiveChapter(panel.id as ChapterId);
-      }
-      // Reveal on approach so the landscape resolves while the chapter arrives.
-      const visible =
-        Math.min(
-          viewport!.scrollTop + viewport!.clientHeight,
-          panel.offsetTop + panel.offsetHeight,
-        ) - Math.max(viewport!.scrollTop, panel.offsetTop);
-      if (visible >= Math.min(viewport!.clientHeight, panel.offsetHeight) * 0.6)
         reveal(panel, true);
+      }
+      if (!motion.matches)
+        for (const candidate of panels) {
+          if (candidate === current || armed.has(candidate)) continue;
+          const visible =
+            Math.min(
+              viewport!.scrollTop + viewport!.clientHeight,
+              candidate.offsetTop + candidate.offsetHeight,
+            ) - Math.max(viewport!.scrollTop, candidate.offsetTop);
+          if (
+            visible <=
+            Math.min(viewport!.clientHeight, candidate.offsetHeight) * 0.05
+          )
+            arm(candidate);
+        }
       window.clearTimeout(settleTimer);
       settleTimer = window.setTimeout(settle, 140);
     }
@@ -318,12 +322,14 @@ export function useHomeJourney(locale: string) {
     }
     function onMotionChange() {
       cancelTravel();
-      returningLandscape?.cancel();
-      if (motion.matches)
+      if (motion.matches) {
+        panels.forEach((panel) => reveal(panel, false));
+      } else {
         panels.forEach((panel) => {
-          animations.get(panel)?.forEach((animation) => animation.cancel());
-          seen.add(panel.id);
+          if (panel !== current) arm(panel);
         });
+        if (current) reveal(current, true);
+      }
     }
     viewport.addEventListener("scroll", onScroll, { passive: true });
     viewport.addEventListener("wheel", interruptTravel, { passive: true });
@@ -340,7 +346,6 @@ export function useHomeJourney(locale: string) {
     return () => {
       persist();
       cancelTravel();
-      returningLandscape?.cancel();
       viewport.removeEventListener("wheel", interruptTravel);
       viewport.removeEventListener("touchstart", interruptTravel);
       viewport.removeEventListener("pointerdown", interruptTravel);

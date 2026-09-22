@@ -20,6 +20,7 @@
 @import "./styles/components.css";
 @import "./styles/snowline.css";
 @import "./styles/snowline-home.css";
+@import "./styles/transitions.css";
 
 @plugin "@tailwindcss/typography";
 

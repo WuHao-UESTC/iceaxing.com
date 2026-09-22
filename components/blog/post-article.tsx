@@ -3,6 +3,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { TableOfContents } from '@/components/blog/table-of-contents';
 import { GiscusComments } from '@/components/comments/giscus';
+import { PageMotionItem } from '@/components/layout/page-transition';
 import {
   SITE_NAME,
   getCanonicalByContentLanguage,
@@ -103,7 +104,8 @@ export function PostArticle({
     <>
       <div className="snowline-article">
         <article className="min-w-0">
-          <nav className="text-sm text-zinc-400 mb-8">
+          <PageMotionItem step={0}>
+            <nav className="text-sm text-zinc-400 mb-8">
             <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
             <span className="mx-2">/</span>
             <Link href={`/${category}`} className="hover:text-zinc-600">{post.category?.title || category}</Link>
@@ -123,51 +125,64 @@ export function PostArticle({
                 </Link>
               </>
             )}
-          </nav>
+            </nav>
+          </PageMotionItem>
 
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
-            <div className="flex items-center gap-3 text-sm text-zinc-400">
-              <time dateTime={post.publishedAt}>
-                {formatDate(post.publishedAt)}
-              </time>
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex gap-2">
-                  {post.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+          <PageMotionItem step={1}>
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold mb-3">{post.title}</h1>
+              <div className="flex items-center gap-3 text-sm text-zinc-400">
+                <time dateTime={post.publishedAt}>
+                  {formatDate(post.publishedAt)}
+                </time>
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex gap-2">
+                    {post.tags.map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 bg-zinc-100 rounded text-xs">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </header>
+          </PageMotionItem>
+
+          <PageMotionItem step={2}>
+            <div className="mb-8 lg:hidden">
+              <TableOfContents content={post.body} locale={locale} />
             </div>
-          </header>
+          </PageMotionItem>
 
-          <div className="mb-8 lg:hidden">
-            <TableOfContents content={post.body} locale={locale} />
-          </div>
-
-          <div className="blog-body">
-            <BlogBody content={post.body} />
-          </div>
+          <PageMotionItem step={2}>
+            <div className="blog-body">
+              <BlogBody content={post.body} />
+            </div>
+          </PageMotionItem>
 
           {post.updatedAt && (
-            <p className="text-sm text-zinc-400 mt-12 pt-6 border-t">
-              {t('updatedAt')} {formatDate(post.updatedAt)}
-            </p>
+            <PageMotionItem step={3}>
+              <p className="text-sm text-zinc-400 mt-12 pt-6 border-t">
+                {t('updatedAt')} {formatDate(post.updatedAt)}
+              </p>
+            </PageMotionItem>
           )}
         </article>
 
-        <div className="hidden lg:block">
-          <div className="sticky top-24">
-            <TableOfContents content={post.body} locale={locale} />
+        <PageMotionItem step={2}>
+          <div className="hidden lg:block">
+            <div className="sticky top-24">
+              <TableOfContents content={post.body} locale={locale} />
+            </div>
           </div>
-        </div>
+        </PageMotionItem>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pb-12">
-        <GiscusComments locale={locale} />
-      </div>
+      <PageMotionItem step={4}>
+        <div className="max-w-3xl mx-auto px-4 pb-12">
+          <GiscusComments locale={locale} />
+        </div>
+      </PageMotionItem>
     </>
   );
 }

@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL, getStaticAlternates } from '@/lib/seo';
 import { htmlLocale, isAppLocale, openGraphLocale } from '@/lib/i18n/locales';
 import { VisualEditing } from '@/components/sanity/VisualEditing';
+import { PageTransition } from '@/components/layout/page-transition';
 import '../globals.css';
 
 export async function generateMetadata({
@@ -79,7 +80,11 @@ export default async function LocaleLayout({
       <body className="site-shell min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SiteHeader />
-          <main className="min-h-[calc(100vh-12rem)]">{children}</main>
+          <PageTransition>
+            <main className="page-transition-main min-h-[calc(100vh-12rem)]">
+              {children}
+            </main>
+          </PageTransition>
           <SiteFooter />
           <VisualEditing />
         </NextIntlClientProvider>

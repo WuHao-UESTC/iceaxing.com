@@ -4,6 +4,7 @@ import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 import { getAbout } from '@/lib/sanity/queries';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -42,17 +43,23 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <div className="snowline-page">
-      <h1 className="text-3xl font-bold mb-6">{about.title || t('title')}</h1>
-      <div className="prose prose-zinc">
-        {about.body && about.body.length > 0 ? (
-          <BlogBody content={about.body} />
-        ) : (
-          <p>{about.intro}</p>
-        )}
-      </div>
-      <Link href="/" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
-        {tc('backToHome')}
-      </Link>
+      <PageMotionItem step={0}>
+        <h1 className="text-3xl font-bold mb-6">{about.title || t('title')}</h1>
+      </PageMotionItem>
+      <PageMotionItem step={1}>
+        <div className="prose prose-zinc">
+          {about.body && about.body.length > 0 ? (
+            <BlogBody content={about.body} />
+          ) : (
+            <p>{about.intro}</p>
+          )}
+        </div>
+      </PageMotionItem>
+      <PageMotionItem step={2}>
+        <Link href="/" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
+          {tc('backToHome')}
+        </Link>
+      </PageMotionItem>
     </div>
   );
 }

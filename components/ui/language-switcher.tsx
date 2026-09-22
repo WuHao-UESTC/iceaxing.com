@@ -19,7 +19,10 @@ export function LanguageSwitcher() {
 
   const handleSwitch = (nextLocale: AppLocale) => {
     startTransition(() => {
-      router.replace(pathname, { locale: nextLocale });
+      router.replace(pathname, {
+        locale: nextLocale,
+        transitionTypes: ['locale-change'],
+      });
     });
   };
 

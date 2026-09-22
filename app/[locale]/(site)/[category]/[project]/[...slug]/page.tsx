@@ -24,6 +24,7 @@ import {
   ListingBreadcrumb,
   PostList,
 } from '@/components/site/listing-cards';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -121,27 +122,33 @@ export default async function CatchAllPage({ params }: Props) {
 
       return (
         <div className="listing-page">
-          <ListingBreadcrumb
-            items={[
-              { label: t('home'), href: '/' },
-              { label: cat?.title || category, href: `/${category}` },
-              { label: proj?.title || project, href: `/${category}/${project}` },
-              { label: collection.title },
-            ]}
-          />
-          <CollectionHero collection={collection} labels={labels} />
+          <PageMotionItem step={0}>
+            <ListingBreadcrumb
+              items={[
+                { label: t('home'), href: '/' },
+                { label: cat?.title || category, href: `/${category}` },
+                { label: proj?.title || project, href: `/${category}/${project}` },
+                { label: collection.title },
+              ]}
+            />
+          </PageMotionItem>
+          <PageMotionItem step={1}>
+            <CollectionHero collection={collection} labels={labels} />
+          </PageMotionItem>
 
-          {posts.length === 0 ? (
-            <EmptyState message={t('emptyCollections')} />
-          ) : (
-            <section className="listing-section listing-section-narrow">
-              <div className="listing-section-head">
-                <h2>{t('posts')}</h2>
-                <span>{posts.length}</span>
-              </div>
-              <PostList posts={posts} category={category} project={project} labels={labels} compact />
-            </section>
-          )}
+          <PageMotionItem step={2}>
+            {posts.length === 0 ? (
+              <EmptyState message={t('emptyCollections')} />
+            ) : (
+              <section className="listing-section listing-section-narrow">
+                <div className="listing-section-head">
+                  <h2>{t('posts')}</h2>
+                  <span>{posts.length}</span>
+                </div>
+                <PostList posts={posts} category={category} project={project} labels={labels} compact />
+              </section>
+            )}
+          </PageMotionItem>
         </div>
       );
     }

@@ -19,6 +19,7 @@ import {
   PostList,
   ProjectHero,
 } from '@/components/site/listing-cards';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -98,16 +99,21 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <div className="listing-page">
-      <ListingBreadcrumb
-        items={[
-          { label: t('home'), href: '/' },
-          { label: cat?.title || category, href: `/${category}` },
-          { label: proj.title },
-        ]}
-      />
-      <ProjectHero project={proj} labels={labels} />
+      <PageMotionItem step={0}>
+        <ListingBreadcrumb
+          items={[
+            { label: t('home'), href: '/' },
+            { label: cat?.title || category, href: `/${category}` },
+            { label: proj.title },
+          ]}
+        />
+      </PageMotionItem>
+      <PageMotionItem step={1}>
+        <ProjectHero project={proj} labels={labels} />
+      </PageMotionItem>
 
-      <div className="listing-stack listing-project-stack">
+      <PageMotionItem step={2}>
+        <div className="listing-stack listing-project-stack">
         {collections.length > 0 && (
           <section className="listing-section">
             <div className="listing-section-head">
@@ -129,7 +135,8 @@ export default async function ProjectPage({ params }: Props) {
             <PostList posts={posts} category={category} project={project} labels={labels} compact />
           )}
         </section>
-      </div>
+        </div>
+      </PageMotionItem>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { getAllLogs } from '@/lib/sanity/queries';
 import { getTranslations } from 'next-intl/server';
 import { LogGrid } from '@/components/log/log-grid';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -36,15 +37,19 @@ export default async function LogPage() {
 
   return (
     <div className="snowline-page">
-      <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
+      <PageMotionItem step={0}>
+        <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
+      </PageMotionItem>
 
-      <LogGrid
-        logs={logs}
-        categoryColorMap={categoryColorMap}
-        legendContent={t('legendContent')}
-        legendSite={t('legendSite')}
-        legendOther={t('legendOther')}
-      />
+      <PageMotionItem step={1}>
+        <LogGrid
+          logs={logs}
+          categoryColorMap={categoryColorMap}
+          legendContent={t('legendContent')}
+          legendSite={t('legendSite')}
+          legendOther={t('legendOther')}
+        />
+      </PageMotionItem>
     </div>
   );
 }

@@ -1,0 +1,186 @@
+/* Route changes keep the shell still while page regions leave and arrive in sequence. */
+::view-transition-old(root) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
+.site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(site-header) {
+  z-index: 100;
+  animation: none;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+::view-transition-group(page-content) {
+  overflow: clip;
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(.page-root) {
+  mix-blend-mode: normal;
+  animation: 260ms cubic-bezier(0.4, 0, 1, 1) both page-root-out;
+}
+
+::view-transition-new(.page-root) {
+  mix-blend-mode: normal;
+  animation: 350ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both page-root-in;
+}
+
+::view-transition-old(.page-root-neutral) {
+  animation: 150ms ease-out both page-neutral-out;
+}
+
+::view-transition-new(.page-root-neutral) {
+  animation: 210ms ease-out 70ms both page-neutral-in;
+}
+
+::view-transition-old(.page-item-neutral-out) {
+  animation: 150ms ease-out both page-neutral-out;
+}
+
+::view-transition-new(.page-item-neutral-in) {
+  animation: 210ms ease-out 70ms both page-neutral-in;
+}
+
+::view-transition-group(.page-item-out-0),
+::view-transition-group(.page-item-out-1),
+::view-transition-group(.page-item-out-2),
+::view-transition-group(.page-item-out-3),
+::view-transition-group(.page-item-out-4),
+::view-transition-group(.page-item-in-0),
+::view-transition-group(.page-item-in-1),
+::view-transition-group(.page-item-in-2),
+::view-transition-group(.page-item-in-3),
+::view-transition-group(.page-item-in-4) {
+  z-index: 2;
+  animation-duration: 620ms;
+}
+
+::view-transition-old(.page-item-out-0),
+::view-transition-new(.page-item-in-0) {
+  --page-motion-step: 0ms;
+}
+
+::view-transition-old(.page-item-out-1),
+::view-transition-new(.page-item-in-1) {
+  --page-motion-step: 42ms;
+}
+
+::view-transition-old(.page-item-out-2),
+::view-transition-new(.page-item-in-2) {
+  --page-motion-step: 84ms;
+}
+
+::view-transition-old(.page-item-out-3),
+::view-transition-new(.page-item-in-3) {
+  --page-motion-step: 126ms;
+}
+
+::view-transition-old(.page-item-out-4),
+::view-transition-new(.page-item-in-4) {
+  --page-motion-step: 168ms;
+}
+
+::view-transition-old(.page-item-out-0),
+::view-transition-old(.page-item-out-1),
+::view-transition-old(.page-item-out-2),
+::view-transition-old(.page-item-out-3),
+::view-transition-old(.page-item-out-4) {
+  mix-blend-mode: normal;
+  animation: 220ms cubic-bezier(0.4, 0, 1, 1) var(--page-motion-step) both
+    page-item-out;
+}
+
+::view-transition-new(.page-item-in-0),
+::view-transition-new(.page-item-in-1),
+::view-transition-new(.page-item-in-2),
+::view-transition-new(.page-item-in-3),
+::view-transition-new(.page-item-in-4) {
+  mix-blend-mode: normal;
+  animation: 360ms cubic-bezier(0.22, 1, 0.36, 1)
+    calc(125ms + var(--page-motion-step)) both page-item-in;
+}
+
+@keyframes page-root-out {
+  to {
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+
+@keyframes page-root-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes page-item-out {
+  to {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(26px);
+  }
+}
+
+@keyframes page-item-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(34px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-neutral-out {
+  to {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(8px);
+  }
+}
+
+@keyframes page-neutral-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}

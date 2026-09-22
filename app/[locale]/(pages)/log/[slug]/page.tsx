@@ -6,6 +6,7 @@ import { GiscusComments } from '@/components/comments/giscus';
 import { getTranslations } from 'next-intl/server';
 import { getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
 import { intlLocale } from '@/lib/i18n/locales';
+import { PageMotionItem } from '@/components/layout/page-transition';
 
 export const revalidate = 60;
 
@@ -65,15 +66,18 @@ export default async function LogDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(logJsonLd) }}
       />
-      <nav className="text-sm text-zinc-400 mb-8">
+      <PageMotionItem step={0}>
+        <nav className="text-sm text-zinc-400 mb-8">
         <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
         <span className="mx-2">/</span>
         <Link href="/log" className="hover:text-zinc-600">{t('log')}</Link>
         <span className="mx-2">/</span>
         <span className="text-zinc-700">{log.title}</span>
-      </nav>
+        </nav>
+      </PageMotionItem>
 
-      <header className="mb-8">
+      <PageMotionItem step={1}>
+        <header className="mb-8">
         <h1 className="text-2xl font-bold mb-2">{log.title}</h1>
         <div className="flex items-center gap-3 text-sm text-zinc-400">
           <time dateTime={log.date}>
@@ -83,17 +87,24 @@ export default async function LogDetailPage({ params }: Props) {
             {categoryLabels[log.category] || log.category}
           </span>
         </div>
-      </header>
+        </header>
+      </PageMotionItem>
 
-      <div className="prose prose-zinc">
-        <BlogBody content={log.body} />
-      </div>
+      <PageMotionItem step={2}>
+        <div className="prose prose-zinc">
+          <BlogBody content={log.body} />
+        </div>
+      </PageMotionItem>
 
-      <GiscusComments locale={locale} />
+      <PageMotionItem step={3}>
+        <GiscusComments locale={locale} />
+      </PageMotionItem>
 
-      <Link href="/log" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
-        {t('backToLog')}
-      </Link>
+      <PageMotionItem step={4}>
+        <Link href="/log" className="text-sm text-[var(--color-blue-soft)] hover:text-[var(--color-sand)] mt-8 inline-block">
+          {t('backToLog')}
+        </Link>
+      </PageMotionItem>
     </div>
   );
 }
