@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { SubscribeDialog } from "@/components/subscribe/subscribe-dialog";
 import { useState, type ReactNode, type MouseEvent } from "react";
 import { ChapterLandscape } from "./chapter-landscape";
 import { FeaturedStrip } from "./featured-strip";
@@ -19,6 +20,9 @@ import type {
 export interface HomeLabels {
   heroTitle: [string, string];
   heroIntro: string;
+  chapterIntros: [string, string, string];
+  campLetter: string;
+  campDirectory: string;
   readNotes: string;
   meetMe: string;
   previousArticles: string;
@@ -269,10 +273,15 @@ function LifeSign({
     <Link
       href={`/${category.slug}`}
       className={`snowline-life-sign snowline-life-sign-${(index % 3) + 1}`}
+      data-reveal
+      data-step={2 + index * 0.7}
     >
-      <span>{category.title}</span>
+      <span className="journey-map-number">0{index + 1} /</span>
+      <h3>{category.title}</h3>
       <small>{introOf(category)}</small>
-      <i aria-hidden="true" />
+      <span className="journey-map-arrow" aria-hidden="true">
+        ↗
+      </span>
     </Link>
   );
 }
@@ -488,9 +497,17 @@ export function HomeDashboard({
               <ChapterHeading
                 index={1}
                 title={labels.chapterNames[1]}
-                detail={labels.skills}
+                detail={labels.chapterIntros[0]}
               />
               <div className="snowline-skill-list" data-reveal data-step="2">
+                <svg
+                  className="journey-route-line"
+                  viewBox="0 0 360 280"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <path d="M22 280C22 207 100 218 85 150S147 97 161 0" />
+                </svg>
                 {payload.skillCategories.length ? (
                   payload.skillCategories
                     .slice(0, 3)
@@ -553,40 +570,42 @@ export function HomeDashboard({
                   </p>
                 )}
               </div>
-              <div
-                className="snowline-completed-heading"
-                data-reveal
-                data-step="4.5"
-              >
-                <h3>{labels.completedProjects}</h3>
-                {payload.completedProjects.length > 3 && (
-                  <button
-                    type="button"
-                    className="snowline-icon-button"
-                    aria-label={labels.refresh}
-                    onClick={() => setCompletedSeed((seed) => seed + 1)}
-                  >
-                    ↻
-                  </button>
-                )}
-              </div>
-              <div className="snowline-completed-grid">
-                {completedProjects.length ? (
-                  completedProjects.map((project, index) => (
-                    <ProjectNote
-                      key={project._id}
-                      project={project}
-                      labels={labels}
-                      completed
-                      step={5 + index * 0.3}
-                    />
-                  ))
-                ) : (
-                  <p className="snowline-empty-note" data-reveal data-step="5">
-                    {labels.noPosts}
-                  </p>
-                )}
-              </div>
+            </div>
+          </div>
+          <div className="journey-footprints">
+            <div
+              className="snowline-completed-heading"
+              data-reveal
+              data-step="4.5"
+            >
+              <h3>{labels.completedProjects}</h3>
+              {payload.completedProjects.length > 3 && (
+                <button
+                  type="button"
+                  className="snowline-icon-button"
+                  aria-label={labels.refresh}
+                  onClick={() => setCompletedSeed((seed) => seed + 1)}
+                >
+                  ↻
+                </button>
+              )}
+            </div>
+            <div className="snowline-completed-grid">
+              {completedProjects.length ? (
+                completedProjects.map((project, index) => (
+                  <ProjectNote
+                    key={project._id}
+                    project={project}
+                    labels={labels}
+                    completed
+                    step={5 + index * 0.3}
+                  />
+                ))
+              ) : (
+                <p className="snowline-empty-note" data-reveal data-step="5">
+                  {labels.noPosts}
+                </p>
+              )}
             </div>
           </div>
           <PanelEnd index={1} labels={labels} navigate={navigate} />
@@ -604,41 +623,57 @@ export function HomeDashboard({
             <ChapterHeading
               index={2}
               title={labels.chapterNames[2]}
-              detail={labels.lifeRecent.replace(/\\n/g, " ")}
+              detail={labels.chapterIntros[1]}
             />
-            <div className="snowline-life-toolbar" data-reveal data-step="5">
-              <div className="snowline-sign-list">
-                {payload.lifeCategories.slice(0, 4).map((category, index) => (
-                  <LifeSign
-                    key={category._id}
-                    category={category}
-                    index={index}
-                  />
-                ))}
-                {payload.lifeCategories.length > 4 && (
-                  <details className="journey-more-categories">
-                    <summary>{labels.moreCategories}</summary>
-                    {payload.lifeCategories.slice(4).map((category, index) => (
-                      <LifeSign
-                        key={category._id}
-                        category={category}
-                        index={index}
-                      />
-                    ))}
-                  </details>
-                )}
-              </div>
-              {payload.lifeRecentPosts.length > 3 && (
-                <button
-                  type="button"
-                  className="snowline-icon-button"
-                  aria-label={labels.refresh}
-                  onClick={() => setLifeSeed((seed) => seed + 1)}
-                >
-                  ↻
-                </button>
+          </div>
+          <nav className="journey-life-map" aria-label={labels.chapterNames[2]}>
+            <svg
+              className="journey-map-line"
+              viewBox="0 0 1100 260"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d="M-80 80C140 290 295 58 510 140S830 310 1180 28" />
+            </svg>
+            <div className="snowline-sign-list">
+              {payload.lifeCategories.slice(0, 4).map((category, index) => (
+                <LifeSign
+                  key={category._id}
+                  category={category}
+                  index={index}
+                />
+              ))}
+              {!payload.lifeCategories.length && (
+                <p className="snowline-empty-note">{labels.noPosts}</p>
               )}
             </div>
+            {payload.lifeCategories.length > 4 && (
+              <details className="journey-more-categories">
+                <summary>{labels.moreCategories}</summary>
+                <div className="journey-map-extra">
+                  {payload.lifeCategories.slice(4).map((category, index) => (
+                    <LifeSign
+                      key={category._id}
+                      category={category}
+                      index={index + 4}
+                    />
+                  ))}
+                </div>
+              </details>
+            )}
+          </nav>
+          <div className="journey-recent-heading" data-reveal data-step="4">
+            <h3>{labels.lifeRecent.replace(/\\n/g, " ")}</h3>
+            {payload.lifeRecentPosts.length > 3 && (
+              <button
+                type="button"
+                className="snowline-icon-button"
+                aria-label={labels.refresh}
+                onClick={() => setLifeSeed((seed) => seed + 1)}
+              >
+                ↻
+              </button>
+            )}
           </div>
           <div className="snowline-life-grid">
             {lifeRecentPosts.length ? (
@@ -669,12 +704,11 @@ export function HomeDashboard({
         className="snowline-panel snowline-night"
         aria-labelledby="night-camp-title"
       >
-        <ChapterLandscape scene="camp" />
         <div className="journey-panel-inner">
           <ChapterHeading
             index={3}
             title={labels.chapterNames[3]}
-            detail={labels.fieldNotes}
+            detail={labels.chapterIntros[2]}
           />
           <div className="snowline-night-layout">
             <div className="snowline-field-notes">
@@ -702,16 +736,36 @@ export function HomeDashboard({
                 )}
               </div>
             </div>
-            <div className="snowline-entry-grid">
-              {payload.entryCards.slice(0, 4).map((entry, index) => (
-                <CampEntry
-                  key={entry._id}
-                  entry={entry}
-                  labels={labels}
-                  index={index}
-                />
-              ))}
+            <div className="journey-camp-trail" aria-hidden="true">
+              <ChapterLandscape scene="camp" />
             </div>
+            <nav
+              className="journey-camp-directory"
+              aria-labelledby="camp-directory-title"
+            >
+              <h3
+                id="camp-directory-title"
+                className="journey-directory-heading"
+                data-reveal
+                data-step="3"
+              >
+                {labels.campDirectory}
+              </h3>
+              <div className="snowline-entry-grid">
+                {payload.entryCards.slice(0, 4).map((entry, index) => (
+                  <CampEntry
+                    key={entry._id}
+                    entry={entry}
+                    labels={labels}
+                    index={index}
+                  />
+                ))}
+              </div>
+            </nav>
+          </div>
+          <div className="journey-camp-letter" data-reveal data-step="5.5">
+            <p>{labels.campLetter}</p>
+            <SubscribeDialog />
           </div>
           <div className="journey-camp-footer" data-reveal data-step="6">
             {footer}

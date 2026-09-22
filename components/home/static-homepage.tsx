@@ -28,6 +28,13 @@ function getHomeLabels(locale: string): HomeLabels {
         profile: "Profile",
       },
       skills: "Technical Stack",
+      chapterIntros: [
+        "From first principles to ideas made real.",
+        "Small discoveries in books, journeys, and ordinary days.",
+        "Passing thoughts, and the people met along the way.",
+      ],
+      campDirectory: "People & places",
+      campLetter: "A letter now and then, from further up the trail.",
       ongoingProjects: "In Progress",
       completedProjects: "Finished Works",
       ramblings: "Daily Ramblings",
@@ -42,9 +49,9 @@ function getHomeLabels(locale: string): HomeLabels {
       fieldNotes: "Field notes",
       chapterNames: [
         "Base Camp",
-        "Technical Ridge",
-        "Snowfield Traverse",
-        "Night Camp",
+        "Technology",
+        "Everyday Life",
+        "Along the Way",
       ],
     };
   }
@@ -73,6 +80,13 @@ function getHomeLabels(locale: string): HomeLabels {
         profile: "Profil",
       },
       skills: "Technischer Stack",
+      chapterIntros: [
+        "Von den Grundlagen zu Ideen, die Wirklichkeit werden.",
+        "Kleine Entdeckungen beim Lesen, Reisen und im Alltag.",
+        "Flüchtige Gedanken und Begegnungen unterwegs.",
+      ],
+      campDirectory: "Menschen & Wege",
+      campLetter: "Ab und zu ein Brief vom nächsten Wegstück.",
       ongoingProjects: "Laufende Projekte",
       completedProjects: "Abgeschlossene Arbeiten",
       ramblings: "Lose Gedanken",
@@ -85,12 +99,7 @@ function getHomeLabels(locale: string): HomeLabels {
       dispatch: "Expeditionsbericht",
       nextCamp: "Weiter aufsteigen",
       fieldNotes: "Feldnotizen",
-      chapterNames: [
-        "Basislager",
-        "Technischer Grat",
-        "Schneefeld",
-        "Nachtlager",
-      ],
+      chapterNames: ["Basislager", "Technik", "Alltag", "Unterwegs"],
     };
   }
 
@@ -117,6 +126,13 @@ function getHomeLabels(locale: string): HomeLabels {
       profile: "简介",
     },
     skills: "技术栈",
+    chapterIntros: [
+      "从原理出发，把想法一步步做成现实。",
+      "在阅读、远行与寻常日子里，收集世界的细节。",
+      "记下偶然的念头，也留住一路相遇的人。",
+    ],
+    campDirectory: "此间与同行",
+    campLetter: "下一段路，偶尔写信给你。",
     ongoingProjects: "仍在推进",
     completedProjects: "已经抵达",
     ramblings: "碎碎念",
@@ -129,7 +145,7 @@ function getHomeLabels(locale: string): HomeLabels {
     dispatch: "营地手记",
     nextCamp: "继续向上",
     fieldNotes: "野外笔记",
-    chapterNames: ["山脚营地", "技术冰脊", "雪原横渡", "高山夜营"],
+    chapterNames: ["山脚营地", "技术栈", "生活日常", "沿途随记"],
   };
 }
 

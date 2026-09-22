@@ -1,9 +1,16 @@
 /** Shared, theme-aware silhouette. Decorative paths never receive focus. */
-export function SnowRidge({ className = "" }: { className?: string }) {
+export function SnowRidge({
+  className = "",
+  fillFrame = false,
+}: {
+  className?: string;
+  fillFrame?: boolean;
+}) {
   return (
     <svg
       className={`snow-ridge ${className}`}
       viewBox="0 0 1440 760"
+      preserveAspectRatio={fillFrame ? "xMidYMid slice" : "xMidYMid meet"}
       fill="none"
       aria-hidden="true"
       focusable="false"

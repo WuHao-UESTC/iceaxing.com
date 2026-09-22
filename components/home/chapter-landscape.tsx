@@ -6,13 +6,48 @@ export function ChapterLandscape({
 }: {
   scene: "cover" | "ridge" | "field" | "camp";
 }) {
+  if (scene === "camp")
+    return (
+      <svg
+        className="journey-landscape journey-landscape-camp"
+        data-reveal="landscape"
+        viewBox="0 0 440 300"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <path
+          className="camp-ridge-wash"
+          d="M12 252C87 246 122 193 167 151C202 119 236 110 275 42C304 108 327 139 363 158C386 171 407 187 428 214L428 280H12Z"
+        />
+        <path
+          className="landscape-line"
+          pathLength="1"
+          d="M12 252C87 246 122 193 167 151C202 119 236 110 275 42C304 108 327 139 363 158C386 171 407 187 428 214"
+        />
+        <path
+          className="landscape-fine"
+          d="M18 272C107 262 143 219 190 181C225 153 254 133 275 87C292 133 327 168 371 184C396 194 412 210 426 233M48 287C143 273 181 231 219 208C263 182 310 218 345 231C375 242 400 250 425 252"
+        />
+        <path
+          className="camp-ascent-path"
+          d="M89 260C130 241 226 268 248 231C269 195 190 198 211 163C225 139 272 139 275 98"
+        />
+        <circle className="camp-route-stop" cx="89" cy="260" r="4" />
+        <circle className="camp-route-stop" cx="211" cy="163" r="3" />
+        <circle className="camp-summit-ring" cx="275" cy="42" r="11" />
+        <circle className="landscape-dot" cx="275" cy="42" r="3" />
+      </svg>
+    );
+
   if (scene === "cover")
     return (
       <div
         className="journey-landscape journey-landscape-cover"
         data-reveal="landscape"
       >
-        <SnowRidge />
+        <SnowRidge fillFrame />
       </div>
     );
 
@@ -69,30 +104,6 @@ export function ChapterLandscape({
             d="M0 683C282 531 482 717 790 645C1080 577 1230 575 1440 629M0 713C282 561 482 747 790 675C1080 607 1230 605 1440 659"
           />
           <circle className="landscape-dot" cx="1133" cy="415" r="4" />
-        </>
-      )}
-      {scene === "camp" && (
-        <>
-          <path
-            className="landscape-wash"
-            d="M0 0H231C83 266 139 504 434 584C751 670 1185 606 1440 406V800H0Z"
-          />
-          <path
-            className="landscape-shadow"
-            d="M0 732C234 678 341 646 498 694C669 746 811 599 969 612C1114 624 1264 725 1440 648V800H0Z"
-          />
-          <path
-            className="landscape-line"
-            pathLength="1"
-            d="M162 0C25 317 192 570 493 624C817 682 1191 588 1440 430"
-          />
-          <path
-            className="landscape-fine"
-            d="M128 0C-14 331 172 595 477 652C817 716 1216 617 1440 478"
-          />
-          <circle className="landscape-halo" cx="1126" cy="599" r="32" />
-          <circle className="landscape-ring" cx="1126" cy="599" r="13" />
-          <circle className="landscape-dot" cx="1126" cy="599" r="4" />
         </>
       )}
     </svg>

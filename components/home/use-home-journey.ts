@@ -35,6 +35,9 @@ export function useHomeJourney(locale: string) {
     let current: HTMLElement | undefined;
     let frame = 0;
     let geometryFrame = 0;
+    let travelFrame = 0;
+    let travelling = false;
+    let returningLandscape: Animation | undefined;
     let settleTimer = 0;
     let suppressFocusReveal = false;
     let saved: { chapter?: string; offset?: number; seen?: string[] } = {};
@@ -83,13 +86,22 @@ export function useHomeJourney(locale: string) {
       )) {
         if (typeof element.animate !== "function") continue;
         const landscape = element.dataset.reveal === "landscape";
+        const restingOpacity = Number(getComputedStyle(element).opacity);
         const animation = element.animate(
           [
-            { opacity: 0, transform: `translateY(${landscape ? 16 : 12}px)` },
-            { opacity: 1, transform: "translateY(0)" },
+            {
+              opacity: landscape ? restingOpacity * 0.45 : 0,
+              filter: `blur(${landscape ? 6 : 2}px)`,
+              transform: `translateY(${landscape ? 16 : 12}px)`,
+            },
+            {
+              opacity: restingOpacity,
+              filter: "blur(0px)",
+              transform: "translateY(0)",
+            },
           ],
           {
-            duration: landscape ? 500 : 360,
+            duration: landscape ? 1000 : 520,
             delay: Math.min(Number(element.dataset.step || 0) * 100, 600),
             easing: "cubic-bezier(.22,1,.36,1)",
             fill: "both",
@@ -119,7 +131,7 @@ export function useHomeJourney(locale: string) {
 
     function settle() {
       const panel = current;
-      if (!panel) return;
+      if (!panel || travelling) return;
       const visible =
         Math.min(
           viewport!.scrollTop + viewport!.clientHeight,
@@ -148,11 +160,28 @@ export function useHomeJourney(locale: string) {
       if (panel !== current) {
         if (current && seen.has(current.id))
           animations.get(current)?.forEach((animation) => animation.cancel());
+        returningLandscape?.cancel();
+        if (seen.has(panel.id) && !motion.matches) {
+          returningLandscape = panel
+            .querySelector(".journey-landscape")
+            ?.animate([{ filter: "blur(6px)" }, { filter: "blur(0px)" }], {
+              duration: 850,
+              easing: "cubic-bezier(.22,1,.36,1)",
+            });
+        }
         current = panel;
         setActiveChapter(panel.id as ChapterId);
       }
+      // Reveal on approach so the landscape resolves while the chapter arrives.
+      const visible =
+        Math.min(
+          viewport!.scrollTop + viewport!.clientHeight,
+          panel.offsetTop + panel.offsetHeight,
+        ) - Math.max(viewport!.scrollTop, panel.offsetTop);
+      if (visible >= Math.min(viewport!.clientHeight, panel.offsetHeight) * 0.6)
+        reveal(panel, true);
       window.clearTimeout(settleTimer);
-      settleTimer = window.setTimeout(settle, 90);
+      settleTimer = window.setTimeout(settle, 140);
     }
     function onScroll() {
       cancelAnimationFrame(frame);
@@ -196,14 +225,67 @@ export function useHomeJourney(locale: string) {
       });
     }
 
+    function cancelTravel() {
+      cancelAnimationFrame(travelFrame);
+      travelling = false;
+      viewport!.style.removeProperty("scroll-snap-type");
+    }
+    function travel(top: number) {
+      cancelTravel();
+      if (motion.matches || Math.abs(top - viewport!.scrollTop) < 2) {
+        viewport!.scrollTo({ top, behavior: "instant" });
+        return;
+      }
+      const from = viewport!.scrollTop;
+      const start = performance.now();
+      const duration = Math.min(
+        1100,
+        850 + (Math.abs(top - from) / viewport!.clientHeight) * 70,
+      );
+      travelling = true;
+      viewport!.style.scrollSnapType = "none";
+      function tick(now: number) {
+        if (document.querySelector('[role="dialog"], #mobile-site-menu')) {
+          cancelTravel();
+          return;
+        }
+        const t = Math.min(1, (now - start) / duration);
+        const eased = t * t * t * (t * (t * 6 - 15) + 10);
+        viewport!.scrollTo({
+          top: from + (top - from) * eased,
+          behavior: "instant",
+        });
+        if (t < 1) travelFrame = requestAnimationFrame(tick);
+        else {
+          cancelTravel();
+          onScroll();
+        }
+      }
+      travelFrame = requestAnimationFrame(tick);
+    }
+    function interruptTravel(event: Event) {
+      if (
+        event instanceof KeyboardEvent &&
+        ![
+          "ArrowDown",
+          "ArrowUp",
+          "PageDown",
+          "PageUp",
+          "Home",
+          "End",
+          "Tab",
+          " ",
+        ].includes(event.key)
+      )
+        return;
+      if (travelling) cancelTravel();
+    }
+
     navigationRef.current = (id) => {
       const target = document.getElementById(id);
       const panel = target?.closest<HTMLElement>(".snowline-panel");
       if (!target || !panel) return;
-      viewport.scrollTo({
-        top: panel.offsetTop,
-        behavior: motion.matches ? "instant" : "smooth",
-      });
+      travel(panel.offsetTop);
       history.replaceState(history.state, "", `#${id}`);
       const focus =
         id === "selected-notes"
@@ -235,6 +317,8 @@ export function useHomeJourney(locale: string) {
       }
     }
     function onMotionChange() {
+      cancelTravel();
+      returningLandscape?.cancel();
       if (motion.matches)
         panels.forEach((panel) => {
           animations.get(panel)?.forEach((animation) => animation.cancel());
@@ -242,6 +326,12 @@ export function useHomeJourney(locale: string) {
         });
     }
     viewport.addEventListener("scroll", onScroll, { passive: true });
+    viewport.addEventListener("wheel", interruptTravel, { passive: true });
+    viewport.addEventListener("touchstart", interruptTravel, { passive: true });
+    viewport.addEventListener("pointerdown", interruptTravel, {
+      passive: true,
+    });
+    window.addEventListener("keydown", interruptTravel);
     viewport.addEventListener("focusin", onFocus);
     window.addEventListener("hashchange", onHashChange);
     window.addEventListener("pagehide", persist);
@@ -249,6 +339,12 @@ export function useHomeJourney(locale: string) {
     onScroll();
     return () => {
       persist();
+      cancelTravel();
+      returningLandscape?.cancel();
+      viewport.removeEventListener("wheel", interruptTravel);
+      viewport.removeEventListener("touchstart", interruptTravel);
+      viewport.removeEventListener("pointerdown", interruptTravel);
+      window.removeEventListener("keydown", interruptTravel);
       resize.disconnect();
       cancelAnimationFrame(frame);
       cancelAnimationFrame(geometryFrame);
