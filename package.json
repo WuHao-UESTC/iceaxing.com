@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:obsidian": "tsx scripts/import-obsidian.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
@@ -18,6 +19,7 @@
     "@portabletext/react": "^6.2.0",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^2.0.8",
+    "@sanity/client": "^7.22.1",
     "@sanity/image-url": "^2.1.1",
     "@sanity/presentation": "^2.0.0",
     "@sanity/react-loader": "^2.0.13",
@@ -53,6 +55,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }

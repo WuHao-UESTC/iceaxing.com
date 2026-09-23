@@ -1,11 +1,16 @@
 import katex from 'katex';
+import { normalizeMathFormula } from '@/lib/math';
 
 interface Props {
-  formula: string;
+  formula?: string;
 }
 
 export function MathBlock({ formula }: Props) {
-  const html = katex.renderToString(formula, {
+  const normalizedFormula = normalizeMathFormula(formula ?? '');
+
+  if (!normalizedFormula) return null;
+
+  const html = katex.renderToString(normalizedFormula, {
     displayMode: true,
     throwOnError: false,
     strict: false,

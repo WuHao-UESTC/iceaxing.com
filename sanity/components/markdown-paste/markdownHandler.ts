@@ -1,9 +1,10 @@
 import MarkdownIt from 'markdown-it';
 import markdownItKatexExport from '@vscode/markdown-it-katex';
+import { extractDisplayMath } from '../../../lib/math';
 
 type MarkDef = { _key: string; _type: string; href?: string };
 
-type PtBlock = {
+export type PtBlock = {
   _key: string;
   _type: string;
   style?: string;
@@ -169,6 +170,19 @@ export function hasMarkdownSyntax(text: string): boolean {
 }
 
 function readDisplayMath(lines: string[], start: number) {
+  const openingLine = lines[start].trimStart();
+
+  if (openingLine.startsWith('$$')) {
+    for (let end = start; end < lines.length; end++) {
+      const candidate = lines.slice(start, end + 1).join('\n');
+      const formula = extractDisplayMath(candidate);
+
+      if (formula !== null) {
+        return { formula, nextIndex: end + 1 };
+      }
+    }
+  }
+
   const firstToken = markdown.parse(lines.slice(start).join('\n'), {})[0];
   if (
     firstToken?.type !== 'math_block' ||

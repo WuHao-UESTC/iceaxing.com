@@ -13,6 +13,7 @@ import { Divider } from './custom-blocks/divider';
 import { TableBlock } from './custom-blocks/table-block';
 import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
+import { extractDisplayMath, normalizeMathFormula } from '@/lib/math';
 import Image from 'next/image';
 
 /** Internal types matching Portable Text span / mark-def structures. */
@@ -44,10 +45,15 @@ function getHeadingId(value: unknown): string {
   return `section-${encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'))}`;
 }
 
-/** Split a text string on $...$ delimiters, returning alternating text/math segments. */
-function parseInlineMath(text: string): { type: 'text' | 'math'; content: string }[] {
-  const segments: { type: 'text' | 'math'; content: string }[] = [];
-  const regex = /(?<!\\)\$([^$\n]+?)(?<!\\)\$/g;
+type MathSegment = {
+  type: 'text' | 'math' | 'displayMath';
+  content: string;
+};
+
+/** Split text on TeX delimiters, checking $$...$$ before $...$. */
+function parseInlineMath(text: string): MathSegment[] {
+  const segments: MathSegment[] = [];
+  const regex = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\$([^$\n]+?)(?<!\\)\$/g;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -56,7 +62,11 @@ function parseInlineMath(text: string): { type: 'text' | 'math'; content: string
     if (match.index > lastIndex) {
       segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
     }
-    segments.push({ type: 'math', content: match[1] });
+    const isDisplayMath = match[1] !== undefined;
+    segments.push({
+      type: isDisplayMath ? 'displayMath' : 'math',
+      content: isDisplayMath ? match[1] : match[2],
+    });
     lastIndex = match.index + match[0].length;
   }
 
@@ -78,13 +88,17 @@ function renderSpan(
   const isCode = markKeys.includes('code');
 
   if (isInlineMath) {
-    const html = katex.renderToString(span.text, {
-      displayMode: false,
+    const displayFormula = extractDisplayMath(span.text);
+    const html = katex.renderToString(displayFormula ?? normalizeMathFormula(span.text), {
+      displayMode: displayFormula !== null,
       throwOnError: false,
       strict: false,
     });
     const rendered = (
-      <span className="katex-inline" dangerouslySetInnerHTML={{ __html: html }} />
+      <span
+        className={displayFormula !== null ? 'katex-display-fallback' : 'katex-inline'}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     );
     return applyMarks(
       markKeys.filter((mark) => mark !== 'inlineMath'),
@@ -100,14 +114,18 @@ function renderSpan(
 
   const rendered = segments.map((seg, i) => {
     const key = `s-${childIndex}-${i}`;
-    if (seg.type === 'math') {
+    if (seg.type === 'math' || seg.type === 'displayMath') {
       const html = katex.renderToString(seg.content, {
-        displayMode: false,
+        displayMode: seg.type === 'displayMath',
         throwOnError: false,
         strict: false,
       });
       return (
-        <span key={key} className="katex-inline" dangerouslySetInnerHTML={{ __html: html }} />
+        <span
+          key={key}
+          className={seg.type === 'displayMath' ? 'katex-display-fallback' : 'katex-inline'}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       );
     }
     return <Fragment key={key}>{seg.content}</Fragment>;
@@ -169,6 +187,17 @@ function renderTextBlock(value: unknown, tag: 'p' | `h${HeadingLevel}` | 'blockq
   return <p>{children}</p>;
 }
 
+function getBlockDisplayMath(value: unknown): string | null {
+  const raw = value as { children?: SpanData[] };
+  const children = raw.children ?? [];
+
+  if (children.length === 0 || children.some((child) => child._type !== 'span')) {
+    return null;
+  }
+
+  return extractDisplayMath(children.map((child) => child.text).join(''));
+}
+
 const components: PortableTextComponents = {
   types: {
     mindmap: ({ value }) => (
@@ -226,6 +255,8 @@ const components: PortableTextComponents = {
 
   block: {
     normal: ({ value }) => {
+      const displayMath = getBlockDisplayMath(value);
+      if (displayMath !== null) return <MathBlock formula={displayMath} />;
       return renderTextBlock(value, 'p');
     },
     h1: ({ value }) => renderTextBlock(value, 'h1'),

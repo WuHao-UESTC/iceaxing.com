@@ -24,6 +24,12 @@ const bodyOf = [
         type: 'string',
         description: '可选。显示在图片下方。',
       }),
+      defineField({
+        name: 'alt',
+        title: '替代文本',
+        type: 'string',
+        description: '用于无障碍访问和图片无法加载时的说明。',
+      }),
     ],
   },
 ];
@@ -48,6 +54,11 @@ const bodyOfEn = [
         title: 'Caption',
         type: 'string',
       }),
+      defineField({
+        name: 'alt',
+        title: 'Alt text',
+        type: 'string',
+      }),
     ],
   },
 ];
@@ -70,6 +81,11 @@ const bodyOfDe = [
       defineField({
         name: 'caption',
         title: 'Bildunterschrift',
+        type: 'string',
+      }),
+      defineField({
+        name: 'alt',
+        title: 'Alternativtext',
         type: 'string',
       }),
     ],
@@ -252,6 +268,14 @@ export default defineType({
       title: 'Author name',
       type: 'string',
       group: 'meta',
+    }),
+    defineField({
+      name: 'obsidianSource',
+      title: 'Obsidian source',
+      type: 'string',
+      group: 'meta',
+      readOnly: true,
+      hidden: true,
     }),
 
     /* ---- SEO ---- */

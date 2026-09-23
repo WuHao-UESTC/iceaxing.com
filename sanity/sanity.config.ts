@@ -10,6 +10,13 @@ import { TranslationInspector } from './components/translation/TranslationInspec
 import { translationBadgesPlugin } from './components/translation/TranslationBadgePlugin';
 import { WritingAssistantInspector } from './components/writing-assistant/WritingAssistantInspector';
 import { blogActionsPlugin } from './components/document-actions/BlogActionsPlugin';
+import { iceaxingStudioTheme } from './theme';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/noto-serif-sc/chinese-simplified-400.css';
+import '@fontsource/noto-serif-sc/chinese-simplified-500.css';
+import '@fontsource/noto-serif-sc/chinese-simplified-700.css';
+import 'katex/dist/katex.min.css';
+import './styles/studio.css';
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'fa79h3qq';
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
@@ -23,6 +30,7 @@ export default defineConfig({
   title: 'iceaxing Blog',
   projectId,
   dataset,
+  theme: iceaxingStudioTheme,
   plugins: [
     structureTool({
       structure: deskStructure,
