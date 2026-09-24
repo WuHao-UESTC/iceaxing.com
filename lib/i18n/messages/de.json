@@ -120,6 +120,11 @@
     "metaDescription": "Ein anpassbarer Pomodoro-Timer mit Fokus-, Kurz- und Langpausen, Zyklen, lokaler Speicherung, Hintergrundkorrektur und Benachrichtigungen.",
     "timerAriaLabel": "Pomodoro-Timer",
     "routeAriaLabel": "Fortschritt der aktuellen Fokuszyklen",
+    "fullscreen": {
+      "enter": "Vollbild öffnen",
+      "exit": "Vollbild verlassen",
+      "error": "Der Browser konnte den Vollbildmodus nicht öffnen. Bitte versuche es erneut."
+    },
     "phases": {
       "focus": "Fokus",
       "shortBreak": "Kurze Pause",

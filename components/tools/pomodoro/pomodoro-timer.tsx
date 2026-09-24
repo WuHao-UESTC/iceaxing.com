@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -26,6 +27,27 @@ import {
 } from "./pomodoro-state";
 
 type NumberSettingKey = keyof typeof SETTING_LIMITS;
+
+function subscribeFullscreen(callback: () => void) {
+  document.addEventListener("fullscreenchange", callback);
+  return () => document.removeEventListener("fullscreenchange", callback);
+}
+
+function getFullscreenElement() {
+  return document.fullscreenElement;
+}
+
+function getFullscreenAvailability() {
+  return document.fullscreenEnabled;
+}
+
+function getServerFullscreenElement() {
+  return null;
+}
+
+function getServerFullscreenAvailability() {
+  return false;
+}
 
 function formatDuration(milliseconds: number) {
   const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
@@ -97,9 +119,22 @@ export function PomodoroTimer() {
   const [now, setNow] = useState(0);
   const [storageReady, setStorageReady] = useState(false);
   const [permissionNote, setPermissionNote] = useState("");
+  const [fullscreenError, setFullscreenError] = useState("");
   const audioContextRef = useRef<AudioContext | null>(null);
+  const consoleRef = useRef<HTMLElement | null>(null);
   const lastAlertRef = useRef(0);
   const originalTitleRef = useRef<string | null>(null);
+  const fullscreenElement = useSyncExternalStore(
+    subscribeFullscreen,
+    getFullscreenElement,
+    getServerFullscreenElement,
+  );
+  const fullscreenAvailable = useSyncExternalStore(
+    subscribeFullscreen,
+    getFullscreenAvailability,
+    getServerFullscreenAvailability,
+  );
+  const isFullscreen = fullscreenElement !== null;
 
   useEffect(() => {
     const restoreTimer = window.setTimeout(() => {
@@ -364,6 +399,19 @@ export function PomodoroTimer() {
     setData((current) => resetToClock(current, Date.now()));
   }, []);
 
+  const handleFullscreen = useCallback(async () => {
+    setFullscreenError("");
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (consoleRef.current) {
+        await consoleRef.current.requestFullscreen();
+      }
+    } catch {
+      setFullscreenError(t("fullscreen.error"));
+    }
+  }, [t]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -413,7 +461,41 @@ export function PomodoroTimer() {
         ) : null}
       </p>
 
-      <section className="pomodoro-console" aria-label={t("timerAriaLabel")}>
+      <section
+        ref={consoleRef}
+        className="pomodoro-console"
+        aria-label={t("timerAriaLabel")}
+      >
+        <div className="pomodoro-console-toolbar">
+          <span>ALTITUDE / RHYTHM</span>
+          {fullscreenAvailable ? (
+            <button
+              type="button"
+              className="pomodoro-fullscreen-button"
+              onClick={() => void handleFullscreen()}
+              aria-label={
+                isFullscreen ? t("fullscreen.exit") : t("fullscreen.enter")
+              }
+              aria-pressed={isFullscreen}
+              title={isFullscreen ? t("fullscreen.exit") : t("fullscreen.enter")}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                {isFullscreen ? (
+                  <path d="M9 4v5H4m11-5v5h5M9 20v-5H4m11 5v-5h5" />
+                ) : (
+                  <path d="M9 4H4v5m11-5h5v5M9 20H4v-5m11 5h5v-5" />
+                )}
+              </svg>
+            </button>
+          ) : null}
+        </div>
+
+        {fullscreenError ? (
+          <p className="pomodoro-fullscreen-error" role="status">
+            {fullscreenError}
+          </p>
+        ) : null}
+
         <div className="pomodoro-altimeter">
           <svg viewBox="0 0 320 320" aria-hidden="true">
             <circle className="pomodoro-orbit-outer" cx="160" cy="160" r="149" />

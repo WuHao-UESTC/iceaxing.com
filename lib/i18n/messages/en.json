@@ -120,6 +120,11 @@
     "metaDescription": "A customizable online Pomodoro timer with focus, short and long breaks, cycles, local persistence, background correction, and completion alerts.",
     "timerAriaLabel": "Pomodoro timer",
     "routeAriaLabel": "Current focus cycle progress",
+    "fullscreen": {
+      "enter": "Enter fullscreen",
+      "exit": "Exit fullscreen",
+      "error": "The browser could not enter fullscreen. Please try again."
+    },
     "phases": {
       "focus": "Focus",
       "shortBreak": "Short break",

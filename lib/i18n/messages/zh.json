@@ -120,6 +120,11 @@
     "metaDescription": "可自定义专注、短休息、长休息与循环次数的在线番茄钟，支持本地保存、后台校时和完成提醒。",
     "timerAriaLabel": "番茄钟计时器",
     "routeAriaLabel": "当前专注循环进度",
+    "fullscreen": {
+      "enter": "全屏显示",
+      "exit": "退出全屏",
+      "error": "浏览器未能进入全屏，请重试。"
+    },
     "phases": {
       "focus": "专注",
       "shortBreak": "短休息",
