@@ -1,9 +1,9 @@
 import { isValidSignature, SIGNATURE_HEADER_NAME } from '@sanity/webhook';
-import { revalidatePath } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { groq } from 'next-sanity';
 import { generateUnsubscribeToken } from '@/lib/auth/token';
-import { client, writeClient } from '@/lib/sanity/client';
+import { originClient, sanityCacheTag, writeClient } from '@/lib/sanity/client';
 
 type ContentType = 'category' | 'project' | 'collection';
 type ContactSummary = { id: string; email: string };
@@ -60,9 +60,7 @@ export async function POST(request: NextRequest) {
 
     switch (_type) {
       case 'blog':
-        revalidatePath('/', 'layout');
-        revalidatePath('/en', 'layout');
-        revalidatePath('/de', 'layout');
+        expireSanityTags('blog');
 
         if (body._id) {
           try {
@@ -74,11 +72,31 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'category':
+        expireSanityTags('category', 'project', 'blog');
+
+        if (body._id && body.notified !== true) {
+          try {
+            await sendNewContentNotification(_type, body._id);
+          } catch (err) {
+            console.error('[revalidate] New-content notification error:', err);
+          }
+        }
+        break;
+
       case 'project':
+        expireSanityTags('project', 'collection', 'blog');
+
+        if (body._id && body.notified !== true) {
+          try {
+            await sendNewContentNotification(_type, body._id);
+          } catch (err) {
+            console.error('[revalidate] New-content notification error:', err);
+          }
+        }
+        break;
+
       case 'collection':
-        revalidatePath('/', 'layout');
-        revalidatePath('/en', 'layout');
-        revalidatePath('/de', 'layout');
+        expireSanityTags('collection', 'blog');
 
         if (body._id && body.notified !== true) {
           try {
@@ -90,40 +108,27 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'log':
-        revalidatePath('/log', 'layout');
-        revalidatePath('/en/log', 'layout');
-        revalidatePath('/de/log', 'layout');
+        expireSanityTags('log');
         break;
 
       case 'friend':
-        revalidatePath('/friends', 'layout');
-        revalidatePath('/en/friends', 'layout');
-        revalidatePath('/de/friends', 'layout');
+        expireSanityTags('friend');
         break;
 
       case 'profile':
-        revalidatePath('/profile', 'layout');
-        revalidatePath('/en/profile', 'layout');
-        revalidatePath('/de/profile', 'layout');
-        revalidatePath('/', 'layout');
-        revalidatePath('/en', 'layout');
-        revalidatePath('/de', 'layout');
+        expireSanityTags('profile');
         break;
 
       case 'motto':
+        expireSanityTags('motto');
+        break;
+
       case 'siteSettings':
-        revalidatePath('/', 'layout');
-        revalidatePath('/en', 'layout');
-        revalidatePath('/de', 'layout');
+        expireSanityTags('siteSettings');
         break;
 
       case 'about':
-        revalidatePath('/about', 'layout');
-        revalidatePath('/en/about', 'layout');
-        revalidatePath('/de/about', 'layout');
-        revalidatePath('/', 'layout');
-        revalidatePath('/en', 'layout');
-        revalidatePath('/de', 'layout');
+        expireSanityTags('about');
         break;
 
       default:
@@ -144,11 +149,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function expireSanityTags(...types: string[]) {
+  for (const type of types) {
+    revalidateTag(sanityCacheTag(type), 'max');
+  }
+}
+
 async function sendNewPostNotification(blogId: string): Promise<void> {
   const config = getNotificationConfig();
   if (!config) return;
 
-  const post = await client.fetch(
+  const post = await originClient.fetch(
     groq`*[_id == $id][0]{
       title,
       language,
@@ -296,7 +307,7 @@ async function sendNewContentNotification(
     }`,
   };
 
-  const doc = await client.fetch(contentQueries[type], { id: docId });
+  const doc = await originClient.fetch(contentQueries[type], { id: docId });
 
   if (!doc?.title || !doc?.slug) {
     console.warn('[notification] New content not found:', docId);

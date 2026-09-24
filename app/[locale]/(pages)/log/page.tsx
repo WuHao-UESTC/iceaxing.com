@@ -4,7 +4,7 @@ import { LogGrid } from '@/components/log/log-grid';
 import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 import { PageMotionItem } from '@/components/layout/page-transition';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string }>;

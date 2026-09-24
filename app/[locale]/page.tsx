@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { SITE_NAME, SITE_URL, getStaticAlternates, jsonLd, localizedUrl } from '@/lib/seo';
 import { htmlLocale, openGraphLocale } from '@/lib/i18n/locales';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string }>;

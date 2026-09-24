@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AddIcon,
   ChevronDownIcon,
   DocumentTextIcon,
-  EditIcon,
   FolderIcon,
   SearchIcon,
 } from '@sanity/icons';
 import { Badge, Box, Card, Flex, Spinner, Stack, Text, TextInput } from '@sanity/ui';
 import { useClient } from 'sanity';
 import { usePaneRouter } from 'sanity/structure';
+import { CreateDocumentLink } from './CreateDocumentLink';
 
 type Category = { _id: string; title: string; order?: number };
 type Project = { _id: string; title: string; categoryId?: string; order?: number };
@@ -47,6 +48,66 @@ const DIRECTORY_QUERY = `{
   }
 }`;
 
+const DIRECTORY_CACHE_KEY = 'iceaxing:studio:content-directory:v1';
+const DIRECTORY_CACHE_MAX_AGE = 5 * 60 * 1000;
+const DIRECTORY_FIELD_PATTERN = /^(title|publishedAt|category|project|collection|order|slug)(?:$|[.\[])/;
+
+type MutationEvent = {
+  mutations?: Array<Record<string, unknown>>;
+};
+
+function mutationTouchesFields(event: MutationEvent, fieldPattern: RegExp) {
+  if (!Array.isArray(event.mutations)) return true;
+
+  return event.mutations.some((mutation) => {
+    if ('create' in mutation || 'createIfNotExists' in mutation || 'delete' in mutation) return true;
+
+    const patch = mutation.patch;
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) return true;
+
+    const patchRecord = patch as Record<string, unknown>;
+    const paths: string[] = [];
+    for (const operation of ['set', 'setIfMissing', 'inc', 'dec', 'diffMatchPatch']) {
+      const value = patchRecord[operation];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        paths.push(...Object.keys(value));
+      }
+    }
+    if (Array.isArray(patchRecord.unset)) {
+      paths.push(...patchRecord.unset.filter((value): value is string => typeof value === 'string'));
+    }
+
+    return paths.length === 0 || paths.some((path) => fieldPattern.test(path));
+  });
+}
+
+function readDirectoryCache(): DirectoryData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(DIRECTORY_CACHE_KEY) || 'null') as {
+      data?: DirectoryData;
+      savedAt?: number;
+    } | null;
+    if (!cached?.data || !cached.savedAt || Date.now() - cached.savedAt > DIRECTORY_CACHE_MAX_AGE) {
+      return null;
+    }
+    return cached.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeDirectoryCache(data: DirectoryData) {
+  try {
+    sessionStorage.setItem(
+      DIRECTORY_CACHE_KEY,
+      JSON.stringify({ data, savedAt: Date.now() }),
+    );
+  } catch {
+    // Storage is optional; the in-memory state still keeps the pane responsive.
+  }
+}
+
 function publishedDocumentId(id: string) {
   return id.replace(/^drafts\./, '');
 }
@@ -78,34 +139,6 @@ function DocumentLink({ document }: { document: { _id: string; title: string } }
   );
 }
 
-function EditDocumentLink({
-  documentId,
-  documentType,
-  label,
-}: {
-  documentId: string;
-  documentType: string;
-  label: string;
-}) {
-  const { ChildLink } = usePaneRouter();
-
-  return (
-    <ChildLink
-      childId={documentId}
-      childParameters={{ documentType }}
-    >
-      <span
-        className="studio-tree-edit"
-        onClick={(event) => event.stopPropagation()}
-        title={label}
-      >
-        <EditIcon aria-hidden="true" />
-        <span className="studio-sr-only">{label}</span>
-      </span>
-    </ChildLink>
-  );
-}
-
 function PostList({ posts }: { posts: Post[] }) {
   if (posts.length === 0) return null;
 
@@ -120,36 +153,64 @@ function PostList({ posts }: { posts: Post[] }) {
 
 export function ContentTreePane() {
   const client = useClient({ apiVersion: '2024-01-01' });
-  const [data, setData] = useState<DirectoryData | null>(null);
+  const [data, setData] = useState<DirectoryData | null>(readDirectoryCache);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const requestRef = useRef<Promise<void> | null>(null);
+  const [hadCachedSnapshot] = useState(() => Boolean(data));
 
   const loadDirectory = useCallback(async () => {
-    try {
-      const result = await client.fetch<DirectoryData>(DIRECTORY_QUERY);
-      setData({
-        categories: deduplicateDocuments(result.categories),
-        projects: deduplicateDocuments(result.projects),
-        collections: deduplicateDocuments(result.collections),
-        posts: deduplicateDocuments(result.posts),
-      });
-      setError(null);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : '目录加载失败');
-    }
+    if (requestRef.current) return requestRef.current;
+
+    const request = (async () => {
+      try {
+        const result = await client.fetch<DirectoryData>(DIRECTORY_QUERY);
+        const nextData = {
+          categories: deduplicateDocuments(result.categories),
+          projects: deduplicateDocuments(result.projects),
+          collections: deduplicateDocuments(result.collections),
+          posts: deduplicateDocuments(result.posts),
+        };
+        writeDirectoryCache(nextData);
+        setData(nextData);
+        setError(null);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : '目录加载失败');
+      } finally {
+        requestRef.current = null;
+      }
+    })();
+
+    requestRef.current = request;
+    return request;
   }, [client]);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => void loadDirectory(), 0);
+    let reloadTimer = 0;
+    const scheduleReload = (delay = 650) => {
+      window.clearTimeout(reloadTimer);
+      reloadTimer = window.setTimeout(() => void loadDirectory(), delay);
+    };
+    const initialLoad = window.setTimeout(() => void loadDirectory(), hadCachedSnapshot ? 900 : 0);
     const subscription = client
       .listen('*[_type in ["category", "project", "collection", "blog"]]')
-      .subscribe({ next: () => void loadDirectory() });
+      .subscribe({
+        next: (event) => {
+          if (mutationTouchesFields(event, DIRECTORY_FIELD_PATTERN)) scheduleReload();
+        },
+      });
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') scheduleReload(150);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       window.clearTimeout(initialLoad);
+      window.clearTimeout(reloadTimer);
       subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [client, loadDirectory]);
+  }, [client, hadCachedSnapshot, loadDirectory]);
 
   const searchResults = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -186,6 +247,40 @@ export function ContentTreePane() {
         <h1>内容目录</h1>
         <p>分类、项目、合集与文章在同一列中逐级展开。</p>
       </header>
+
+      <details className="studio-create-menu">
+        <summary>
+          <AddIcon aria-hidden="true" />
+          <span>新建文章</span>
+          <ChevronDownIcon className="studio-create-chevron" />
+        </summary>
+        <div className="studio-create-options">
+          <CreateDocumentLink
+            className="studio-create-option studio-create-option-primary"
+            label="空白文章"
+            schemaType="blog"
+            template="blog-blank"
+          />
+          <CreateDocumentLink
+            className="studio-create-option"
+            label="技术教程"
+            schemaType="blog"
+            template="blog-tech-tutorial"
+          />
+          <CreateDocumentLink
+            className="studio-create-option"
+            label="读书笔记"
+            schemaType="blog"
+            template="blog-reading-note"
+          />
+          <CreateDocumentLink
+            className="studio-create-option"
+            label="复盘总结"
+            schemaType="blog"
+            template="blog-retrospective"
+          />
+        </div>
+      </details>
 
       <Box paddingX={3} paddingBottom={3}>
         <TextInput
@@ -235,11 +330,6 @@ export function ContentTreePane() {
                     <FolderIcon className="studio-tree-folder" />
                     <span>{category.title}</span>
                     <Badge mode="outline">{categoryCount}</Badge>
-                    <EditDocumentLink
-                      documentId={category._id}
-                      documentType="category"
-                      label={`编辑分类 ${category.title}`}
-                    />
                   </summary>
 
                   <div className="studio-tree-children">
@@ -262,11 +352,6 @@ export function ContentTreePane() {
                             <ChevronDownIcon className="studio-tree-chevron" />
                             <span>{project.title}</span>
                             <Badge mode="outline">{projectPosts.length}</Badge>
-                            <EditDocumentLink
-                              documentId={project._id}
-                              documentType="project"
-                              label={`编辑项目 ${project.title}`}
-                            />
                           </summary>
                           <div className="studio-tree-children">
                             <PostList posts={directProjectPosts} />
@@ -281,11 +366,6 @@ export function ContentTreePane() {
                                     <ChevronDownIcon className="studio-tree-chevron" />
                                     <span>{collection.title}</span>
                                     <Badge mode="outline">{collectionPosts.length}</Badge>
-                                    <EditDocumentLink
-                                      documentId={collection._id}
-                                      documentType="collection"
-                                      label={`编辑合集 ${collection.title}`}
-                                    />
                                   </summary>
                                   <PostList posts={collectionPosts} />
                                 </details>

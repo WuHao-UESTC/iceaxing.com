@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import:obsidian": "tsx scripts/import-obsidian.ts"
+    "import:obsidian": "tsx scripts/import-obsidian.ts",
+    "repair:portable-text": "tsx scripts/repair-portable-text.ts"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",

@@ -16,7 +16,7 @@ import {
 } from '@/components/site/listing-cards';
 import { PageMotionItem } from '@/components/layout/page-transition';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string; category: string }>;

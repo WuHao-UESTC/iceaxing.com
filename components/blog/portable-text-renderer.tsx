@@ -1,8 +1,8 @@
 import { Fragment } from 'react';
+import dynamic from 'next/dynamic';
 import { PortableText, type PortableTextComponents } from '@portabletext/react';
 import type { PortableTextBlock } from '@portabletext/react';
 import katex from 'katex';
-import { MindMap } from './custom-blocks/mindmap';
 import { MathBlock } from './custom-blocks/math-block';
 import { CodeBlock } from './custom-blocks/code-block';
 import { PdfEmbed } from './custom-blocks/pdf-embed';
@@ -15,6 +15,11 @@ import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
 import { extractDisplayMath, normalizeMathFormula } from '@/lib/math';
 import Image from 'next/image';
+import 'katex/dist/katex.min.css';
+
+const MindMap = dynamic(() =>
+  import('./custom-blocks/mindmap').then((module) => module.MindMap),
+);
 
 /** Internal types matching Portable Text span / mark-def structures. */
 interface SpanData {
@@ -240,7 +245,7 @@ const components: PortableTextComponents = {
             alt={value.alt || ''}
             width={1200}
             height={675}
-            unoptimized
+            sizes="(max-width: 768px) calc(100vw - 2rem), 768px"
             className="rounded-lg"
           />
           {value.caption && (

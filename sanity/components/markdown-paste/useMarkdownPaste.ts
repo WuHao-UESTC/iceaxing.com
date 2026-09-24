@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { hasMarkdownSyntax, markdownToPortableText } from './markdownHandler';
 
 type PtBlock = {
   _key: string;
@@ -8,6 +7,19 @@ type PtBlock = {
   children?: Array<{ _key: string; _type: string; text: string; marks?: string[] }>;
   [key: string]: unknown;
 };
+
+let markdownParserPromise: Promise<typeof import('./markdownHandler')> | null = null;
+
+function loadMarkdownParser() {
+  markdownParserPromise ??= import('./markdownHandler');
+  return markdownParserPromise;
+}
+
+function looksLikeMarkdown(text: string) {
+  return /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+\.\s|```|>\s)|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\)|\$\$[\s\S]+?\$\$/.test(
+    text,
+  );
+}
 
 function findBlockElement(el: Node | null): Element | null {
   let current: Node | null = el;
@@ -38,24 +50,36 @@ export function useMarkdownPaste(
     const container = containerRef.current;
     if (!container) return;
 
-    const handlePaste = (e: ClipboardEvent) => {
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleHandle = idleWindow.requestIdleCallback?.(
+      () => void loadMarkdownParser(),
+      { timeout: 2500 },
+    );
+
+    const handlePaste = async (e: ClipboardEvent) => {
       const clipboardData = e.clipboardData;
       if (!clipboardData) return;
 
       const text = clipboardData.getData('text/plain');
-      if (!text || !hasMarkdownSyntax(text)) return;
+      if (!text || !looksLikeMarkdown(text)) return;
+
+      const targetEl = e.target as Node;
+      const blockEl = findBlockElement(targetEl);
+      const blockKey = blockEl?.getAttribute('data-block-key') || '';
+
+      e.preventDefault();
+      e.stopPropagation();
 
       try {
+        const { markdownToPortableText } = await loadMarkdownParser();
         const newBlocks = markdownToPortableText(text);
-        if (newBlocks.length === 0) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Find the target block from the paste event
-        const targetEl = e.target as Node;
-        const blockEl = findBlockElement(targetEl);
-        const blockKey = blockEl?.getAttribute('data-block-key') || '';
+        if (newBlocks.length === 0) {
+          document.execCommand('insertText', false, text);
+          return;
+        }
 
         const currentValue = valueRef.current;
         let insertIdx = currentValue.length;
@@ -75,11 +99,15 @@ export function useMarkdownPaste(
 
         onChange?.(updatedBlocks);
       } catch {
-        // If parsing fails, let the default paste handler run
+        // Preserve the pasted content if the optional parser chunk cannot load.
+        document.execCommand('insertText', false, text);
       }
     };
 
     container.addEventListener('paste', handlePaste, true);
-    return () => container.removeEventListener('paste', handlePaste, true);
+    return () => {
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      container.removeEventListener('paste', handlePaste, true);
+    };
   }, [containerRef, onChange]);
 }

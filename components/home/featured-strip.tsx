@@ -145,7 +145,10 @@ export function FeaturedStrip({
                   alt=""
                   width={112}
                   height={84}
-                  unoptimized
+                  sizes="112px"
+                  priority={index === 0}
+                  placeholder={post.coverImage.lqip ? "blur" : "empty"}
+                  blurDataURL={post.coverImage.lqip}
                   className="snowline-featured-image"
                 />
               )}

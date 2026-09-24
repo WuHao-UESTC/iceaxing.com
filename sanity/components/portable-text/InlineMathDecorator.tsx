@@ -1,4 +1,4 @@
-import { isValidElement, type ReactNode } from 'react';
+import { isValidElement, useDeferredValue, useMemo, type ReactNode } from 'react';
 import katex from 'katex';
 import type { BlockDecoratorProps } from 'sanity';
 import { normalizeMathFormula } from '../../../lib/math';
@@ -14,14 +14,19 @@ function getTextContent(node: ReactNode): string {
 
 export function InlineMathDecorator({ children, focused, selected }: BlockDecoratorProps) {
   const formula = normalizeMathFormula(getTextContent(children));
+  const deferredFormula = useDeferredValue(formula);
+  const html = useMemo(
+    () => deferredFormula
+      ? katex.renderToString(deferredFormula, {
+          displayMode: false,
+          throwOnError: false,
+          strict: false,
+        })
+      : '',
+    [deferredFormula],
+  );
 
   if (!formula) return children;
-
-  const html = katex.renderToString(formula, {
-    displayMode: false,
-    throwOnError: false,
-    strict: false,
-  });
 
   return (
     <span

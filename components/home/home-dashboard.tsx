@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { SubscribeDialog } from "@/components/subscribe/subscribe-dialog";
+import dynamic from "next/dynamic";
 import { useState, type ReactNode, type MouseEvent } from "react";
 import { ChapterLandscape } from "./chapter-landscape";
 import { FeaturedStrip } from "./featured-strip";
@@ -17,6 +17,10 @@ import type {
   MottoDoc,
   SpecialBlogItem,
 } from "@/lib/sanity/types";
+
+const SubscribeDialog = dynamic(() =>
+  import("@/components/subscribe/subscribe-dialog").then((module) => module.SubscribeDialog),
+);
 
 export interface HomeLabels {
   heroTitle: [string, string];
@@ -311,7 +315,9 @@ function LifeJournalCard({
             width={720}
             height={500}
             className="snowline-life-image"
-            unoptimized
+            sizes="(max-width: 720px) calc(100vw - 2rem), 42vw"
+            placeholder={post.coverImage.lqip ? "blur" : "empty"}
+            blurDataURL={post.coverImage.lqip}
           />
         ) : (
           <span className="snowline-life-placeholder" aria-hidden="true" />

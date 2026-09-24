@@ -99,7 +99,7 @@ export function useHomeJourney(locale: string) {
           [
             {
               opacity: landscape ? restingOpacity * 0.45 : 0,
-              filter: `blur(${landscape ? 6 : 2}px)`,
+              filter: `blur(${landscape ? 3 : 1}px)`,
               transform: `translateY(${landscape ? 16 : 12}px)`,
             },
             {
@@ -109,8 +109,8 @@ export function useHomeJourney(locale: string) {
             },
           ],
           {
-            duration: landscape ? 900 : 460,
-            delay: Math.min(Number(element.dataset.step || 0) * 65, 390),
+            duration: landscape ? 720 : 380,
+            delay: Math.min(Number(element.dataset.step || 0) * 50, 300),
             easing: "cubic-bezier(.22,1,.36,1)",
             fill: "both",
           },
@@ -127,7 +127,7 @@ export function useHomeJourney(locale: string) {
             { strokeDasharray: "1", strokeDashoffset: "1" },
             { strokeDasharray: "1", strokeDashoffset: "0" },
           ],
-          { duration: 720, easing: "ease-out", fill: "both" },
+          { duration: 620, easing: "ease-out", fill: "both" },
         );
         drawing.pause();
         drawing.currentTime = 0;

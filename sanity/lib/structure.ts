@@ -1,6 +1,7 @@
-import { AddDocumentIcon, DocumentsIcon, FolderIcon, HomeIcon } from '@sanity/icons';
+import { ControlsIcon, DocumentsIcon, FolderIcon, HomeIcon } from '@sanity/icons';
 import type { StructureResolver } from 'sanity/structure';
 import { ContentTreePane } from '../components/navigation/ContentTreePane';
+import { TaxonomyManagerPane } from '../components/navigation/TaxonomyManagerPane';
 
 export const deskStructure: StructureResolver = (S) => {
   const pageItems = [
@@ -33,64 +34,22 @@ export const deskStructure: StructureResolver = (S) => {
             }),
         ),
       S.listItem()
-        .id('create-content')
-        .title('新建内容')
-        .icon(AddDocumentIcon)
+        .id('taxonomy-manager')
+        .title('分类管理')
+        .icon(ControlsIcon)
         .child(
-          S.list()
-            .id('create-content-list')
-            .title('新建内容')
-            .items([
-              S.listItem()
-                .id('new-blank-post')
-                .title('空白文章')
-                .child(
-                  S.editor()
-                    .id('new-blank-post-editor')
-                    .schemaType('blog')
-                    .initialValueTemplate('blog-blank'),
-                ),
-              S.listItem()
-                .id('new-tutorial-post')
-                .title('技术教程')
-                .child(
-                  S.editor()
-                    .id('new-tutorial-post-editor')
-                    .schemaType('blog')
-                    .initialValueTemplate('blog-tech-tutorial'),
-                ),
-              S.listItem()
-                .id('new-reading-post')
-                .title('读书笔记')
-                .child(
-                  S.editor()
-                    .id('new-reading-post-editor')
-                    .schemaType('blog')
-                    .initialValueTemplate('blog-reading-note'),
-                ),
-              S.listItem()
-                .id('new-retrospective-post')
-                .title('复盘总结')
-                .child(
-                  S.editor()
-                    .id('new-retrospective-post-editor')
-                    .schemaType('blog')
-                    .initialValueTemplate('blog-retrospective'),
-                ),
-              S.divider(),
-              S.listItem()
-                .id('new-category')
-                .title('分类')
-                .child(S.editor().id('new-category-editor').schemaType('category')),
-              S.listItem()
-                .id('new-project')
-                .title('项目')
-                .child(S.editor().id('new-project-editor').schemaType('project')),
-              S.listItem()
-                .id('new-collection')
-                .title('合集')
-                .child(S.editor().id('new-collection-editor').schemaType('collection')),
-            ]),
+          S.component()
+            .id('taxonomy-manager-pane')
+            .title('分类管理')
+            .component(TaxonomyManagerPane)
+            .child((documentId, { params }) => {
+              const documentType = params.documentType || 'category';
+
+              return S.document()
+                .id(`${documentType}-${documentId}`)
+                .documentId(documentId)
+                .schemaType(documentType);
+            }),
         ),
       S.listItem()
         .id('all-posts')

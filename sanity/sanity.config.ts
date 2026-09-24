@@ -14,7 +14,6 @@ import { iceaxingStudioTheme } from './theme';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/noto-serif-sc/chinese-simplified-400.css';
 import '@fontsource/noto-serif-sc/chinese-simplified-500.css';
-import '@fontsource/noto-serif-sc/chinese-simplified-700.css';
 import 'katex/dist/katex.min.css';
 import './styles/studio.css';
 

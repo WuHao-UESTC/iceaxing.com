@@ -2,11 +2,22 @@ import { client } from '@/lib/sanity/client';
 import { groq } from 'next-sanity';
 import { Feed } from 'feed';
 
+type FeedPost = {
+  _id: string;
+  title: string;
+  slug?: string;
+  excerpt?: string;
+  publishedAt: string;
+  project?: { slug?: string };
+  category?: { slug?: string };
+  collection?: { slug?: string };
+};
+
 export async function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://iceaxing.com';
 
   try {
-    const posts = await client.fetch(groq`
+    const posts = await client.fetch<FeedPost[]>(groq`
       *[_type == "blog"] | order(publishedAt desc) [0...20] {
         _id,
         title,

@@ -6,7 +6,7 @@ import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 import Image from 'next/image';
 import { PageMotionItem } from '@/components/layout/page-transition';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -57,7 +57,7 @@ export default async function FriendsPage() {
                     alt={friend.name}
                     width={40}
                     height={40}
-                    unoptimized
+                    sizes="40px"
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
                 )}

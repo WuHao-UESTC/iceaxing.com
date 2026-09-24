@@ -135,7 +135,6 @@ const projectProjection = groq`{
     "language": ${localizedBlogLanguage},
     theme,
     "excerpt": ${localizedString('excerpt')},
-    "bodyText": pt::text(${localizedBlocks('body')}),
     publishedAt,
     tags,
     authorName,
@@ -167,7 +166,6 @@ const blogListProjection = groq`{
   "language": ${localizedBlogLanguage},
   theme,
   "excerpt": ${localizedString('excerpt')},
-  "bodyText": pt::text(${localizedBlocks('body')}),
   publishedAt,
   tags,
   authorName,
@@ -431,7 +429,6 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
     "language": ${localizedBlogLanguage},
     theme,
     "excerpt": ${localizedString('excerpt')},
-    "bodyText": pt::text(${localizedBlocks('body')}),
     publishedAt,
     tags,
     authorName,
@@ -588,7 +585,7 @@ export async function getHomePayload(locale = 'zh'): Promise<HomePayload> {
 }
 
 export async function getSubscriptionOptions(locale = 'zh'): Promise<SubscriptionOption[]> {
-  const categories = await client.fetch(
+  const categories = await client.fetch<SubscriptionOption[]>(
     groq`*[_type == "category"] | order(order) {
       "type": "category",
       "slug": slug.current,
@@ -597,7 +594,7 @@ export async function getSubscriptionOptions(locale = 'zh'): Promise<Subscriptio
     }`,
     { locale }
   );
-  const projects = await client.fetch(
+  const projects = await client.fetch<SubscriptionOption[]>(
     groq`*[_type == "project"] | order(order) {
       "type": "project",
       "slug": slug.current,
@@ -607,7 +604,7 @@ export async function getSubscriptionOptions(locale = 'zh'): Promise<Subscriptio
     }`,
     { locale }
   );
-  const collections = await client.fetch(
+  const collections = await client.fetch<SubscriptionOption[]>(
     groq`*[_type == "collection"] | order(order) {
       "type": "collection",
       "slug": slug.current,
@@ -617,5 +614,5 @@ export async function getSubscriptionOptions(locale = 'zh'): Promise<Subscriptio
     }`,
     { locale }
   );
-  return [...categories, ...projects, ...collections] as SubscriptionOption[];
+  return [...categories, ...projects, ...collections];
 }

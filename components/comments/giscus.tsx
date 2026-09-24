@@ -1,6 +1,8 @@
 'use client';
 
-import GiscusReact from '@giscus/react';
+import dynamic from 'next/dynamic';
+
+const GiscusReact = dynamic(() => import('@giscus/react'));
 
 interface Props {
   locale?: string;

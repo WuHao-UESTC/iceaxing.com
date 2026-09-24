@@ -51,7 +51,7 @@ function CoverImage({
   title,
   className = '',
 }: {
-  image?: { url?: string; alt?: string };
+  image?: { url?: string; alt?: string; lqip?: string };
   title: string;
   className?: string;
 }) {
@@ -63,7 +63,9 @@ function CoverImage({
       width={900}
       height={600}
       className={className}
-      unoptimized
+      sizes="(max-width: 768px) calc(100vw - 2rem), (max-width: 1200px) 48vw, 560px"
+      placeholder={image.lqip ? 'blur' : 'empty'}
+      blurDataURL={image.lqip}
     />
   );
 }

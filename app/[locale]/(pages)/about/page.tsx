@@ -6,7 +6,7 @@ import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageMotionItem } from '@/components/layout/page-transition';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string }>;

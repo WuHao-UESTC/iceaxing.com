@@ -7,7 +7,7 @@ import { getStaticAlternates, localizedUrl } from '@/lib/seo';
 import Image from 'next/image';
 import { PageMotionItem } from '@/components/layout/page-transition';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -50,7 +50,7 @@ export default async function ProfilePage() {
               alt={profile.name}
               width={64}
               height={64}
-              unoptimized
+              sizes="64px"
               className="w-16 h-16 rounded-full object-cover"
             />
           )}
