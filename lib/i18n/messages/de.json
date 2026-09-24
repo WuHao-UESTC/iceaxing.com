@@ -4,6 +4,7 @@
     "techStack": "Technischer Stack",
     "lifeSlices": "Leben",
     "ramblings": "Gedanken",
+    "tools": "Werkzeuge",
     "log": "Log",
     "about": "Über",
     "friends": "Freunde",
@@ -76,6 +77,114 @@
   "profile": {
     "title": "Profil",
     "metaDescription": "Über iceaxings Tech-Stack, Projekte und Interessen."
+  },
+  "tools": {
+    "title": "Online-Werkzeuge",
+    "description": "Eine ruhige Sammlung praktischer Browser-Werkzeuge ohne Anmeldung. Finde deinen Rhythmus und bewahre die Aufmerksamkeit für das Wesentliche.",
+    "metaTitle": "Online-Werkzeuge",
+    "metaDescription": "Die Online-Werkzeugkiste von iceaxing mit einem fokussierten Pomodoro-Timer und datensparsamen Browser-Helfern.",
+    "home": "Start",
+    "breadcrumbLabel": "Brotkrümelnavigation",
+    "toolCount": "{count} Werkzeug(e) bereit",
+    "browserReady": "Direkt im Browser",
+    "noAccount": "Ohne Konto",
+    "available": "Verfügbare Werkzeuge",
+    "featureListLabel": "Werkzeugfunktionen",
+    "openTool": "Werkzeug öffnen",
+    "privacyTitle": "Deine Einstellungen bleiben auf diesem Gerät",
+    "privacyDescription": "Diese Werkzeuge laufen im Browser. Einstellungen und Sitzungen werden lokal gespeichert und nicht an den Website-Server übertragen.",
+    "categories": {
+      "focus": "Fokus",
+      "time": "Zeit"
+    },
+    "statuses": {
+      "stable": "Stabil",
+      "beta": "Beta"
+    },
+    "items": {
+      "pomodoro": {
+        "title": "Pomodoro-Timer",
+        "description": "Schaffe einen klaren Rhythmus zwischen Fokus und Pause. Passe Intervalle und Zyklen an und kehre im Leerlauf zu einer ruhigen lokalen Uhr zurück.",
+        "features": {
+          "custom": "Eigener Rhythmus",
+          "local": "Lokal gespeichert",
+          "precise": "Hintergrundabgleich"
+        }
+      }
+    }
+  },
+  "pomodoro": {
+    "title": "Pomodoro-Timer",
+    "description": "Betrachte jede Fokusphase als erreichbare Etappe. Lege dein Tempo fest, gehe voran und kalibriere dich in jeder Pause neu.",
+    "metaTitle": "Online-Pomodoro-Timer",
+    "metaDescription": "Ein anpassbarer Pomodoro-Timer mit Fokus-, Kurz- und Langpausen, Zyklen, lokaler Speicherung, Hintergrundkorrektur und Benachrichtigungen.",
+    "timerAriaLabel": "Pomodoro-Timer",
+    "routeAriaLabel": "Fortschritt der aktuellen Fokuszyklen",
+    "phases": {
+      "focus": "Fokus",
+      "shortBreak": "Kurze Pause",
+      "longBreak": "Lange Pause"
+    },
+    "status": {
+      "clock": "Ortszeit",
+      "running": "Timer läuft",
+      "paused": "Pausiert",
+      "phaseComplete": "Etappe abgeschlossen",
+      "finished": "Satz abgeschlossen"
+    },
+    "descriptions": {
+      "clock": "Wenn du bereit bist, beginne mit einer konzentrierten Etappe.",
+      "active": "Aktuelle Etappe: {phase}. Gib diese Zeit nur einer Sache.",
+      "next": "Als Nächstes folgt {phase}. Fahre fort, wenn du bereit bist.",
+      "finished": "Diese Route ist geschafft. Atme durch oder beginne einen neuen Satz."
+    },
+    "cyclePosition": "Zyklus {current} / {total}",
+    "cycleName": "Zyklus {cycle}",
+    "actions": {
+      "startFocus": "Fokus starten",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "skip": "Etappe überspringen",
+      "returnClock": "Zurück zur Uhr",
+      "newSet": "Neuen Satz starten",
+      "startPhase": "{phase} starten"
+    },
+    "announcements": {
+      "completed": "{phase} ist abgeschlossen."
+    },
+    "notification": {
+      "title": "Pomodoro-Etappe abgeschlossen",
+      "body": "{phase} ist beendet. Kehre für den nächsten Teil deiner Route zurück.",
+      "unsupported": "Dieser Browser unterstützt keine Desktop-Benachrichtigungen.",
+      "denied": "Benachrichtigungen sind deaktiviert. Hinweise auf der Seite und Töne funktionieren weiterhin."
+    },
+    "settings": {
+      "title": "Rhythmus einstellen",
+      "localBadge": "Lokal gespeichert",
+      "focusMinutes": "Fokusdauer",
+      "shortBreakMinutes": "Kurze Pause",
+      "longBreakMinutes": "Lange Pause",
+      "cycles": "Zyklen",
+      "minutesUnit": "Min.",
+      "cyclesUnit": "Runden",
+      "nextPhaseHint": "Änderungen unterbrechen die aktive Etappe nicht; neue Zeiten gelten ab der nächsten Etappe.",
+      "autoStart": "Nächste Etappe automatisch starten",
+      "autoStartHint": "Nach Abschluss direkt fortfahren",
+      "sound": "Abschlusston",
+      "soundHint": "Einen ruhigen Zweiklang abspielen",
+      "notifications": "Desktop-Benachrichtigungen",
+      "notificationsHint": "Nur erinnern, wenn die Seite im Hintergrund ist"
+    },
+    "today": {
+      "title": "Heutige Spur",
+      "completed": "Fokusrunden",
+      "minutes": "Fokusminuten"
+    },
+    "shortcuts": {
+      "title": "Tastenkürzel",
+      "space": "Start / Pause",
+      "reset": "Zurück zur Uhr"
+    }
   },
   "subscribe": {
     "title": "Updates abonnieren",

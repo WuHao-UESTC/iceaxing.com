@@ -31,6 +31,11 @@ export async function SiteHeader() {
       label: t("ramblings"),
       categories: [],
     },
+    {
+      href: "/tools",
+      label: t("tools"),
+      categories: [],
+    },
   ];
 
   return (

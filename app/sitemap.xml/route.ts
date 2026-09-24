@@ -53,7 +53,15 @@ export async function GET() {
   const siteUrl = SITE_URL;
 
   try {
-    const staticPages = ['', '/about', '/friends', '/profile', '/log'];
+    const staticPages = [
+      '',
+      '/about',
+      '/friends',
+      '/profile',
+      '/log',
+      '/tools',
+      '/tools/pomodoro',
+    ];
 
     const [blogs, logs, categories, projects, collections] = await Promise.all([
       client.fetch<BlogSitemapDoc[]>(groq`

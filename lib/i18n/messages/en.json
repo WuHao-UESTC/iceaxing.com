@@ -4,6 +4,7 @@
     "techStack": "Tech Stack",
     "lifeSlices": "Life",
     "ramblings": "Ramblings",
+    "tools": "Tools",
     "log": "Log",
     "about": "About",
     "friends": "Friends",
@@ -76,6 +77,114 @@
   "profile": {
     "title": "Profile",
     "metaDescription": "About iceaxing's tech stack, projects, and interests."
+  },
+  "tools": {
+    "title": "Online Tools",
+    "description": "A quiet set of practical browser tools with no account required. Tune your rhythm and keep your attention for what matters.",
+    "metaTitle": "Online Tools",
+    "metaDescription": "iceaxing's online toolbox, with a focused Pomodoro timer and other privacy-minded browser utilities.",
+    "home": "Home",
+    "breadcrumbLabel": "Breadcrumb",
+    "toolCount": "{count} tool(s) ready",
+    "browserReady": "Runs in browser",
+    "noAccount": "No account",
+    "available": "Available tools",
+    "featureListLabel": "Tool features",
+    "openTool": "Open tool",
+    "privacyTitle": "Your settings stay on this device",
+    "privacyDescription": "These tools run in your browser. Preferences and sessions are stored locally and are not uploaded to the site server.",
+    "categories": {
+      "focus": "Focus",
+      "time": "Time"
+    },
+    "statuses": {
+      "stable": "Stable",
+      "beta": "Beta"
+    },
+    "items": {
+      "pomodoro": {
+        "title": "Pomodoro Timer",
+        "description": "Build a clear rhythm between focus and rest. Customize every interval and cycle, then return to a calm local clock when the timer is idle.",
+        "features": {
+          "custom": "Custom rhythm",
+          "local": "Local storage",
+          "precise": "Background sync"
+        }
+      }
+    }
+  },
+  "pomodoro": {
+    "title": "Pomodoro Timer",
+    "description": "Treat each focus session as a route you can finish. Set your pace, move forward, and recalibrate at every break.",
+    "metaTitle": "Online Pomodoro Timer",
+    "metaDescription": "A customizable online Pomodoro timer with focus, short and long breaks, cycles, local persistence, background correction, and completion alerts.",
+    "timerAriaLabel": "Pomodoro timer",
+    "routeAriaLabel": "Current focus cycle progress",
+    "phases": {
+      "focus": "Focus",
+      "shortBreak": "Short break",
+      "longBreak": "Long break"
+    },
+    "status": {
+      "clock": "Local time",
+      "running": "Timer running",
+      "paused": "Paused",
+      "phaseComplete": "Stage complete",
+      "finished": "Set complete"
+    },
+    "descriptions": {
+      "clock": "When you are ready, begin with one focused stretch.",
+      "active": "Current stage: {phase}. Give this time to one thing only.",
+      "next": "Next comes {phase}. Continue when you are ready.",
+      "finished": "This route is complete. Take a breath or begin another set."
+    },
+    "cyclePosition": "Cycle {current} / {total}",
+    "cycleName": "Cycle {cycle}",
+    "actions": {
+      "startFocus": "Start focus",
+      "pause": "Pause",
+      "resume": "Resume",
+      "skip": "Skip this stage",
+      "returnClock": "Return to clock",
+      "newSet": "Start another set",
+      "startPhase": "Start {phase}"
+    },
+    "announcements": {
+      "completed": "{phase} is complete."
+    },
+    "notification": {
+      "title": "Pomodoro stage complete",
+      "body": "{phase} has ended. Return for the next part of your route.",
+      "unsupported": "Desktop notifications are not supported by this browser.",
+      "denied": "Notification permission is off. In-page and sound alerts still work."
+    },
+    "settings": {
+      "title": "Rhythm settings",
+      "localBadge": "Saved locally",
+      "focusMinutes": "Focus length",
+      "shortBreakMinutes": "Short break",
+      "longBreakMinutes": "Long break",
+      "cycles": "Cycles",
+      "minutesUnit": "min",
+      "cyclesUnit": "rounds",
+      "nextPhaseHint": "Changes never interrupt the active stage; new durations apply from the next stage.",
+      "autoStart": "Auto-start next stage",
+      "autoStartHint": "Continue immediately after completion",
+      "sound": "Completion sound",
+      "soundHint": "Play a restrained two-note chime",
+      "notifications": "Desktop notifications",
+      "notificationsHint": "Only notify while the page is in the background"
+    },
+    "today": {
+      "title": "Today's trace",
+      "completed": "Focus rounds",
+      "minutes": "Focus minutes"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "space": "Start / pause",
+      "reset": "Return to clock"
+    }
   },
   "subscribe": {
     "title": "Subscribe for updates",

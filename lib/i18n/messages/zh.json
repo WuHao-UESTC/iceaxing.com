@@ -4,6 +4,7 @@
     "techStack": "技术栈",
     "lifeSlices": "生活切片",
     "ramblings": "碎碎念",
+    "tools": "在线工具",
     "log": "日志",
     "about": "关于",
     "friends": "友链",
@@ -76,6 +77,114 @@
   "profile": {
     "title": "个人简介",
     "metaDescription": "关于 iceaxing 的技术栈、项目经历和兴趣爱好。"
+  },
+  "tools": {
+    "title": "在线工具",
+    "description": "一组安静、直接、无需登录的浏览器工具。在这里调整节奏，把注意力留给真正重要的事。",
+    "metaTitle": "在线工具",
+    "metaDescription": "iceaxing 的在线工具箱，提供番茄钟等简洁、注重隐私的浏览器工具。",
+    "home": "首页",
+    "breadcrumbLabel": "面包屑导航",
+    "toolCount": "{count} 个可用工具",
+    "browserReady": "浏览器即用",
+    "noAccount": "无需账号",
+    "available": "可用工具",
+    "featureListLabel": "工具特点",
+    "openTool": "立即使用",
+    "privacyTitle": "设置留在你的设备中",
+    "privacyDescription": "首版工具只在浏览器中运行，偏好与会话保存在本地，不会上传到网站服务器。",
+    "categories": {
+      "focus": "专注",
+      "time": "时间"
+    },
+    "statuses": {
+      "stable": "稳定版",
+      "beta": "测试版"
+    },
+    "items": {
+      "pomodoro": {
+        "title": "番茄钟",
+        "description": "在专注与休息之间建立清晰节奏。自定义每段时长和循环次数，离开计时状态后回到一枚安静的本地时钟。",
+        "features": {
+          "custom": "自定义节奏",
+          "local": "本地保存",
+          "precise": "后台校时"
+        }
+      }
+    }
+  },
+  "pomodoro": {
+    "title": "番茄钟",
+    "description": "把一次专注看作一段可抵达的路线。设定节奏，开始前行，在每次休息时重新校准。",
+    "metaTitle": "在线番茄钟",
+    "metaDescription": "可自定义专注、短休息、长休息与循环次数的在线番茄钟，支持本地保存、后台校时和完成提醒。",
+    "timerAriaLabel": "番茄钟计时器",
+    "routeAriaLabel": "当前专注循环进度",
+    "phases": {
+      "focus": "专注",
+      "shortBreak": "短休息",
+      "longBreak": "长休息"
+    },
+    "status": {
+      "clock": "本地时间",
+      "running": "正在计时",
+      "paused": "已暂停",
+      "phaseComplete": "阶段完成",
+      "finished": "本组完成"
+    },
+    "descriptions": {
+      "clock": "准备好后，从一段专注开始。",
+      "active": "当前阶段：{phase}。让这段时间只容纳一件事。",
+      "next": "下一阶段是{phase}，准备好后继续。",
+      "finished": "这组路线已经走完。休息一下，或者开始新的一组。"
+    },
+    "cyclePosition": "第 {current} / {total} 轮",
+    "cycleName": "第 {cycle} 轮",
+    "actions": {
+      "startFocus": "开始专注",
+      "pause": "暂停",
+      "resume": "继续",
+      "skip": "跳过本阶段",
+      "returnClock": "返回时钟",
+      "newSet": "再来一组",
+      "startPhase": "开始{phase}"
+    },
+    "announcements": {
+      "completed": "{phase}阶段已完成。"
+    },
+    "notification": {
+      "title": "番茄钟阶段完成",
+      "body": "{phase}已经结束，回来看看下一段路线吧。",
+      "unsupported": "当前浏览器不支持桌面通知。",
+      "denied": "通知权限未开启，你仍会收到页面内和声音提示。"
+    },
+    "settings": {
+      "title": "节奏设置",
+      "localBadge": "本地保存",
+      "focusMinutes": "专注时长",
+      "shortBreakMinutes": "短休息",
+      "longBreakMinutes": "长休息",
+      "cycles": "循环周期",
+      "minutesUnit": "分钟",
+      "cyclesUnit": "轮",
+      "nextPhaseHint": "进行中的阶段不会被设置改动打断，新时长从下一阶段开始生效。",
+      "autoStart": "自动开始下一阶段",
+      "autoStartHint": "阶段结束后直接继续",
+      "sound": "完成提示音",
+      "soundHint": "播放克制的双音提示",
+      "notifications": "桌面通知",
+      "notificationsHint": "仅在页面位于后台时提醒"
+    },
+    "today": {
+      "title": "今日轨迹",
+      "completed": "完成轮数",
+      "minutes": "专注分钟"
+    },
+    "shortcuts": {
+      "title": "键盘快捷键",
+      "space": "开始 / 暂停",
+      "reset": "返回时钟"
+    }
   },
   "subscribe": {
     "title": "订阅更新通知",
