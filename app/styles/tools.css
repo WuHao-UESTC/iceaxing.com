@@ -46,7 +46,8 @@
 .tools-kicker {
   color: var(--accent);
   font-family: var(--font-mono-stack);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -56,18 +57,18 @@
   margin-top: 18px;
   color: var(--color-text);
   font-family: var(--font-serif-cn);
-  font-size: clamp(3.1rem, 7vw, 6.9rem);
-  font-weight: 500;
-  letter-spacing: -0.045em;
-  line-height: 0.96;
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
 }
 
 .tools-hero-copy > p {
   max-width: 42rem;
   margin-top: 26px;
   color: var(--color-text-muted);
-  font-size: clamp(0.96rem, 1.5vw, 1.08rem);
-  line-height: 1.9;
+  font-size: clamp(0.98rem, 1.6vw, 1.16rem);
+  line-height: 1.85;
 }
 
 .tools-hero-meta {
@@ -84,7 +85,7 @@
   color: var(--color-text-muted);
   background: color-mix(in srgb, var(--color-panel) 58%, transparent);
   font-family: var(--font-mono-stack);
-  font-size: 0.66rem;
+  font-size: 0.74rem;
 }
 
 .tools-hero-map {
@@ -265,15 +266,17 @@
   margin-top: 30px;
   color: var(--color-text);
   font-family: var(--font-serif-cn);
-  font-size: clamp(2.1rem, 4.5vw, 4.7rem);
-  line-height: 1.08;
+  font-size: clamp(1.08rem, 1.8vw, 1.45rem);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .tool-card-copy > p {
   max-width: 41rem;
   margin-top: 17px;
   color: var(--color-text-muted);
-  line-height: 1.85;
+  font-size: 0.92rem;
+  line-height: 1.72;
 }
 
 .tool-feature-list {
@@ -440,13 +443,13 @@
 }
 
 .pomodoro-page-header h1 {
-  font-size: clamp(2.8rem, 6vw, 5.8rem);
+  font-size: clamp(32px, 4vw, 50px);
 }
 
 .pomodoro-page-header > p {
   color: var(--color-text-muted);
-  font-size: clamp(0.94rem, 1.4vw, 1.06rem);
-  line-height: 1.9;
+  font-size: clamp(0.98rem, 1.6vw, 1.16rem);
+  line-height: 1.85;
 }
 
 .pomodoro-workbench {
@@ -1144,7 +1147,7 @@
 
   .tools-hero h1,
   .pomodoro-page-header h1 {
-    font-size: clamp(2.6rem, 16vw, 4rem);
+    font-size: clamp(32px, 4vw, 50px);
   }
 
   .tools-hero-map {
@@ -1165,7 +1168,7 @@
 
   .tool-card h2 {
     margin-top: 24px;
-    font-size: 2.25rem;
+    font-size: clamp(1.08rem, 1.8vw, 1.45rem);
   }
 
   .tool-card-preview {
