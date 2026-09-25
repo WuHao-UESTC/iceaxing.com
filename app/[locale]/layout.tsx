@@ -11,6 +11,16 @@ import { VisualEditing } from '@/components/sanity/VisualEditing';
 import { PageTransition } from '@/components/layout/page-transition';
 import '../globals.css';
 
+const themeInitializationScript = `
+  try {
+    const storedTheme = window.localStorage.getItem('iceaxing-theme');
+    document.documentElement.dataset.theme =
+      storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'dark';
+  } catch {
+    document.documentElement.dataset.theme = 'dark';
+  }
+`;
+
 export async function generateMetadata({
   params,
 }: {
@@ -76,7 +86,10 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={htmlLocale(locale)} data-theme="light">
+    <html lang={htmlLocale(locale)} data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
+      </head>
       <body className="site-shell min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased font-sans">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SiteHeader />

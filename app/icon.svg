@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .mark {
+      stroke: #356c98;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .mark {
+        stroke: #ddc493;
+      }
+    }
+  </style>
+  <path
+    class="mark"
+    d="M2 24C9 21 13 12 19 4C23 14 27 16 34 20M9 24C17 24 21 18 25 15"
+    fill="none"
+    stroke-width="2.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    transform="translate(3 10) scale(1.6)"
+  />
+</svg>
