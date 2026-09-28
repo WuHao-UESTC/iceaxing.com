@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { SnowRidge } from './snow-ridge';
 import { Link } from '@/lib/i18n/navigation';
 import type { BlogListItem, CategoryDoc, CollectionDoc, ProjectDoc } from '@/lib/sanity/types';
+import { FilterablePostList } from './filterable-post-list';
 
 type LocaleLabels = {
   locale: string;
@@ -387,8 +388,22 @@ export function PostList({
   compact?: boolean;
   rambling?: boolean;
 }) {
+  const className = `${compact ? 'listing-post-list is-compact' : 'listing-post-list'} ${rambling ? 'is-rambling-list' : ''}`;
+  const filterItems = posts.map((post) => ({
+    id: post._id,
+    title: post.title,
+    publishedAt: post.publishedAt,
+    searchText: [
+      post.title,
+      post.excerpt,
+      post.bodyText,
+      post.collection?.title,
+      ...(post.tags ?? []),
+    ].filter(Boolean).join('\n'),
+  }));
+
   return (
-    <div className={`${compact ? 'listing-post-list is-compact' : 'listing-post-list'} ${rambling ? 'is-rambling-list' : ''}`}>
+    <FilterablePostList items={filterItems} className={className} locale={labels.locale}>
       {posts.map((post) => (
         <PostEntryLink
           key={post._id}
@@ -399,6 +414,6 @@ export function PostList({
           rambling={rambling}
         />
       ))}
-    </div>
+    </FilterablePostList>
   );
 }

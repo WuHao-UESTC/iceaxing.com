@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Link } from '@/lib/i18n/navigation';
 import { BlogBody } from '@/components/blog/portable-text-renderer';
 import { TableOfContents } from '@/components/blog/table-of-contents';
+import { ResizableTocRail } from '@/components/blog/resizable-toc-rail';
 import { GiscusComments } from '@/components/comments/giscus';
 import { PageMotionItem } from '@/components/layout/page-transition';
 import {
@@ -171,7 +172,9 @@ export function PostArticle({
 
         <PageMotionItem step={2}>
           <div className="snowline-article-toc-rail">
-            <TableOfContents content={post.body} locale={locale} />
+            <ResizableTocRail locale={locale}>
+              <TableOfContents content={post.body} locale={locale} />
+            </ResizableTocRail>
           </div>
         </PageMotionItem>
       </div>

@@ -661,6 +661,73 @@
   border-block: 1px solid color-mix(in srgb, var(--color-line) 48%, transparent);
 }
 
+.listing-post-browser {
+  display: grid;
+  gap: 14px;
+}
+
+.listing-post-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 0.42fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.listing-post-control {
+  display: grid;
+  gap: 7px;
+  color: var(--color-text-faint);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+}
+
+.listing-post-control :is(input, select) {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid color-mix(in srgb, var(--color-line) 72%, transparent);
+  border-radius: 7px;
+  outline: none;
+  background: color-mix(in srgb, var(--color-panel) 76%, transparent);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.82rem;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.listing-post-control input {
+  padding: 0 12px;
+}
+
+.listing-post-control select {
+  padding: 0 32px 0 12px;
+}
+
+.listing-post-control :is(input, select):focus {
+  border-color: var(--color-gold);
+  background: var(--color-panel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold) 14%, transparent);
+}
+
+.listing-post-control input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.listing-post-result-count {
+  color: var(--color-text-faint);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.listing-post-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border-block: 1px solid color-mix(in srgb, var(--color-line) 48%, transparent);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .listing-post-link {
   display: grid;
   grid-template-columns: 8rem minmax(0, 1fr);
@@ -814,6 +881,10 @@
 
   .listing-post-link,
   .listing-post-link.is-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .listing-post-controls {
     grid-template-columns: 1fr;
   }
 
