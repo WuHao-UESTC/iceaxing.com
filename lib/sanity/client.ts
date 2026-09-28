@@ -87,12 +87,19 @@ function fetchPublished<Result>(query: string, params: QueryParams = {}) {
   });
 }
 
+function fetchPublishedFresh<Result>(query: string, params: QueryParams = {}) {
+  // Imports and one-click syncs should appear on article routes immediately.
+  // Sanity's CDN remains enabled; only Next's additional Data Cache is skipped.
+  return publishedClient.fetch<Result>(query, params, { cache: 'no-store' });
+}
+
 function fetchPreview<Result>(query: string, params: QueryParams = {}) {
   return previewClient.fetch<Result>(query, params, { cache: 'no-store' });
 }
 
 export const client = {
   fetch: fetchPublished,
+  fetchFresh: fetchPublishedFresh,
 };
 
 /**
@@ -100,8 +107,8 @@ export const client = {
  * In preview mode (draft mode), uses a client that fetches drafts
  * and encodes stega source maps for Visual Editing.
  */
-export function getClient(preview: boolean) {
+export function getClient(preview: boolean, fresh = false) {
   return {
-    fetch: preview ? fetchPreview : fetchPublished,
+    fetch: preview ? fetchPreview : fresh ? fetchPublishedFresh : fetchPublished,
   };
 }
