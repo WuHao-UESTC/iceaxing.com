@@ -10,6 +10,7 @@ import { TranslationInspector } from './components/translation/TranslationInspec
 import { translationBadgesPlugin } from './components/translation/TranslationBadgePlugin';
 import { WritingAssistantInspector } from './components/writing-assistant/WritingAssistantInspector';
 import { blogActionsPlugin } from './components/document-actions/BlogActionsPlugin';
+import { ObsidianImportTool } from './components/obsidian-import/ObsidianImportTool';
 import { iceaxingStudioTheme } from './theme';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/noto-serif-sc/chinese-simplified-400.css';
@@ -30,6 +31,13 @@ export default defineConfig({
   projectId,
   dataset,
   theme: iceaxingStudioTheme,
+  tools: [
+    {
+      name: 'obsidian-import',
+      title: 'Obsidian 导入',
+      component: ObsidianImportTool,
+    },
+  ],
   plugins: [
     structureTool({
       structure: deskStructure,

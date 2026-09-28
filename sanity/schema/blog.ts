@@ -277,6 +277,22 @@ export default defineType({
       readOnly: true,
       hidden: true,
     }),
+    defineField({
+      name: 'obsidianContentHash',
+      title: 'Obsidian content hash',
+      type: 'string',
+      group: 'meta',
+      readOnly: true,
+      hidden: true,
+    }),
+    defineField({
+      name: 'obsidianImportedAt',
+      title: 'Obsidian imported at',
+      type: 'datetime',
+      group: 'meta',
+      readOnly: true,
+      hidden: true,
+    }),
 
     /* ---- SEO ---- */
     defineField({

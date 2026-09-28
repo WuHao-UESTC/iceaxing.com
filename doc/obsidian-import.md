@@ -2,6 +2,42 @@
 
 项目内置的导入工具会读取 Markdown、解析 Obsidian 图片引用、上传本地图片到 Sanity，并创建包含 Portable Text 正文的博客草稿。
 
+## Studio 图形界面（推荐）
+
+运行 Sanity Studio：
+
+```powershell
+npm run studio
+```
+
+打开顶部的“Obsidian 导入”工具，第一次点击“选择 Obsidian 仓库”，选择仓库根目录：
+
+```text
+E:\base_Obsidian\iceaxing's knowledge base
+```
+
+之后可以搜索、按目录筛选并勾选单篇或多篇文章。执行“预检”后，工具会显示文章是新增、有更新还是无变化，并列出无法解析的图片。选择 Category、Project 和可选的 Collection 后即可导入。
+
+- 独立文章直接选择 Category。
+- 项目文章先用 Category 筛选 Project，再选择 Project；文章会从 Project 继承 Category。
+- Collection 必须属于所选 Project。
+- 默认只写入草稿；直接发布需要额外确认。
+- 更新现有文章时保留翻译、封面、主题等 Sanity 手工字段。
+- 无法解析的图片默认阻止导入，也可以明确选择保留原始 Markdown 语法后继续。
+- 浏览器需要支持 File System Access API，推荐使用最新版 Chrome 或 Edge。
+
+工具会记住最近选择的仓库句柄。浏览器撤销权限后，需要点击“恢复仓库”重新授权。
+
+## 本地只读验证
+
+下面的命令会扫描真实仓库、解析所有文章和图片引用，但不会连接或修改 Sanity：
+
+```powershell
+npm run validate:obsidian
+```
+
+追加 `-- --strict` 后，存在未解析图片也会返回失败状态，适合在发布前检查。
+
 ## 预检
 
 先运行预检。预检不会连接或修改 Sanity：
