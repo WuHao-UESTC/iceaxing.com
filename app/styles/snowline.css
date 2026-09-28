@@ -350,12 +350,16 @@ button {
   color: var(--muted-foreground);
 }
 .snowline-article {
-  width: min(1080px, calc(100% - 48px));
+  position: relative;
+  width: min(820px, calc(100% - 48px));
   margin: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 720px) minmax(0, 220px);
-  gap: 64px;
   padding: 60px 0 80px;
+}
+.snowline-article-toc-inline {
+  margin-bottom: 2rem;
+}
+.snowline-article-toc-rail {
+  display: none;
 }
 .snowline-article article > header {
   padding-bottom: 28px;
@@ -393,6 +397,28 @@ button {
 .blog-toc {
   border-color: var(--line);
   background: transparent;
+}
+@media (min-width: 1400px) {
+  .snowline-article-toc-inline {
+    display: none;
+  }
+  .snowline-article-toc-rail {
+    position: absolute;
+    top: 60px;
+    bottom: 80px;
+    left: calc(100% + 48px);
+    display: block;
+    width: 240px;
+  }
+  .snowline-article-toc-rail > .blog-toc {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
 }
 .site-shell [role="dialog"] {
   border-radius: 12px;
@@ -467,11 +493,6 @@ button {
   }
   .site-mobile-tools .sm\:hidden {
     display: block;
-  }
-}
-@media (max-width: 800px) {
-  .snowline-article {
-    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 560px) {

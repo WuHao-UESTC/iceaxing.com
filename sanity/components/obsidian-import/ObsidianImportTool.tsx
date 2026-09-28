@@ -7,6 +7,7 @@ import {
   loadExistingObsidianDocuments,
   loadImportTaxonomy,
   prepareImportPreview,
+  syncExistingObsidianPreview,
   type ExistingObsidianDocument,
   type ImportDestination,
   type ImportPreview,
@@ -69,6 +70,7 @@ export function ObsidianImportTool() {
   const [conflictStrategy, setConflictStrategy] = useState<'update' | 'skip-existing'>('update');
   const [busyMessage, setBusyMessage] = useState('');
   const [error, setError] = useState('');
+  const [syncSummary, setSyncSummary] = useState('');
   const [progress, setProgress] = useState<Record<string, RowProgress>>({});
   const cancelRequested = useRef(false);
   const assetCache = useRef(new Map<string, string>());
@@ -145,6 +147,7 @@ export function ObsidianImportTool() {
       setSelectedPaths(new Set());
       setPreviews([]);
       setProgress({});
+      setSyncSummary('');
       assetCache.current.clear();
       await saveVaultHandle(selected).catch(() => undefined);
     } catch (connectError) {
@@ -195,6 +198,135 @@ export function ObsidianImportTool() {
       setPreviews(nextPreviews);
     } catch (preflightError) {
       setError(`预检失败：${toErrorMessage(preflightError)}`);
+    } finally {
+      setBusyMessage('');
+    }
+  };
+
+  const runOneClickSync = async () => {
+    setError('');
+    setSyncSummary('');
+    setPreviews([]);
+    setProgress({});
+    assetCache.current.clear();
+
+    try {
+      let handle = snapshot?.handle ?? savedHandle;
+      if (!handle) handle = await chooseVaultDirectory();
+      if (!(await ensureVaultPermission(handle))) throw new Error('未获得仓库读取权限。');
+
+      setBusyMessage('正在重新扫描 Obsidian 仓库…');
+      const nextSnapshot = await scanVault(handle);
+      const nextExisting = await loadExistingObsidianDocuments(client);
+      const localPaths = new Set(nextSnapshot.notes.map((entry) => entry.path));
+      const entries = nextSnapshot.notes.filter((entry) => nextExisting.has(entry.path));
+      const missingLocalCount = Array.from(nextExisting.keys())
+        .filter((path) => !localPaths.has(path)).length;
+      const nextPreviews: ImportPreview[] = [];
+
+      setSnapshot(nextSnapshot);
+      setSavedHandle(handle);
+      setExistingBySource(nextExisting);
+      setSelectedPaths(new Set(entries.map((entry) => entry.path)));
+      await saveVaultHandle(handle).catch(() => undefined);
+
+      for (let index = 0; index < entries.length; index++) {
+        setBusyMessage(`正在检查已导入文章 ${index + 1}/${entries.length}：${entries[index].path}`);
+        nextPreviews.push(await prepareImportPreview(entries[index], nextSnapshot, nextExisting));
+      }
+      setPreviews(nextPreviews);
+
+      const candidates = nextPreviews.filter((preview) =>
+        preview.status === 'changed' || preview.status === 'legacy',
+      );
+      const initialProgress = Object.fromEntries(nextPreviews.map((preview) => [
+        preview.note.relativePath,
+        preview.status === 'unchanged'
+          ? { status: 'skipped', message: '内容无变化' }
+          : { status: 'waiting', message: '等待同步' },
+      ])) as Record<string, RowProgress>;
+      setProgress(initialProgress);
+
+      if (candidates.length === 0) {
+        setSyncSummary(
+          `检查完成：${nextPreviews.length} 篇已导入文章均为最新${missingLocalCount ? `；${missingLocalCount} 篇源文件未在仓库中找到` : ''}。`,
+        );
+        return;
+      }
+
+      const unresolvedCount = candidates.reduce(
+        (total, preview) => total + preview.unresolvedImages.length,
+        0,
+      );
+      if (unresolvedCount > 0 && !allowMissingImages) {
+        setError(`检测到 ${unresolvedCount} 张无法解析的图片，已停止同步。修复图片后重试，或启用“允许缺失图片”。`);
+        setSyncSummary(`发现 ${candidates.length} 篇待更新文章，尚未写入 Sanity。`);
+        return;
+      }
+
+      let successfulCount = 0;
+      let failedCount = 0;
+      let uploadedImageCount = 0;
+      const successfulPaths = new Set<string>();
+
+      for (let index = 0; index < candidates.length; index++) {
+        const preview = candidates[index];
+        const path = preview.note.relativePath;
+        setBusyMessage(`正在同步 ${index + 1}/${candidates.length}：${path}`);
+        setProgress((current) => ({
+          ...current,
+          [path]: { status: 'running', message: '同步正文和图片…' },
+        }));
+
+        try {
+          const result = await syncExistingObsidianPreview({
+            client,
+            preview,
+            snapshot: nextSnapshot,
+            allowMissingImages,
+            assetCache: assetCache.current,
+          });
+          successfulCount++;
+          uploadedImageCount += result.uploadedImages;
+          successfulPaths.add(path);
+          setProgress((current) => ({
+            ...current,
+            [path]: {
+              status: 'success',
+              documentId: result.documentId,
+              message: `同步完成，处理 ${result.uploadedImages} 张图片`,
+            },
+          }));
+        } catch (syncError) {
+          failedCount++;
+          setProgress((current) => ({
+            ...current,
+            [path]: { status: 'failed', message: toErrorMessage(syncError) },
+          }));
+        }
+      }
+
+      const refreshed = await loadExistingObsidianDocuments(client).catch(() => null);
+      if (refreshed) {
+        setExistingBySource(refreshed);
+        setPreviews((current) => current.map((preview) => successfulPaths.has(preview.note.relativePath)
+          ? {
+              ...preview,
+              status: 'unchanged',
+              existing: refreshed.get(preview.note.relativePath),
+            }
+          : preview));
+      }
+      setSyncSummary([
+        `同步完成：${successfulCount} 篇已更新，${nextPreviews.length - candidates.length} 篇无变化`,
+        `${uploadedImageCount} 张图片已处理`,
+        failedCount ? `${failedCount} 篇失败` : '',
+        missingLocalCount ? `${missingLocalCount} 篇源文件未找到（未删除网页文章）` : '',
+      ].filter(Boolean).join('；') + '。');
+    } catch (syncError) {
+      if (toErrorName(syncError) !== 'AbortError') {
+        setError(`一键同步失败：${toErrorMessage(syncError)}`);
+      }
     } finally {
       setBusyMessage('');
     }
@@ -317,6 +449,13 @@ export function ObsidianImportTool() {
         </div>
         <Flex align="center" gap={2} wrap="wrap">
           {snapshot && <Badge tone="positive">{snapshot.name}</Badge>}
+          <Button
+            disabled={!supportsDirectoryPicker() || Boolean(busyMessage)}
+            mode="ghost"
+            text="一键同步已导入文章"
+            tone="primary"
+            onClick={() => void runOneClickSync()}
+          />
           {savedHandle && !snapshot && (
             <Button mode="ghost" text={`恢复 ${savedHandle.name}`} onClick={() => void connectVault(savedHandle)} />
           )}
@@ -330,6 +469,7 @@ export function ObsidianImportTool() {
       </header>
 
       {error && <Card className="obsidian-importer-alert" padding={3} radius={2} tone="critical"><Text size={1}>{error}</Text></Card>}
+      {syncSummary && <Card className="obsidian-importer-alert" padding={3} radius={2} tone="positive"><Text size={1}>{syncSummary}</Text></Card>}
       {!supportsDirectoryPicker() && (
         <Card className="obsidian-importer-alert" padding={3} radius={2} tone="caution">
           <Text size={1}>当前浏览器不支持本地目录读取。请使用最新版 Chrome 或 Edge 打开 Studio。</Text>

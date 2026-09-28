@@ -149,7 +149,7 @@ export function PostArticle({
           </PageMotionItem>
 
           <PageMotionItem step={2}>
-            <div className="mb-8 lg:hidden">
+            <div className="snowline-article-toc-inline">
               <TableOfContents content={post.body} locale={locale} />
             </div>
           </PageMotionItem>
@@ -170,10 +170,8 @@ export function PostArticle({
         </article>
 
         <PageMotionItem step={2}>
-          <div className="hidden lg:block">
-            <div className="sticky top-24">
-              <TableOfContents content={post.body} locale={locale} />
-            </div>
+          <div className="snowline-article-toc-rail">
+            <TableOfContents content={post.body} locale={locale} />
           </div>
         </PageMotionItem>
       </div>

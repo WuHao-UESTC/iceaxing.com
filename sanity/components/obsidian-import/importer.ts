@@ -271,6 +271,58 @@ function compactObject(value: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined));
 }
 
+function getObsidianOwnedFields(preview: ImportPreview, body: PtBlock[]) {
+  return compactObject({
+    title: preview.note.title,
+    slug: { _type: 'slug', current: preview.note.slug },
+    body,
+    excerpt: preview.note.excerpt,
+    language: 'zh',
+    publishedAt: preview.note.publishedAt,
+    updatedAt: preview.note.updatedAt,
+    authorName: preview.note.authorName,
+    tags: preview.note.tags,
+    obsidianSource: preview.note.relativePath,
+    obsidianContentHash: preview.contentHash,
+    obsidianImportedAt: new Date().toISOString(),
+  });
+}
+
+/** Update only fields owned by Obsidian, keeping publication state and taxonomy intact. */
+export async function syncExistingObsidianPreview(input: {
+  client: SanityClient;
+  preview: ImportPreview;
+  snapshot: VaultSnapshot;
+  allowMissingImages: boolean;
+  assetCache: Map<string, string>;
+}): Promise<ImportResult> {
+  const {
+    client,
+    preview,
+    snapshot,
+    allowMissingImages,
+    assetCache,
+  } = input;
+  if (!preview.existing) {
+    throw new Error(`无法同步尚未导入的文章：${preview.note.relativePath}`);
+  }
+
+  const { body, uploadedImages } = await buildPortableText(
+    client,
+    preview,
+    snapshot,
+    assetCache,
+    allowMissingImages,
+  );
+  let patch = client
+    .patch(preview.existing._id)
+    .set(getObsidianOwnedFields(preview, body));
+  if (!preview.note.authorName) patch = patch.unset(['authorName']);
+  await patch.commit();
+
+  return { documentId: preview.existing._id, uploadedImages };
+}
+
 export async function importObsidianPreview(input: {
   client: SanityClient;
   preview: ImportPreview;
@@ -315,18 +367,7 @@ export async function importObsidianPreview(input: {
     ? { ...withoutSystemFields(source), _id: targetId }
     : { _id: targetId, _type: 'blog' };
   const ownedFields = compactObject({
-    title: preview.note.title,
-    slug: { _type: 'slug', current: preview.note.slug },
-    body,
-    excerpt: preview.note.excerpt,
-    language: 'zh',
-    publishedAt: preview.note.publishedAt,
-    updatedAt: preview.note.updatedAt,
-    authorName: preview.note.authorName,
-    tags: preview.note.tags,
-    obsidianSource: preview.note.relativePath,
-    obsidianContentHash: preview.contentHash,
-    obsidianImportedAt: new Date().toISOString(),
+    ...getObsidianOwnedFields(preview, body),
     ...(destination.mode === 'category'
       ? { category: { _type: 'reference', _ref: destination.categoryId } }
       : {
@@ -351,6 +392,7 @@ export async function importObsidianPreview(input: {
       delete publishedDocument.category;
       if (!destination.collectionId) delete publishedDocument.collection;
     }
+    if (!preview.note.authorName) delete publishedDocument.authorName;
     let transaction = client.transaction().createOrReplace(publishedDocument);
     if (draft) transaction = transaction.delete(draftId);
     await transaction.commit();
@@ -359,6 +401,7 @@ export async function importObsidianPreview(input: {
 
   await client.createIfNotExists(seed);
   let patch = client.patch(targetId).set(ownedFields);
+  if (!preview.note.authorName) patch = patch.unset(['authorName']);
   patch = destination.mode === 'category'
     ? patch.unset(['project', 'collection'])
     : destination.collectionId
