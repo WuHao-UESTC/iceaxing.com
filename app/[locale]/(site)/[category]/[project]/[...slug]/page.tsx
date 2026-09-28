@@ -25,6 +25,7 @@ import {
   PostList,
 } from '@/components/site/listing-cards';
 import { PageMotionItem } from '@/components/layout/page-transition';
+import { decodeRouteSegment, decodeRouteSegments } from '@/lib/routing/route-segments';
 
 export const revalidate = 3600;
 
@@ -37,7 +38,11 @@ function postPath(category: string, project: string, slug: string[]) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug, category, project, locale } = await params;
+  const routeParams = await params;
+  const { locale } = routeParams;
+  const category = decodeRouteSegment(routeParams.category);
+  const project = decodeRouteSegment(routeParams.project);
+  const slug = decodeRouteSegments(routeParams.slug);
   const t = await getTranslations({ locale, namespace: 'common' });
   const { isEnabled: preview } = await draftMode();
   if (slug.length === 0 || slug.length > 2) return { title: t('notFound') };
@@ -73,7 +78,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CatchAllPage({ params }: Props) {
-  const { slug, category, project, locale } = await params;
+  const routeParams = await params;
+  const { locale } = routeParams;
+  const category = decodeRouteSegment(routeParams.category);
+  const project = decodeRouteSegment(routeParams.project);
+  const slug = decodeRouteSegments(routeParams.slug);
   const t = await getTranslations({ locale, namespace: 'common' });
   const { isEnabled: preview } = await draftMode();
 

@@ -296,8 +296,11 @@ export async function importObsidianPreview(input: {
     assetCache,
     allowMissingImages,
   );
-  const baseId = preview.existing?._id.replace(/^drafts\./, '')
-    ?? await deterministicObsidianDocumentId(preview.note.relativePath);
+  const generatedId = await deterministicObsidianDocumentId(preview.note.relativePath);
+  const existingBaseId = preview.existing?._id.replace(/^drafts\./, '');
+  const baseId = existingBaseId && !existingBaseId.startsWith('obsidian.')
+    ? existingBaseId
+    : generatedId;
   const draftId = `drafts.${baseId}`;
   const targetId = publish ? baseId : draftId;
   const variants = await client.fetch<SanityDocument[]>(

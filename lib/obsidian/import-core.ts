@@ -299,7 +299,7 @@ async function digest(algorithm: 'SHA-1' | 'SHA-256', value: string) {
 
 export async function deterministicObsidianDocumentId(relativePath: string) {
   const hash = await digest('SHA-1', normalizeLookupPath(relativePath));
-  return `obsidian.${hash}`;
+  return `obsidian-${hash}`;
 }
 
 export function contentFingerprint(

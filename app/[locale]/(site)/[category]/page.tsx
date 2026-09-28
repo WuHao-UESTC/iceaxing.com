@@ -15,6 +15,7 @@ import {
   ProjectGrid,
 } from '@/components/site/listing-cards';
 import { PageMotionItem } from '@/components/layout/page-transition';
+import { decodeRouteSegment } from '@/lib/routing/route-segments';
 
 export const revalidate = 3600;
 
@@ -23,7 +24,9 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { category, locale } = await params;
+  const routeParams = await params;
+  const { locale } = routeParams;
+  const category = decodeRouteSegment(routeParams.category);
   const t = await getTranslations({ locale, namespace: 'common' });
   const { isEnabled: preview } = await draftMode();
   const cat = await getCategoryBySlug(category, locale, preview);
@@ -41,7 +44,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function CategoryPage({ params }: Props) {
-  const { category, locale } = await params;
+  const routeParams = await params;
+  const { locale } = routeParams;
+  const category = decodeRouteSegment(routeParams.category);
   const t = await getTranslations({ locale, namespace: 'common' });
   const { isEnabled: preview } = await draftMode();
   const cat = await getCategoryBySlug(category, locale, preview);

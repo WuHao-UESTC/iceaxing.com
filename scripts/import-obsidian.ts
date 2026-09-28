@@ -557,7 +557,7 @@ function deterministicDocumentId(relativePath: string) {
   const digest = createHash('sha1')
     .update(normalizeLookupPath(relativePath))
     .digest('hex');
-  return `obsidian.${digest}`;
+  return `obsidian-${digest}`;
 }
 
 async function main() {

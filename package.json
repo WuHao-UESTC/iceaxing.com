@@ -9,6 +9,7 @@
     "lint": "eslint",
     "import:obsidian": "tsx scripts/import-obsidian.ts",
     "validate:obsidian": "node --no-warnings --experimental-strip-types scripts/validate-obsidian-import.mjs",
+    "migrate:obsidian-ids": "node scripts/migrate-obsidian-document-ids.mjs",
     "studio": "sanity dev",
     "studio:build": "sanity build",
     "repair:portable-text": "tsx scripts/repair-portable-text.ts"

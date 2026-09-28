@@ -38,6 +38,22 @@ npm run validate:obsidian
 
 追加 `-- --strict` 后，存在未解析图片也会返回失败状态，适合在发布前检查。
 
+## 旧文档 ID 迁移
+
+早期导入器使用了包含句点的 `obsidian.<hash>` 文档 ID。Sanity 的公开查询不会返回 ID 中含句点的文档，因此这些文章需要迁移到 `obsidian-<hash>`。先预检：
+
+```powershell
+npm run migrate:obsidian-ids -- --project razavi-analog-ic-design-note --project-status ongoing
+```
+
+确认没有 ID 冲突和入站引用后执行：
+
+```powershell
+npm run migrate:obsidian-ids -- --project razavi-analog-ic-design-note --project-status ongoing --write
+```
+
+脚本会逐篇在同一事务中创建新 ID 并删除旧 ID，正文中的 Sanity 图片资产引用不会改变。
+
 ## 预检
 
 先运行预检。预检不会连接或修改 Sanity：
