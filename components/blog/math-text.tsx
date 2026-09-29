@@ -3,6 +3,7 @@ import katex from 'katex';
 import {
   extractHtmlAnchorId,
   extractHtmlAnchorReference,
+  extractHtmlSpanAnchorId,
 } from '@/lib/html-anchor';
 import { normalizeMathFormula } from '@/lib/math';
 import { AnchorBlock } from './custom-blocks/anchor';
@@ -19,7 +20,7 @@ type MathTextSegment =
 
 const MATH_DELIMITER_PATTERN =
   /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\\\[([\s\S]+?)(?<!\\)\\\]|(?<!\\)\$([^$\n]+?)(?<!\\)\$|(?<!\\)\\\(([^\n]+?)(?<!\\)\\\)/g;
-const HTML_ANCHOR_PATTERN = /<a\b[^>]*>[\s\S]*?<\/a\s*>/gi;
+const HTML_ANCHOR_PATTERN = /<(a|span)\b[^>]*>[\s\S]*?<\/\1\s*>/gi;
 const TEX_ENVIRONMENT_PATTERN = /\\begin\{([A-Za-z]+\*?)\}[\s\S]*?\\end\{\1\}/g;
 
 type SegmentMatch = {
@@ -51,7 +52,10 @@ function findHtmlAnchor(value: string, fromIndex: number): SegmentMatch | null {
   if (!match) return null;
 
   const reference = extractHtmlAnchorReference(match[0]);
-  const anchorId = reference ? undefined : extractHtmlAnchorId(match[0]);
+  const anchorId = reference
+    ? undefined
+    : extractHtmlSpanAnchorId(match[0]) ??
+      (/^<a\b/i.test(match[0]) ? extractHtmlAnchorId(match[0]) : undefined);
   const segment: MathTextSegment = reference
     ? { type: 'reference', ...reference }
     : anchorId

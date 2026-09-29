@@ -47,6 +47,27 @@ export function extractHtmlAnchorReference(tag: string): HtmlAnchorReference | u
   };
 }
 
+/** Parse exporter-generated `<span id label>[label]</span>` anchor placeholders. */
+export function extractHtmlSpanAnchorId(tag: string): string | undefined {
+  const tagMatch = tag.match(/^<span\b([^>]*)>([\s\S]*?)<\/span\s*>$/i);
+  if (!tagMatch) return undefined;
+
+  const anchorId = extractHtmlAnchorId(tagMatch[1]);
+  if (!anchorId) return undefined;
+
+  const content = decodeHtmlEntities(tagMatch[2].replace(/<[^>]*>/g, '')).trim();
+  if (!content) return anchorId;
+
+  const labelMatch = tagMatch[1].match(
+    /(?:^|\s)label\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i,
+  );
+  const labelId = normalizeHtmlAnchorId(
+    labelMatch?.[1] ?? labelMatch?.[2] ?? labelMatch?.[3],
+  );
+
+  return labelId === anchorId && content === `[${labelId}]` ? anchorId : undefined;
+}
+
 export function normalizeHtmlAnchorId(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   const normalized = decodeHtmlEntities(value).trim().replace(/^#/, '');
