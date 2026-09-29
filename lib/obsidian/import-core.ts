@@ -18,6 +18,7 @@ export type MarkdownSegment =
       target: string;
       alt?: string;
       caption?: string;
+      anchorId?: string;
     };
 
 export type PreparedObsidianNote = {
@@ -112,6 +113,8 @@ export function slugifyObsidianPath(value: string) {
 export function stripMarkdown(value: string) {
   return value
     .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/<figure\b[^>]*>[\s\S]*?<\/figure\s*>/gi, ' ')
+    .replace(/<img\b[^>]*>/gi, ' ')
     .replace(/!\[\[[^\]]+\]\]/g, ' ')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
@@ -168,10 +171,84 @@ export function prepareObsidianNote(input: {
   };
 }
 
+function decodeHtmlEntities(value: string) {
+  const namedEntities: Record<string, string> = {
+    amp: '&',
+    apos: "'",
+    gt: '>',
+    lt: '<',
+    nbsp: ' ',
+    quot: '"',
+  };
+
+  return value.replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, code: string) => {
+    if (code.startsWith('#')) {
+      const hexadecimal = code[1]?.toLocaleLowerCase() === 'x';
+      const codePoint = Number.parseInt(code.slice(hexadecimal ? 2 : 1), hexadecimal ? 16 : 10);
+      if (Number.isFinite(codePoint)) {
+        try {
+          return String.fromCodePoint(codePoint);
+        } catch {
+          return entity;
+        }
+      }
+      return entity;
+    }
+
+    return namedEntities[code.toLocaleLowerCase()] ?? entity;
+  });
+}
+
+function readHtmlAttribute(tag: string, name: string) {
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = tag.match(
+    new RegExp(`(?:^|\\s)${escapedName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\u0060]+))`, 'i'),
+  );
+  const value = match?.[1] ?? match?.[2] ?? match?.[3];
+  return value === undefined ? undefined : decodeHtmlEntities(value).trim();
+}
+
+function htmlToPlainText(value: string) {
+  return decodeHtmlEntities(
+    value
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ''),
+  )
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .trim();
+}
+
+function parseHtmlImageSegments(syntax: string): MarkdownSegment[] {
+  const captionMatch = syntax.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption\s*>/i);
+  const caption = captionMatch ? htmlToPlainText(captionMatch[1]) : undefined;
+  const imageTags = syntax.match(/<img\b[^>]*>/gi) ?? [];
+
+  return imageTags.flatMap((tag, index) => {
+    const target = readHtmlAttribute(tag, 'src');
+    if (!target) return [];
+    const alt = readHtmlAttribute(tag, 'alt');
+    const rawAnchorId = readHtmlAttribute(tag, 'id');
+    const anchorId = rawAnchorId && !/[\s"'<>]/.test(rawAnchorId)
+      ? rawAnchorId.replace(/^#/, '') || undefined
+      : undefined;
+
+    return [{
+      type: 'image' as const,
+      syntax: imageTags.length === 1 ? syntax : tag,
+      target,
+      alt: alt || basename(target),
+      caption: index === 0 && caption ? caption : undefined,
+      anchorId,
+    }];
+  });
+}
+
 export function splitMarkdownImages(markdown: string): MarkdownSegment[] {
   const segments: MarkdownSegment[] = [];
-  const pattern = /!\[\[([^\]]+)\]\]|!\[([^\]]*)\]\(([^)\n]+)\)/g;
+  const pattern = /<figure\b[^>]*>[\s\S]*?<\/figure\s*>|<img\b[^>]*>|!\[\[([^\]]+)\]\]|!\[([^\]]*)\]\(([^)\n]+)\)/gi;
   let inFence: '`' | '~' | null = null;
+  let textBuffer = '';
 
   const appendText = (value: string) => {
     if (!value) return;
@@ -180,36 +257,29 @@ export function splitMarkdownImages(markdown: string): MarkdownSegment[] {
     else segments.push({ type: 'text', value });
   };
 
-  for (const line of markdown.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
-    if (!line) continue;
-    const fence = line.match(/^\s*(`{3,}|~{3,})/);
-    if (fence) {
-      const marker = fence[1][0] as '`' | '~';
-      if (inFence === marker) inFence = null;
-      else if (!inFence) inFence = marker;
-      appendText(line);
-      continue;
-    }
-    if (inFence) {
-      appendText(line);
-      continue;
-    }
-
+  const splitTextBuffer = () => {
+    if (!textBuffer) return;
     let cursor = 0;
     let match: RegExpExecArray | null;
     pattern.lastIndex = 0;
 
-    while ((match = pattern.exec(line)) !== null) {
-      const precedingBackticks = line.slice(0, match.index).match(/(?<!\\)`/g)?.length ?? 0;
+    while ((match = pattern.exec(textBuffer)) !== null) {
+      const lineStart = textBuffer.lastIndexOf('\n', match.index - 1) + 1;
+      const precedingBackticks = textBuffer.slice(lineStart, match.index).match(/(?<!\\)`/g)?.length ?? 0;
       if (precedingBackticks % 2 === 1) continue;
 
-      appendText(line.slice(cursor, match.index));
-      if (match[1] !== undefined) {
+      const syntax = match[0];
+      appendText(textBuffer.slice(cursor, match.index));
+      if (/^<(?:figure|img)\b/i.test(syntax)) {
+        const htmlImages = parseHtmlImageSegments(syntax);
+        if (htmlImages.length > 0) segments.push(...htmlImages);
+        else appendText(syntax);
+      } else if (match[1] !== undefined) {
         const [target, ...aliases] = match[1].split('|');
         const alias = aliases.join('|').trim();
         segments.push({
           type: 'image',
-          syntax: match[0],
+          syntax,
           target: target.trim(),
           alt: basename(target.trim()).replace(/\.excalidraw$/i, ''),
           caption: alias && !/^\d+(?:x\d+)?$/i.test(alias) ? alias : undefined,
@@ -223,15 +293,32 @@ export function splitMarkdownImages(markdown: string): MarkdownSegment[] {
         }
         segments.push({
           type: 'image',
-          syntax: match[0],
+          syntax,
           target,
           alt: match[2].trim() || basename(target),
         });
       }
-      cursor = match.index + match[0].length;
+      cursor = match.index + syntax.length;
     }
-    appendText(line.slice(cursor));
+    appendText(textBuffer.slice(cursor));
+    textBuffer = '';
+  };
+
+  for (const line of markdown.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
+    if (!line) continue;
+    const fence = line.match(/^\s*(`{3,}|~{3,})/);
+    if (fence) {
+      splitTextBuffer();
+      const marker = fence[1][0] as '`' | '~';
+      if (inFence === marker) inFence = null;
+      else if (!inFence) inFence = marker;
+      appendText(line);
+      continue;
+    }
+    if (inFence) appendText(line);
+    else textBuffer += line;
   }
+  splitTextBuffer();
 
   return segments.length > 0 ? segments : [{ type: 'text', value: markdown }];
 }

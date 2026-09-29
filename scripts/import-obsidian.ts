@@ -8,17 +8,12 @@ import {
   markdownToPortableText,
   type PtBlock,
 } from '../sanity/components/markdown-paste/markdownHandler';
+import {
+  OBSIDIAN_IMAGE_EXTENSIONS,
+  splitMarkdownImages,
+} from '../lib/obsidian/import-core';
 
 const DEFAULT_VAULT = String.raw`E:\base_Obsidian\iceaxing's knowledge base`;
-const IMAGE_EXTENSIONS = new Set([
-  '.avif',
-  '.gif',
-  '.jpeg',
-  '.jpg',
-  '.png',
-  '.svg',
-  '.webp',
-]);
 
 type ImportOptions = {
   source?: string;
@@ -32,16 +27,6 @@ type ImportOptions = {
 };
 
 type Frontmatter = Record<string, string | string[]>;
-
-type MarkdownSegment =
-  | { type: 'text'; value: string }
-  | {
-      type: 'image';
-      syntax: string;
-      target: string;
-      alt?: string;
-      caption?: string;
-    };
 
 type ImageIndex = {
   byRelativePath: Map<string, string>;
@@ -293,76 +278,6 @@ async function prepareNote(absolutePath: string, vault: string): Promise<Prepare
   };
 }
 
-function splitImages(markdown: string): MarkdownSegment[] {
-  const segments: MarkdownSegment[] = [];
-  const pattern = /!\[\[([^\]]+)\]\]|!\[([^\]]*)\]\(([^)\n]+)\)/g;
-  let inFence: '`' | '~' | null = null;
-
-  const appendText = (value: string) => {
-    if (!value) return;
-    const previous = segments.at(-1);
-    if (previous?.type === 'text') previous.value += value;
-    else segments.push({ type: 'text', value });
-  };
-
-  for (const line of markdown.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
-    if (!line) continue;
-    const fence = line.match(/^\s*(`{3,}|~{3,})/);
-    if (fence) {
-      const marker = fence[1][0] as '`' | '~';
-      if (inFence === marker) inFence = null;
-      else if (!inFence) inFence = marker;
-      appendText(line);
-      continue;
-    }
-    if (inFence) {
-      appendText(line);
-      continue;
-    }
-
-    let cursor = 0;
-    let match: RegExpExecArray | null;
-    pattern.lastIndex = 0;
-
-    while ((match = pattern.exec(line)) !== null) {
-      const precedingBackticks = line.slice(0, match.index).match(/(?<!\\)`/g)?.length ?? 0;
-      if (precedingBackticks % 2 === 1) continue;
-
-      appendText(line.slice(cursor, match.index));
-
-      if (match[1] !== undefined) {
-        const [target, ...aliases] = match[1].split('|');
-        const alias = aliases.join('|').trim();
-        segments.push({
-          type: 'image',
-          syntax: match[0],
-          target: target.trim(),
-          alt: path.parse(target.trim()).name.replace(/\.excalidraw$/i, ''),
-          caption: alias && !/^\d+(?:x\d+)?$/i.test(alias) ? alias : undefined,
-        });
-      } else {
-        let target = match[3].trim();
-        if (target.startsWith('<') && target.includes('>')) {
-          target = target.slice(1, target.indexOf('>'));
-        } else {
-          target = target.split(/\s+["']/)[0];
-        }
-        segments.push({
-          type: 'image',
-          syntax: match[0],
-          target,
-          alt: match[2].trim() || path.parse(target).name,
-        });
-      }
-
-      cursor = match.index + match[0].length;
-    }
-    appendText(line.slice(cursor));
-  }
-
-  return segments.length > 0 ? segments : [{ type: 'text', value: markdown }];
-}
-
 function normalizeWikiLinks(markdown: string) {
   return markdown
     .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
@@ -408,7 +323,7 @@ async function buildImageIndex(vault: string): Promise<ImageIndex> {
 
   for (const file of files) {
     const extension = path.extname(file).toLocaleLowerCase();
-    if (!IMAGE_EXTENSIONS.has(extension)) continue;
+    if (!OBSIDIAN_IMAGE_EXTENSIONS.has(extension)) continue;
 
     const relative = normalizeLookupPath(path.relative(vault, file));
     const basename = path.basename(file).toLocaleLowerCase();
@@ -503,7 +418,7 @@ async function buildPortableText(
 ) {
   const body: PtBlock[] = [];
 
-  for (const segment of splitImages(note.bodyMarkdown)) {
+  for (const segment of splitMarkdownImages(note.bodyMarkdown)) {
     if (segment.type === 'text') {
       body.push(...markdownToPortableText(normalizeWikiLinks(segment.value)));
       continue;
@@ -538,6 +453,7 @@ async function buildPortableText(
       asset: { _type: 'reference', _ref: assetId },
       alt: segment.alt,
       caption: segment.caption,
+      anchorId: segment.anchorId,
     });
   }
 

@@ -18,6 +18,7 @@ import columns from './custom-blocks/columns';
 import toggle from './custom-blocks/toggle';
 import divider from './custom-blocks/divider';
 import table from './custom-blocks/table';
+import anchor from './custom-blocks/anchor';
 
 export const schemaTypes = [
   category,
@@ -39,4 +40,5 @@ export const schemaTypes = [
   toggle,
   divider,
   table,
+  anchor,
 ];

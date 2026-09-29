@@ -253,6 +253,7 @@ async function buildPortableText(
       asset: { _type: 'reference', _ref: upload.assetId },
       alt: segment.alt,
       caption: segment.caption,
+      anchorId: segment.anchorId,
     });
   }
 

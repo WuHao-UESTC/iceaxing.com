@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import markdownItKatexExport from '@vscode/markdown-it-katex';
 import { extractDisplayMath } from '../../../lib/math';
+import { extractHtmlAnchorId } from '../../../lib/html-anchor';
 
 type MarkDef = { _key: string; _type: string; href?: string };
 
@@ -169,6 +170,74 @@ export function hasMarkdownSyntax(text: string): boolean {
   );
 }
 
+type MarkdownSourceSegment =
+  | { type: 'text'; value: string }
+  | { type: 'math'; formula: string }
+  | { type: 'anchor'; id: string };
+
+function splitSpecialBlocks(markdownSource: string): MarkdownSourceSegment[] {
+  const segments: MarkdownSourceSegment[] = [];
+  const pattern = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\\\[([\s\S]+?)(?<!\\)\\\]|<a\b[^>]*>\s*<\/a\s*>/gi;
+  let inFence: '`' | '~' | null = null;
+  let textBuffer = '';
+
+  const appendText = (value: string) => {
+    if (!value) return;
+    const previous = segments.at(-1);
+    if (previous?.type === 'text') previous.value += value;
+    else segments.push({ type: 'text', value });
+  };
+
+  const splitTextBuffer = () => {
+    if (!textBuffer) return;
+    let cursor = 0;
+    let match: RegExpExecArray | null;
+    pattern.lastIndex = 0;
+
+    while ((match = pattern.exec(textBuffer)) !== null) {
+      const lineStart = textBuffer.lastIndexOf('\n', match.index - 1) + 1;
+      const precedingBackticks = textBuffer.slice(lineStart, match.index).match(/(?<!\\)`/g)?.length ?? 0;
+      if (precedingBackticks % 2 === 1) continue;
+
+      const syntax = match[0];
+      appendText(textBuffer.slice(cursor, match.index));
+
+      if (match[1] !== undefined || match[2] !== undefined) {
+        const formula = (match[1] ?? match[2]).replace(/\r\n?/g, '\n').trim();
+        if (formula) segments.push({ type: 'math', formula });
+        else appendText(syntax);
+      } else {
+        const id = extractHtmlAnchorId(syntax);
+        if (id) segments.push({ type: 'anchor', id });
+        else appendText(syntax);
+      }
+
+      cursor = match.index + syntax.length;
+    }
+
+    appendText(textBuffer.slice(cursor));
+    textBuffer = '';
+  };
+
+  for (const line of markdownSource.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
+    if (!line) continue;
+    const fence = line.match(/^\s*(`{3,}|~{3,})/);
+    if (fence) {
+      splitTextBuffer();
+      const marker = fence[1][0] as '`' | '~';
+      if (inFence === marker) inFence = null;
+      else if (!inFence) inFence = marker;
+      appendText(line);
+      continue;
+    }
+    if (inFence) appendText(line);
+    else textBuffer += line;
+  }
+  splitTextBuffer();
+
+  return segments.length > 0 ? segments : [{ type: 'text', value: markdownSource }];
+}
+
 function readDisplayMath(lines: string[], start: number) {
   const openingLine = lines[start].trimStart();
 
@@ -210,7 +279,7 @@ function getNestingLevel(line: string): number {
   return Math.floor(effective / 2);
 }
 
-export function markdownToPortableText(md: string): PtBlock[] {
+function markdownTextToPortableText(md: string): PtBlock[] {
   const lines = md.split('\n');
   const blocks: PtBlock[] = [];
   let i = 0;
@@ -392,4 +461,24 @@ export function markdownToPortableText(md: string): PtBlock[] {
   }
 
   return blocks;
+}
+
+export function markdownToPortableText(md: string): PtBlock[] {
+  return splitSpecialBlocks(md).flatMap((segment): PtBlock[] => {
+    if (segment.type === 'math') {
+      return [{
+        _key: generateKey(),
+        _type: 'mathBlock',
+        formula: segment.formula,
+      }];
+    }
+    if (segment.type === 'anchor') {
+      return [{
+        _key: generateKey(),
+        _type: 'anchor',
+        id: segment.id,
+      }];
+    }
+    return markdownTextToPortableText(segment.value);
+  });
 }

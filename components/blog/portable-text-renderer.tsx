@@ -11,9 +11,12 @@ import { Columns } from './custom-blocks/columns';
 import { Toggle } from './custom-blocks/toggle';
 import { Divider } from './custom-blocks/divider';
 import { TableBlock } from './custom-blocks/table-block';
+import { AnchorBlock } from './custom-blocks/anchor';
 import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
 import { extractDisplayMath, normalizeMathFormula } from '@/lib/math';
+import { extractHtmlAnchorId, normalizeHtmlAnchorId } from '@/lib/html-anchor';
+import { repairLegacyDisplayMath } from '@/lib/portable-text/repair-legacy-math';
 import Image from 'next/image';
 import 'katex/dist/katex.min.css';
 
@@ -51,14 +54,14 @@ function getHeadingId(value: unknown): string {
 }
 
 type MathSegment = {
-  type: 'text' | 'math' | 'displayMath';
+  type: 'text' | 'math' | 'displayMath' | 'anchor';
   content: string;
 };
 
 /** Split text on TeX delimiters, checking $$...$$ before $...$. */
 function parseInlineMath(text: string): MathSegment[] {
   const segments: MathSegment[] = [];
-  const regex = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\$([^$\n]+?)(?<!\\)\$/g;
+  const regex = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\$([^$\n]+?)(?<!\\)\$|<a\b[^>]*>\s*<\/a\s*>/gi;
 
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -67,11 +70,17 @@ function parseInlineMath(text: string): MathSegment[] {
     if (match.index > lastIndex) {
       segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
     }
-    const isDisplayMath = match[1] !== undefined;
-    segments.push({
-      type: isDisplayMath ? 'displayMath' : 'math',
-      content: isDisplayMath ? match[1] : match[2],
-    });
+    if (match[1] !== undefined || match[2] !== undefined) {
+      const isDisplayMath = match[1] !== undefined;
+      segments.push({
+        type: isDisplayMath ? 'displayMath' : 'math',
+        content: isDisplayMath ? match[1] : match[2],
+      });
+    } else {
+      const anchorId = extractHtmlAnchorId(match[0]);
+      if (anchorId) segments.push({ type: 'anchor', content: anchorId });
+      else segments.push({ type: 'text', content: match[0] });
+    }
     lastIndex = match.index + match[0].length;
   }
 
@@ -94,14 +103,16 @@ function renderSpan(
 
   if (isInlineMath) {
     const displayFormula = extractDisplayMath(span.text);
-    const html = katex.renderToString(displayFormula ?? normalizeMathFormula(span.text), {
-      displayMode: displayFormula !== null,
+    const formula = displayFormula ?? normalizeMathFormula(span.text);
+    const displayMode = displayFormula !== null || /\\begin\{(?:aligned|align\*?|gathered|multline\*?)\}/.test(formula);
+    const html = katex.renderToString(formula, {
+      displayMode,
       throwOnError: false,
       strict: false,
     });
     const rendered = (
       <span
-        className={displayFormula !== null ? 'katex-display-fallback' : 'katex-inline'}
+        className={displayMode ? 'katex-display-fallback' : 'katex-inline'}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );
@@ -119,6 +130,7 @@ function renderSpan(
 
   const rendered = segments.map((seg, i) => {
     const key = `s-${childIndex}-${i}`;
+    if (seg.type === 'anchor') return <AnchorBlock key={key} id={seg.content} />;
     if (seg.type === 'math' || seg.type === 'displayMath') {
       const html = katex.renderToString(seg.content, {
         displayMode: seg.type === 'displayMath',
@@ -236,10 +248,11 @@ const components: PortableTextComponents = {
     table: ({ value }) => (
       <TableBlock caption={value.caption} headers={value.headers} rows={value.rows} />
     ),
+    anchor: ({ value }) => <AnchorBlock id={value.id} />,
     image: ({ value }: { value: SanityImage }) => {
       const src = urlFor(value).width(1200).format('webp').auto('format').url();
       return (
-        <figure className="my-6">
+        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="my-6 scroll-mt-24">
           <Image
             src={src}
             alt={value.alt || ''}
@@ -292,8 +305,13 @@ const components: PortableTextComponents = {
       );
     },
   },
+  marks: {
+    // Text blocks are rendered from their raw spans above; this serializer is
+    // still required because Portable Text resolves marks before calling them.
+    inlineMath: ({ children }) => <>{children}</>,
+  },
 };
 
 export function BlogBody({ content }: { content: PortableTextBlock[] }) {
-  return <PortableText value={content} components={components} />;
+  return <PortableText value={repairLegacyDisplayMath(content)} components={components} />;
 }

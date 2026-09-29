@@ -10,8 +10,10 @@ import { CodeBlock } from './code-block';
 import { PdfEmbed } from './pdf-embed';
 import { Divider } from './divider';
 import { TableBlock } from './table-block';
+import { AnchorBlock } from './anchor';
 import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
+import { normalizeHtmlAnchorId } from '@/lib/html-anchor';
 import Image from 'next/image';
 import { type CSSProperties } from 'react';
 
@@ -105,10 +107,11 @@ export const nestedComponents: PortableTextComponents = {
     table: ({ value }) => (
       <TableBlock caption={value.caption} headers={value.headers} rows={value.rows} />
     ),
+    anchor: ({ value }) => <AnchorBlock id={value.id} />,
     image: ({ value }: { value: SanityImage }) => {
       const src = urlFor(value).width(800).format('webp').auto('format').url();
       return (
-        <figure className="my-4">
+        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="my-4 scroll-mt-24">
           <Image src={src} alt={value.alt || ''} width={800} height={450} className="rounded-lg" />
           {value.caption && (
             <figcaption className="mt-1 text-center text-xs text-zinc-500">{value.caption}</figcaption>

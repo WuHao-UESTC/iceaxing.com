@@ -14,6 +14,7 @@ const bodyOf = [
   { type: 'toggle' },
   { type: 'divider' },
   { type: 'table' },
+  { type: 'anchor' },
   {
     type: 'image',
     options: { hotspot: true },
@@ -30,6 +31,11 @@ const bodyOf = [
         type: 'string',
         description: '用于无障碍访问和图片无法加载时的说明。',
       }),
+      defineField({
+        name: 'anchorId',
+        title: 'Anchor ID',
+        type: 'string',
+      }),
     ],
   },
 ];
@@ -45,6 +51,7 @@ const bodyOfEn = [
   { type: 'toggle' },
   { type: 'divider' },
   { type: 'table' },
+  { type: 'anchor' },
   {
     type: 'image',
     options: { hotspot: true },
@@ -57,6 +64,11 @@ const bodyOfEn = [
       defineField({
         name: 'alt',
         title: 'Alt text',
+        type: 'string',
+      }),
+      defineField({
+        name: 'anchorId',
+        title: 'Anchor ID',
         type: 'string',
       }),
     ],
@@ -74,6 +86,7 @@ const bodyOfDe = [
   { type: 'toggle' },
   { type: 'divider' },
   { type: 'table' },
+  { type: 'anchor' },
   {
     type: 'image',
     options: { hotspot: true },
@@ -86,6 +99,11 @@ const bodyOfDe = [
       defineField({
         name: 'alt',
         title: 'Alternativtext',
+        type: 'string',
+      }),
+      defineField({
+        name: 'anchorId',
+        title: 'Anchor ID',
         type: 'string',
       }),
     ],
