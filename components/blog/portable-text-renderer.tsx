@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import dynamic from 'next/dynamic';
 import { PortableText, type PortableTextComponents } from '@portabletext/react';
 import type { PortableTextBlock } from '@portabletext/react';
@@ -12,10 +11,11 @@ import { Toggle } from './custom-blocks/toggle';
 import { Divider } from './custom-blocks/divider';
 import { TableBlock } from './custom-blocks/table-block';
 import { AnchorBlock } from './custom-blocks/anchor';
+import { MathText } from './math-text';
 import { urlFor } from '@/lib/sanity/image';
 import type { SanityImage } from '@/lib/sanity/types';
 import { extractDisplayMath, normalizeMathFormula } from '@/lib/math';
-import { extractHtmlAnchorId, normalizeHtmlAnchorId } from '@/lib/html-anchor';
+import { normalizeHtmlAnchorId } from '@/lib/html-anchor';
 import { repairLegacyDisplayMath } from '@/lib/portable-text/repair-legacy-math';
 import Image from 'next/image';
 import 'katex/dist/katex.min.css';
@@ -53,44 +53,6 @@ function getHeadingId(value: unknown): string {
   return `section-${encodeURIComponent(text.toLowerCase().replace(/\s+/g, '-'))}`;
 }
 
-type MathSegment = {
-  type: 'text' | 'math' | 'displayMath' | 'anchor';
-  content: string;
-};
-
-/** Split text on TeX delimiters, checking $$...$$ before $...$. */
-function parseInlineMath(text: string): MathSegment[] {
-  const segments: MathSegment[] = [];
-  const regex = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\$([^$\n]+?)(?<!\\)\$|<a\b[^>]*>\s*<\/a\s*>/gi;
-
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({ type: 'text', content: text.slice(lastIndex, match.index) });
-    }
-    if (match[1] !== undefined || match[2] !== undefined) {
-      const isDisplayMath = match[1] !== undefined;
-      segments.push({
-        type: isDisplayMath ? 'displayMath' : 'math',
-        content: isDisplayMath ? match[1] : match[2],
-      });
-    } else {
-      const anchorId = extractHtmlAnchorId(match[0]);
-      if (anchorId) segments.push({ type: 'anchor', content: anchorId });
-      else segments.push({ type: 'text', content: match[0] });
-    }
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    segments.push({ type: 'text', content: text.slice(lastIndex) });
-  }
-
-  return segments.length > 0 ? segments : [{ type: 'text', content: text }];
-}
-
 /** Render a single Portable Text span, processing inline $...$ math. */
 function renderSpan(
   span: SpanData,
@@ -124,29 +86,7 @@ function renderSpan(
     );
   }
 
-  const segments = isCode
-    ? [{ type: 'text' as const, content: span.text }]
-    : parseInlineMath(span.text);
-
-  const rendered = segments.map((seg, i) => {
-    const key = `s-${childIndex}-${i}`;
-    if (seg.type === 'anchor') return <AnchorBlock key={key} id={seg.content} />;
-    if (seg.type === 'math' || seg.type === 'displayMath') {
-      const html = katex.renderToString(seg.content, {
-        displayMode: seg.type === 'displayMath',
-        throwOnError: false,
-        strict: false,
-      });
-      return (
-        <span
-          key={key}
-          className={seg.type === 'displayMath' ? 'katex-display-fallback' : 'katex-inline'}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      );
-    }
-    return <Fragment key={key}>{seg.content}</Fragment>;
-  });
+  const rendered = isCode ? span.text : <MathText>{span.text}</MathText>;
 
   return applyMarks(markKeys, markDefs, rendered, childIndex);
 }

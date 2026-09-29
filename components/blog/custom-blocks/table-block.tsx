@@ -1,3 +1,5 @@
+import { MathText } from '../math-text';
+
 interface TableProps {
   caption?: string;
   headers?: string[];
@@ -12,7 +14,7 @@ export function TableBlock({ caption, headers, rows }: TableProps) {
       <table className="min-w-full border-collapse text-sm">
         {caption && (
           <caption className="mb-2 text-sm text-zinc-500 text-left">
-            {caption}
+            <MathText>{caption}</MathText>
           </caption>
         )}
         <thead>
@@ -22,7 +24,7 @@ export function TableBlock({ caption, headers, rows }: TableProps) {
                 key={i}
                 className="px-3 py-2 text-left font-semibold text-zinc-700 dark:text-zinc-300"
               >
-                {header}
+                <MathText>{header}</MathText>
               </th>
             ))}
           </tr>
@@ -35,7 +37,7 @@ export function TableBlock({ caption, headers, rows }: TableProps) {
                   key={colIdx}
                   className="px-3 py-2 text-zinc-600 dark:text-zinc-400"
                 >
-                  {row.cells?.[colIdx] || ''}
+                  <MathText>{row.cells?.[colIdx] ?? ''}</MathText>
                 </td>
               ))}
             </tr>

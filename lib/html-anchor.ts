@@ -7,7 +7,7 @@ const HTML_ENTITY_VALUES: Record<string, string> = {
   quot: '"',
 };
 
-function decodeHtmlEntities(value: string) {
+export function decodeHtmlEntities(value: string) {
   return value.replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, code: string) => {
     if (code.startsWith('#')) {
       const hexadecimal = code[1]?.toLocaleLowerCase() === 'x';
@@ -22,6 +22,29 @@ function decodeHtmlEntities(value: string) {
 
     return HTML_ENTITY_VALUES[code.toLocaleLowerCase()] ?? entity;
   });
+}
+
+export interface HtmlAnchorReference {
+  href: string;
+  label: string;
+}
+
+/** Parse a raw HTML anchor only when it points to a safe in-page fragment. */
+export function extractHtmlAnchorReference(tag: string): HtmlAnchorReference | undefined {
+  const tagMatch = tag.match(/^<a\b([^>]*)>([\s\S]*?)<\/a\s*>$/i);
+  if (!tagMatch) return undefined;
+
+  const hrefMatch = tagMatch[1].match(
+    /(?:^|\s)href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i,
+  );
+  const rawHref = decodeHtmlEntities(hrefMatch?.[1] ?? hrefMatch?.[2] ?? hrefMatch?.[3] ?? '');
+  const anchorId = rawHref.startsWith('#') ? normalizeHtmlAnchorId(rawHref) : undefined;
+  if (!anchorId) return undefined;
+
+  return {
+    href: `#${anchorId}`,
+    label: decodeHtmlEntities(tagMatch[2].replace(/<[^>]*>/g, '')),
+  };
 }
 
 export function normalizeHtmlAnchorId(value: unknown): string | undefined {
