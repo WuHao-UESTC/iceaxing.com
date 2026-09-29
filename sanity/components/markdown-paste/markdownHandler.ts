@@ -23,6 +23,12 @@ export type PtBlock = {
 
 type ParsedSpan = { text: string; marks: string[] };
 
+const ESCAPED_DOLLAR_PLACEHOLDER = '\uE000escaped-dollar\uE001';
+const INLINE_MATH_OPEN_PLACEHOLDER = '\uE002inline-math-open\uE003';
+const INLINE_MATH_CLOSE_PLACEHOLDER = '\uE004inline-math-close\uE005';
+const FALLBACK_INLINE_MATH_PATTERN =
+  /(?<!\\)(?<!\$)\$(?![\s$])([^$\n]*?[^$\s\\])\$(?![\d$])|\uE002inline-math-open\uE003(?!\s)([^\n]*?\S)\uE004inline-math-close\uE005/g;
+
 const markdownItKatex = (
   markdownItKatexExport as typeof markdownItKatexExport & {
     default?: typeof markdownItKatexExport;
@@ -44,11 +50,37 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
   const markDefs: MarkDef[] = [];
   const activeMarks: string[] = [];
   const linkMarks: string[] = [];
-  const tokens = markdown.parseInline(text, {})[0]?.children ?? [];
+  const protectedText = text
+    .replace(/(?<!\\)\\\$/g, ESCAPED_DOLLAR_PLACEHOLDER)
+    .replace(/(?<!\\)\\\(/g, INLINE_MATH_OPEN_PLACEHOLDER)
+    .replace(/(?<!\\)\\\)/g, INLINE_MATH_CLOSE_PLACEHOLDER);
+  const tokens = markdown.parseInline(protectedText, {})[0]?.children ?? [];
 
   const pushSpan = (content: string, extraMarks: string[] = []) => {
     if (!content) return;
     spans.push({ text: content, marks: [...activeMarks, ...extraMarks] });
+  };
+
+  const restoreProtectedSyntax = (content: string, preserveEscape = false) =>
+    content
+      .replaceAll(ESCAPED_DOLLAR_PLACEHOLDER, preserveEscape ? '\\$' : '$')
+      .replaceAll(INLINE_MATH_OPEN_PLACEHOLDER, preserveEscape ? '\\(' : '(')
+      .replaceAll(INLINE_MATH_CLOSE_PLACEHOLDER, preserveEscape ? '\\)' : ')');
+
+  // The upstream plugin rejects some Obsidian-valid delimiter placements,
+  // notably a closing `$` immediately followed by an ASCII word character.
+  const pushTextWithFallbackMath = (content: string) => {
+    let cursor = 0;
+    let match: RegExpExecArray | null;
+    FALLBACK_INLINE_MATH_PATTERN.lastIndex = 0;
+
+    while ((match = FALLBACK_INLINE_MATH_PATTERN.exec(content)) !== null) {
+      pushSpan(restoreProtectedSyntax(content.slice(cursor, match.index)));
+      pushSpan(restoreProtectedSyntax(match[1] ?? match[2], true).trim(), ['inlineMath']);
+      cursor = match.index + match[0].length;
+    }
+
+    pushSpan(restoreProtectedSyntax(content.slice(cursor)));
   };
 
   const closeMark = (mark: string) => {
@@ -59,7 +91,7 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
   for (const token of tokens) {
     switch (token.type) {
       case 'text':
-        pushSpan(token.content);
+        pushTextWithFallbackMath(token.content);
         break;
       case 'strong_open':
         activeMarks.push('strong');
@@ -80,11 +112,11 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
         closeMark('strike-through');
         break;
       case 'code_inline':
-        pushSpan(token.content, ['code']);
+        pushSpan(restoreProtectedSyntax(token.content, true), ['code']);
         break;
       case 'math_inline':
       case 'math_inline_block':
-        pushSpan(token.content.trim(), ['inlineMath']);
+        pushSpan(restoreProtectedSyntax(token.content, true).trim(), ['inlineMath']);
         break;
       case 'link_open': {
         const key = generateKey();
@@ -107,7 +139,7 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
         pushSpan('\n');
         break;
       case 'image':
-        pushSpan(token.content);
+        pushSpan(restoreProtectedSyntax(token.content));
         break;
     }
   }

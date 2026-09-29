@@ -8,6 +8,10 @@ export const OBSIDIAN_IMAGE_EXTENSIONS = new Set([
   '.webp',
 ]);
 
+// Bump when Markdown-to-Portable-Text semantics change so one-click sync can
+// repair existing documents even when their source Markdown is unchanged.
+const OBSIDIAN_IMPORT_FORMAT_VERSION = '2';
+
 export type ObsidianFrontmatter = Record<string, string | string[]>;
 
 export type MarkdownSegment =
@@ -394,6 +398,7 @@ export function contentFingerprint(
   images: Array<{ source: string; size?: number; lastModified?: number }>,
 ) {
   return [
+    `obsidian-import-format:${OBSIDIAN_IMPORT_FORMAT_VERSION}`,
     note.sourceMarkdown,
     ...images.map((image) => `${normalizeLookupPath(image.source)}:${image.size ?? ''}:${image.lastModified ?? ''}`),
   ].join('\n--obsidian-asset--\n');
