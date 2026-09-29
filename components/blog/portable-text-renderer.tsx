@@ -192,7 +192,7 @@ const components: PortableTextComponents = {
     image: ({ value }: { value: SanityImage }) => {
       const src = urlFor(value).width(1200).format('webp').auto('format').url();
       return (
-        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="my-6 scroll-mt-24">
+        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="article-image my-6 scroll-mt-24">
           <Image
             src={src}
             alt={value.alt || ''}

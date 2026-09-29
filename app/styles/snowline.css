@@ -351,11 +351,13 @@ button {
 }
 .snowline-article {
   position: relative;
-  width: min(820px, calc(100% - 48px));
+  width: min(840px, calc(100% - 48px));
   margin: auto;
   padding: 60px 0 80px;
 }
 .snowline-article-toc-inline {
+  max-width: 760px;
+  margin-inline: auto;
   margin-bottom: 2rem;
 }
 .snowline-article-toc-rail {
@@ -365,9 +367,8 @@ button {
   padding-bottom: 28px;
   border-bottom: 1px solid var(--line);
 }
-.snowline-article h1 {
-  font-size: clamp(30px, 3.7vw, 46px);
-  line-height: 1.5;
+.snowline-article article > header h1 {
+  line-height: 1.34;
 }
 .snowline-article article > header > div,
 .snowline-article article > header > div > div {
@@ -381,18 +382,8 @@ button {
   color: var(--muted-foreground);
   border-radius: 20px;
 }
-.site-shell .blog-theme-default .blog-body,
-.site-shell .blog-theme-default .blog-body p,
-.site-shell .blog-theme-default .blog-body li,
 .site-shell .snowline-page .blog-body {
   color: var(--foreground);
-}
-.blog-body {
-  font-size: 17px;
-  line-height: 1.95;
-}
-.blog-body :where(h1, h2, h3, h4) {
-  scroll-margin-top: 105px;
 }
 .blog-toc {
   border-color: var(--line);
@@ -408,7 +399,7 @@ button {
     bottom: 80px;
     left: calc(100% + 48px);
     display: block;
-    width: min(420px, calc(50vw - 458px));
+    width: min(420px, calc(50vw - 468px));
   }
   .blog-toc-resizable {
     position: sticky;
@@ -563,6 +554,7 @@ button {
     padding-top: 45px;
   }
   .snowline-article {
+    width: calc(100% - 32px);
     padding-top: 35px;
   }
 }

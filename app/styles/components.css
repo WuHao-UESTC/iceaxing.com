@@ -234,18 +234,6 @@
   }
 }
 
-.site-shell .blog-theme-default .blog-body,
-.site-shell .blog-theme-default .blog-body p,
-.site-shell .blog-theme-default .blog-body li {
-  color: #ffffff;
-}
-
-[data-theme="light"] .site-shell .blog-theme-default .blog-body,
-[data-theme="light"] .site-shell .blog-theme-default .blog-body p,
-[data-theme="light"] .site-shell .blog-theme-default .blog-body li {
-  color: var(--color-text);
-}
-
 .listing-page {
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;

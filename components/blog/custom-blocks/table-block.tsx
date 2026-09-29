@@ -10,7 +10,7 @@ export function TableBlock({ caption, headers, rows }: TableProps) {
   if (!headers || headers.length === 0) return null;
 
   return (
-    <figure className="my-6 overflow-x-auto">
+    <figure className="article-table my-6 overflow-x-auto">
       <table className="min-w-full border-collapse text-sm">
         {caption && (
           <caption className="mb-2 text-sm text-zinc-500 text-left">

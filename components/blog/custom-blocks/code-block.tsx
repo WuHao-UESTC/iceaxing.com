@@ -13,7 +13,7 @@ export function CodeBlock({ code, language, filename }: Props) {
   }).value;
 
   return (
-    <figure className="my-6 rounded-lg overflow-hidden border border-zinc-200">
+    <figure className="article-code-block my-6 rounded-lg overflow-hidden border border-zinc-200">
       {filename && (
         <figcaption className="px-4 py-2 bg-zinc-100 text-zinc-500 text-sm font-mono border-b border-zinc-200">
           {filename}

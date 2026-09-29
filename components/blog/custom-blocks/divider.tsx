@@ -11,7 +11,7 @@ const borderStyles: Record<string, string> = {
 export function Divider({ style = 'solid' }: DividerProps) {
   return (
     <hr
-      className={`my-8 border-t border-zinc-300 ${borderStyles[style] || borderStyles.solid}`}
+      className={`article-divider my-8 border-t border-zinc-300 ${borderStyles[style] || borderStyles.solid}`}
     />
   );
 }

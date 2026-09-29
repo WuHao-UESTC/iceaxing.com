@@ -18,7 +18,7 @@ export function MathBlock({ formula }: Props) {
 
   return (
     <div
-      className="my-6 overflow-x-auto py-2"
+      className="math-block my-6 overflow-x-auto"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

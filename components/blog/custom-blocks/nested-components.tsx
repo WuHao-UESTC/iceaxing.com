@@ -111,7 +111,7 @@ export const nestedComponents: PortableTextComponents = {
     image: ({ value }: { value: SanityImage }) => {
       const src = urlFor(value).width(800).format('webp').auto('format').url();
       return (
-        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="my-4 scroll-mt-24">
+        <figure id={normalizeHtmlAnchorId(value.anchorId)} className="article-image my-4 scroll-mt-24">
           <Image src={src} alt={value.alt || ''} width={800} height={450} className="rounded-lg" />
           {value.caption && (
             <figcaption className="mt-1 text-center text-xs text-zinc-500">{value.caption}</figcaption>

@@ -104,7 +104,7 @@ export function PostArticle({
   return (
     <>
       <div className="snowline-article">
-        <article className="min-w-0">
+        <article className="blog-theme-default min-w-0">
           <PageMotionItem step={0}>
             <nav className="text-sm text-zinc-400 mb-8">
             <Link href="/" className="hover:text-zinc-600">{t('home')}</Link>
