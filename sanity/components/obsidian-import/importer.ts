@@ -284,6 +284,7 @@ function getObsidianOwnedFields(preview: ImportPreview, body: PtBlock[]) {
     authorName: preview.note.authorName,
     tags: preview.note.tags,
     obsidianSource: preview.note.relativePath,
+    obsidianSourceMarkdown: preview.note.sourceMarkdown,
     obsidianContentHash: preview.contentHash,
     obsidianImportedAt: new Date().toISOString(),
   });

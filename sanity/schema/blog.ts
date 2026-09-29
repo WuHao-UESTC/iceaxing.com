@@ -296,6 +296,14 @@ export default defineType({
       hidden: true,
     }),
     defineField({
+      name: 'obsidianSourceMarkdown',
+      title: 'Obsidian source Markdown',
+      type: 'text',
+      group: 'meta',
+      readOnly: true,
+      hidden: true,
+    }),
+    defineField({
       name: 'obsidianContentHash',
       title: 'Obsidian content hash',
       type: 'string',

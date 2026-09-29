@@ -10,7 +10,7 @@ export const OBSIDIAN_IMAGE_EXTENSIONS = new Set([
 
 // Bump when Markdown-to-Portable-Text semantics change so one-click sync can
 // repair existing documents even when their source Markdown is unchanged.
-const OBSIDIAN_IMPORT_FORMAT_VERSION = '2';
+const OBSIDIAN_IMPORT_FORMAT_VERSION = '3';
 
 export type ObsidianFrontmatter = Record<string, string | string[]>;
 
@@ -170,7 +170,7 @@ export function prepareObsidianNote(input: {
     updatedAt: input.updatedAt.toISOString(),
     authorName: metadataString(metadata, 'author'),
     tags,
-    bodyMarkdown: body.trim(),
+    bodyMarkdown: body,
     sourceMarkdown: input.markdown,
   };
 }
@@ -251,7 +251,7 @@ function parseHtmlImageSegments(syntax: string): MarkdownSegment[] {
 export function splitMarkdownImages(markdown: string): MarkdownSegment[] {
   const segments: MarkdownSegment[] = [];
   const pattern = /<figure\b[^>]*>[\s\S]*?<\/figure\s*>|<img\b[^>]*>|!\[\[([^\]]+)\]\]|!\[([^\]]*)\]\(([^)\n]+)\)/gi;
-  let inFence: '`' | '~' | null = null;
+  let fence: { marker: '`' | '~'; length: number } | null = null;
   let textBuffer = '';
 
   const appendText = (value: string) => {
@@ -310,27 +310,82 @@ export function splitMarkdownImages(markdown: string): MarkdownSegment[] {
 
   for (const line of markdown.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
     if (!line) continue;
-    const fence = line.match(/^\s*(`{3,}|~{3,})/);
+    const fenceRun = line.match(/^ {0,3}(`{3,}|~{3,})([^\r\n]*)/);
     if (fence) {
+      appendText(line);
+      if (
+        fenceRun &&
+        fenceRun[1][0] === fence.marker &&
+        fenceRun[1].length >= fence.length &&
+        !fenceRun[2].trim()
+      ) {
+        fence = null;
+      }
+      continue;
+    }
+    if (fenceRun) {
       splitTextBuffer();
-      const marker = fence[1][0] as '`' | '~';
-      if (inFence === marker) inFence = null;
-      else if (!inFence) inFence = marker;
+      fence = {
+        marker: fenceRun[1][0] as '`' | '~',
+        length: fenceRun[1].length,
+      };
       appendText(line);
       continue;
     }
-    if (inFence) appendText(line);
-    else textBuffer += line;
+    textBuffer += line;
   }
   splitTextBuffer();
 
   return segments.length > 0 ? segments : [{ type: 'text', value: markdown }];
 }
 
-export function normalizeWikiLinks(markdown: string) {
-  return markdown
+function normalizeWikiLinksOutsideInlineCode(value: string) {
+  let output = '';
+  let cursor = 0;
+  const inlineCode = /(`+)[\s\S]*?\1/g;
+  let match: RegExpExecArray | null;
+
+  const normalizeText = (text: string) => text
     .replace(/\[\[([^\]|]+)\\?\|([^\]]+)\]\]/g, '$2')
     .replace(/\[\[([^\]]+)\]\]/g, '$1');
+
+  while ((match = inlineCode.exec(value)) !== null) {
+    output += normalizeText(value.slice(cursor, match.index));
+    output += match[0];
+    cursor = match.index + match[0].length;
+  }
+
+  return output + normalizeText(value.slice(cursor));
+}
+
+export function normalizeWikiLinks(markdown: string) {
+  let output = '';
+  let fence: { marker: '`' | '~'; length: number } | null = null;
+
+  for (const line of markdown.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
+    if (!line) continue;
+    const opening = line.match(/^ {0,3}(`{3,}|~{3,})/);
+
+    if (fence) {
+      output += line;
+      const closingPattern = new RegExp(
+        `^ {0,3}${fence.marker === '`' ? '`' : '~'}{${fence.length},}\\s*$`,
+      );
+      if (closingPattern.test(line.trimEnd())) fence = null;
+      continue;
+    }
+
+    if (opening) {
+      const run = opening[1];
+      fence = { marker: run[0] as '`' | '~', length: run.length };
+      output += line;
+      continue;
+    }
+
+    output += normalizeWikiLinksOutsideInlineCode(line);
+  }
+
+  return output;
 }
 
 export function normalizeVaultPath(value: string) {

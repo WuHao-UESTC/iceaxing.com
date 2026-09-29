@@ -46,6 +46,55 @@ function findDelimitedMath(value: string, fromIndex: number): SegmentMatch | nul
   };
 }
 
+function hasBalancedMathGroups(value: string) {
+  const pairs: Record<string, string> = { ')': '(', ']': '[', '}': '{' };
+  const stack: string[] = [];
+
+  for (let index = 0; index < value.length; index++) {
+    const character = value[index];
+    if (character === '\\') {
+      index++;
+      continue;
+    }
+    if (character === '(' || character === '[' || character === '{') {
+      stack.push(character);
+    } else if (character in pairs && stack.pop() !== pairs[character]) {
+      return false;
+    }
+  }
+
+  return stack.length === 0;
+}
+
+/**
+ * Gracefully render an otherwise complete formula whose final `$` is missing.
+ * Requiring TeX syntax or a grouped expression avoids treating prices such as
+ * `$100` as mathematics. The source text itself remains untouched in Sanity.
+ */
+function findUnclosedInlineMath(value: string, fromIndex: number): SegmentMatch | null {
+  const pattern = /(?<!\\)(?<!\$)\$(?![\s$])([^$\n]+)$/g;
+  pattern.lastIndex = fromIndex;
+  const match = pattern.exec(value);
+  if (!match) return null;
+
+  const rawFormula = match[1];
+  const formula = rawFormula.trimEnd();
+  const looksLikeMath =
+    /^[([{\\]/.test(formula) ||
+    /[\\_^{}]/.test(formula);
+  if (!formula || !looksLikeMath || !hasBalancedMathGroups(formula)) return null;
+
+  return {
+    index: match.index,
+    end: match.index + 1 + formula.length,
+    segment: {
+      type: 'math',
+      content: formula,
+      displayMode: false,
+    },
+  };
+}
+
 function findHtmlAnchor(value: string, fromIndex: number): SegmentMatch | null {
   HTML_ANCHOR_PATTERN.lastIndex = fromIndex;
   const match = HTML_ANCHOR_PATTERN.exec(value);
@@ -110,7 +159,7 @@ function firstMatch(matches: Array<SegmentMatch | null>): SegmentMatch | null {
   }, null);
 }
 
-function splitMathText(value: string): MathTextSegment[] {
+export function splitMathText(value: string): MathTextSegment[] {
   const segments: MathTextSegment[] = [];
   let cursor = 0;
 
@@ -119,6 +168,7 @@ function splitMathText(value: string): MathTextSegment[] {
       findDelimitedMath(value, cursor),
       findHtmlAnchor(value, cursor),
       findBareEnvironment(value, cursor),
+      findUnclosedInlineMath(value, cursor),
     ]);
     if (!match) break;
 

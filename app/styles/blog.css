@@ -4,12 +4,19 @@
   --blog-line-height: 1.9;
   --article-body: #263746;
   --article-heading: #142a3a;
-  --article-heading-soft: #203c50;
+  --article-heading-2: #1f6172;
+  --article-heading-3: #665287;
+  --article-heading-4: #955b48;
   --article-strong: #285f87;
-  --article-emphasis: #536f82;
-  --article-math: #214f70;
+  --article-emphasis: #55715d;
+  --article-highlight: #76508a;
+  --article-math: #176b68;
   --article-link: #356c98;
   --article-code: #765038;
+  --article-quote: #735784;
+  --article-list-marker: #2f7a69;
+  --article-caption: #6e6678;
+  --article-table-heading: #526589;
   --article-muted: #687986;
   --article-surface: color-mix(in srgb, var(--color-panel-soft) 62%, transparent);
   --article-surface-strong: color-mix(in srgb, var(--color-panel-soft) 82%, transparent);
@@ -21,12 +28,19 @@
 [data-theme="dark"] .blog-theme-default {
   --article-body: #dedad2;
   --article-heading: #f4efe4;
-  --article-heading-soft: #e8dfc9;
+  --article-heading-2: #8fc8e8;
+  --article-heading-3: #c6afe4;
+  --article-heading-4: #e6a48f;
   --article-strong: #e0bd78;
-  --article-emphasis: #b8c2ca;
-  --article-math: #e2c98e;
-  --article-link: #d0ae70;
+  --article-emphasis: #a9c9b0;
+  --article-highlight: #d4a9d8;
+  --article-math: #96d3c7;
+  --article-link: #8fc8e8;
   --article-code: #d6ae7a;
+  --article-quote: #c6afe4;
+  --article-list-marker: #86c9aa;
+  --article-caption: #b5a9bd;
+  --article-table-heading: #9db9e2;
   --article-muted: #a4a099;
   --article-surface: color-mix(in srgb, var(--color-panel-soft) 48%, transparent);
   --article-surface-strong: color-mix(in srgb, var(--color-panel-soft) 76%, transparent);
@@ -98,6 +112,7 @@
   margin: 2.65em 0 0.9em;
   padding-bottom: 0.55em;
   border-bottom: 1px solid var(--color-line);
+  color: var(--article-heading-2);
   font-size: 1.55rem;
 }
 
@@ -107,19 +122,19 @@
   left: 0;
   width: 3rem;
   height: 1px;
-  background: var(--article-link);
+  background: var(--article-heading-2);
   content: "";
 }
 
 .blog-theme-default .blog-body h3 {
   margin: 2.2em 0 0.75em;
-  color: var(--article-heading-soft);
+  color: var(--article-heading-3);
   font-size: 1.28rem;
 }
 
 .blog-theme-default .blog-body h4 {
   margin: 1.9em 0 0.65em;
-  color: var(--article-heading-soft);
+  color: var(--article-heading-4);
   font-size: 1.08rem;
   letter-spacing: 0;
 }
@@ -146,7 +161,7 @@
 
 .blog-theme-default .blog-body strong em,
 .blog-theme-default .blog-body em strong {
-  color: var(--article-strong);
+  color: var(--article-highlight);
 }
 
 .blog-theme-default .blog-body a {
@@ -178,9 +193,9 @@
 .blog-theme-default .blog-body blockquote {
   margin: 1.8rem 0;
   padding: 1rem 1.15rem 1rem 1.3rem;
-  border-left: 3px solid var(--article-link);
+  border-left: 3px solid var(--article-quote);
   border-radius: 0 0.5rem 0.5rem 0;
-  color: var(--article-body);
+  color: var(--article-quote);
   background: var(--article-surface);
   font-style: normal;
 }
@@ -209,7 +224,7 @@
 }
 
 .blog-theme-default .blog-body li::marker {
-  color: var(--article-link);
+  color: var(--article-list-marker);
   font-weight: 600;
 }
 
@@ -247,7 +262,7 @@
 
 .blog-theme-default .blog-body figcaption,
 .blog-theme-default .blog-body caption {
-  color: var(--article-muted);
+  color: var(--article-caption);
   font-family: var(--font-ui);
   font-size: 0.82rem;
   line-height: 1.6;
@@ -319,7 +334,7 @@
 }
 
 .blog-theme-default .blog-body .article-table th {
-  color: var(--article-heading-soft);
+  color: var(--article-table-heading);
   font-weight: 700;
 }
 
@@ -344,12 +359,11 @@
 .blog-theme-default .blog-body :where(.math-block, .katex-display-fallback) {
   display: block;
   margin: 1.9rem 0;
-  padding: 1rem 1.2rem;
-  border: 1px solid var(--article-accent-soft);
-  border-left: 3px solid var(--article-link);
-  border-radius: 0.5rem;
+  padding: 0.35rem 0;
+  border: 0;
+  border-radius: 0;
   color: var(--article-math);
-  background: var(--article-surface);
+  background: transparent;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -501,7 +515,7 @@
 
   .blog-theme-default .blog-body :where(.math-block, .katex-display-fallback) {
     margin-block: 1.5rem;
-    padding: 0.85rem 0.9rem;
+    padding-block: 0.25rem;
   }
 
   .blog-theme-default .blog-body .article-table :where(th, td) {

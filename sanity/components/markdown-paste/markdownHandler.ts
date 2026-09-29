@@ -76,7 +76,9 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
 
     while ((match = FALLBACK_INLINE_MATH_PATTERN.exec(content)) !== null) {
       pushSpan(restoreProtectedSyntax(content.slice(cursor, match.index)));
-      pushSpan(restoreProtectedSyntax(match[1] ?? match[2], true).trim(), ['inlineMath']);
+      // Keep the exact delimiters in Sanity. Rendering normalizes them before
+      // passing the formula to KaTeX, while the stored source stays lossless.
+      pushSpan(restoreProtectedSyntax(match[0], true), ['inlineMath']);
       cursor = match.index + match[0].length;
     }
 
@@ -115,9 +117,14 @@ function parseInline(text: string): { spans: ParsedSpan[]; markDefs: MarkDef[] }
         pushSpan(restoreProtectedSyntax(token.content, true), ['code']);
         break;
       case 'math_inline':
-      case 'math_inline_block':
-        pushSpan(restoreProtectedSyntax(token.content, true).trim(), ['inlineMath']);
+      case 'math_inline_block': {
+        const delimiter = token.markup || (token.type === 'math_inline_block' ? '$$' : '$');
+        pushSpan(
+          `${delimiter}${restoreProtectedSyntax(token.content, true)}${delimiter}`,
+          ['inlineMath'],
+        );
         break;
+      }
       case 'link_open': {
         const key = generateKey();
         markDefs.push({
@@ -204,13 +211,13 @@ export function hasMarkdownSyntax(text: string): boolean {
 
 type MarkdownSourceSegment =
   | { type: 'text'; value: string }
-  | { type: 'math'; formula: string }
+  | { type: 'math'; source: string }
   | { type: 'anchor'; id: string };
 
 function splitSpecialBlocks(markdownSource: string): MarkdownSourceSegment[] {
   const segments: MarkdownSourceSegment[] = [];
-  const pattern = /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\\\[([\s\S]+?)(?<!\\)\\\]|<a\b[^>]*>\s*<\/a\s*>/gi;
-  let inFence: '`' | '~' | null = null;
+  const pattern = /(?<!\\)\$\$[\s\S]+?(?<!\\)\$\$|(?<!\\)\\\[[\s\S]+?(?<!\\)\\\]|<a\b[^>]*>\s*<\/a\s*>/gi;
+  let fence: { marker: '`' | '~'; length: number } | null = null;
   let textBuffer = '';
 
   const appendText = (value: string) => {
@@ -232,12 +239,23 @@ function splitSpecialBlocks(markdownSource: string): MarkdownSourceSegment[] {
       if (precedingBackticks % 2 === 1) continue;
 
       const syntax = match[0];
+
+      // A display delimiter inside a Markdown table cell belongs to the cell.
+      // Pulling it into a standalone block would split and corrupt the table.
+      const currentLine = textBuffer.slice(
+        textBuffer.lastIndexOf('\n', match.index - 1) + 1,
+        textBuffer.indexOf('\n', match.index) < 0
+          ? textBuffer.length
+          : textBuffer.indexOf('\n', match.index),
+      );
+      const isMath = syntax.startsWith('$$') || syntax.startsWith('\\[');
+      const isTableRow = /(?<!\\)\|/.test(currentLine);
+      if (isMath && isTableRow) continue;
+
       appendText(textBuffer.slice(cursor, match.index));
 
-      if (match[1] !== undefined || match[2] !== undefined) {
-        const formula = (match[1] ?? match[2]).replace(/\r\n?/g, '\n').trim();
-        if (formula) segments.push({ type: 'math', formula });
-        else appendText(syntax);
+      if (isMath) {
+        segments.push({ type: 'math', source: syntax });
       } else {
         const id = extractHtmlAnchorId(syntax);
         if (id) segments.push({ type: 'anchor', id });
@@ -253,17 +271,29 @@ function splitSpecialBlocks(markdownSource: string): MarkdownSourceSegment[] {
 
   for (const line of markdownSource.match(/[^\r\n]*(?:\r?\n|$)/g) ?? []) {
     if (!line) continue;
-    const fence = line.match(/^\s*(`{3,}|~{3,})/);
+    const fenceRun = line.match(/^ {0,3}(`{3,}|~{3,})([^\r\n]*)/);
     if (fence) {
+      appendText(line);
+      if (
+        fenceRun &&
+        fenceRun[1][0] === fence.marker &&
+        fenceRun[1].length >= fence.length &&
+        !fenceRun[2].trim()
+      ) {
+        fence = null;
+      }
+      continue;
+    }
+    if (fenceRun) {
       splitTextBuffer();
-      const marker = fence[1][0] as '`' | '~';
-      if (inFence === marker) inFence = null;
-      else if (!inFence) inFence = marker;
+      fence = {
+        marker: fenceRun[1][0] as '`' | '~',
+        length: fenceRun[1].length,
+      };
       appendText(line);
       continue;
     }
-    if (inFence) appendText(line);
-    else textBuffer += line;
+    textBuffer += line;
   }
   splitTextBuffer();
 
@@ -279,7 +309,7 @@ function readDisplayMath(lines: string[], start: number) {
       const formula = extractDisplayMath(candidate);
 
       if (formula !== null) {
-        return { formula, nextIndex: end + 1 };
+        return { source: candidate, nextIndex: end + 1 };
       }
     }
   }
@@ -295,7 +325,7 @@ function readDisplayMath(lines: string[], start: number) {
   }
 
   return {
-    formula: firstToken.content.trim(),
+    source: lines.slice(start, start + firstToken.map[1]).join('\n'),
     nextIndex: start + firstToken.map[1],
   };
 }
@@ -324,18 +354,26 @@ function markdownTextToPortableText(md: string): PtBlock[] {
       blocks.push({
         _key: generateKey(),
         _type: 'mathBlock',
-        formula: displayMath.formula,
+        formula: displayMath.source,
       });
       i = displayMath.nextIndex;
       continue;
     }
 
-    // Code fence
-    if (line.trim().startsWith('```')) {
-      const lang = line.trim().slice(3).trim();
+    // Code fence. Respect the opening marker and its length so code containing
+    // shorter backtick runs is never truncated during import.
+    const fenceOpening = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (fenceOpening) {
+      const marker = fenceOpening[1][0];
+      const markerLength = fenceOpening[1].length;
+      const info = fenceOpening[2].trim();
+      const lang = info.split(/\s+/, 1)[0];
+      const fenceClosing = new RegExp(
+        `^ {0,3}${marker === '`' ? '`' : '~'}{${markerLength},}\\s*$`,
+      );
       const codeLines: string[] = [];
       i++;
-      while (i < lines.length && !lines[i].trim().startsWith('```')) {
+      while (i < lines.length && !fenceClosing.test(lines[i])) {
         codeLines.push(lines[i]);
         i++;
       }
@@ -345,7 +383,7 @@ function markdownTextToPortableText(md: string): PtBlock[] {
         language: lang || 'plain',
         code: codeLines.join('\n'),
       } as PtBlock);
-      i++;
+      if (i < lines.length) i++;
       continue;
     }
 
@@ -501,7 +539,7 @@ export function markdownToPortableText(md: string): PtBlock[] {
       return [{
         _key: generateKey(),
         _type: 'mathBlock',
-        formula: segment.formula,
+        formula: segment.source,
       }];
     }
     if (segment.type === 'anchor') {

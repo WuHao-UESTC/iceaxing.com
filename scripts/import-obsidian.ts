@@ -9,6 +9,7 @@ import {
   type PtBlock,
 } from '../sanity/components/markdown-paste/markdownHandler';
 import {
+  normalizeWikiLinks,
   OBSIDIAN_IMAGE_EXTENSIONS,
   splitMarkdownImages,
 } from '../lib/obsidian/import-core';
@@ -45,6 +46,7 @@ type PreparedNote = {
   authorName?: string;
   tags: string[];
   bodyMarkdown: string;
+  sourceMarkdown: string;
 };
 
 type ImportStats = {
@@ -274,14 +276,9 @@ async function prepareNote(absolutePath: string, vault: string): Promise<Prepare
     updatedAt: fileStats.mtime.toISOString(),
     authorName: metadataString(metadata, 'author'),
     tags,
-    bodyMarkdown: body.trim(),
+    bodyMarkdown: body,
+    sourceMarkdown: markdown,
   };
-}
-
-function normalizeWikiLinks(markdown: string) {
-  return markdown
-    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
-    .replace(/\[\[([^\]]+)\]\]/g, '$1');
 }
 
 async function walkFiles(directory: string): Promise<string[]> {
@@ -574,6 +571,7 @@ async function main() {
       authorName: note.authorName,
       tags: note.tags,
       obsidianSource: note.relativePath,
+      obsidianSourceMarkdown: note.sourceMarkdown,
       ...(projectRef
         ? { project: { _type: 'reference', _ref: projectRef } }
         : categoryRef
