@@ -1,4 +1,4 @@
-export type ToolCategory = "focus" | "time";
+export type ToolCategory = "focus" | "time" | "engineering";
 export type ToolStatus = "stable" | "beta";
 
 export interface ToolCatalogEntry {
@@ -17,6 +17,14 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     category: "focus",
     status: "stable",
     order: 10,
+    visible: true,
+  },
+  {
+    slug: "smithChart",
+    href: "/tools/smith-chart",
+    category: "engineering",
+    status: "stable",
+    order: 20,
     visible: true,
   },
 ];

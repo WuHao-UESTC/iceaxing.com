@@ -61,6 +61,7 @@ export async function GET() {
       '/log',
       '/tools',
       '/tools/pomodoro',
+      '/tools/smith-chart',
     ];
 
     const [blogs, logs, categories, projects, collections] = await Promise.all([

@@ -95,7 +95,8 @@
     "privacyDescription": "首版工具只在浏览器中运行，偏好与会话保存在本地，不会上传到网站服务器。",
     "categories": {
       "focus": "专注",
-      "time": "时间"
+      "time": "时间",
+      "engineering": "射频工程"
     },
     "statuses": {
       "stable": "稳定版",
@@ -110,8 +111,75 @@
           "local": "本地保存",
           "precise": "后台校时"
         }
+      },
+      "smithChart": {
+        "title": "史密斯圆图",
+        "description": "用于阻抗变换、传输线分析、匹配网络综合与数据导出的高精度矢量史密斯圆图。",
+        "features": {
+          "custom": "专业刻度",
+          "local": "交互标记",
+          "precise": "匹配综合"
+        }
       }
     }
+  },
+  "smithChart": {
+    "title": "史密斯圆图",
+    "description": "在专业矢量刻度上标注终端阻抗，读取完整射频参数，沿传输线旋转，并综合可实际制作的短截线或 L 型匹配网络。",
+    "metaTitle": "在线史密斯圆图",
+    "metaDescription": "专业交互式史密斯圆图，支持阻抗与导纳、反射系数、驻波比、回波损耗、传输线变换、短截线和 L 型匹配、标记以及 SVG/CSV 导出。",
+    "chartAriaLabel": "交互式阻抗与导纳史密斯圆图",
+    "chartTitle": "归一化阻抗平面",
+    "reset": "复位",
+    "saveMarker": "保存标记",
+    "dragHint": "在圆图内点击或拖动，直接设定终端阻抗",
+    "fineGrid": "精细网格",
+    "scaleLabels": "刻度标签",
+    "admittanceOverlay": "导纳网格",
+    "inputTitle": "端口参数",
+    "resistance": "电阻 R",
+    "reactance": "电抗 X",
+    "conductance": "电导 G",
+    "susceptance": "电纳 B",
+    "lineImpedance": "传输线阻抗 Z₀",
+    "frequency": "频率",
+    "lineTitle": "传输线变换",
+    "towardGenerator": "向信号源",
+    "towardLoad": "向负载",
+    "electricalLength": "电长度",
+    "wavelengths": "线长",
+    "velocityFactor": "速度因子",
+    "physicalLength": "物理长度",
+    "resultsTitle": "计算结果",
+    "normalizedImpedance": "归一化阻抗 z",
+    "impedance": "阻抗 Z",
+    "admittance": "导纳 Y",
+    "returnLoss": "回波损耗",
+    "mismatchLoss": "失配损耗",
+    "qualityFactor": "品质因数 Q",
+    "reflectedPower": "反射功率",
+    "voltageMaximum": "距下一电压波腹",
+    "voltageMinimum": "距下一电压波节",
+    "matchingTitle": "匹配助手",
+    "stubMatching": "并联单短截线方案",
+    "solution": "方案 {number}",
+    "distanceFromLoad": "距负载距离",
+    "shortStub": "短路短截线",
+    "openStub": "开路短截线",
+    "lNetwork": "L 型网络方案",
+    "noPassiveMatch": "当前点不存在有限的无源匹配方案。",
+    "topology": {
+      "seriesFirst": "先串联、后并联",
+      "shuntFirst": "先并联、后串联"
+    },
+    "components": {
+      "L": "电感",
+      "C": "电容"
+    },
+    "markersTitle": "已保存标记",
+    "clear": "清空",
+    "recallMarker": "载入标记 {marker}",
+    "deleteMarker": "删除标记 {marker}"
   },
   "pomodoro": {
     "title": "番茄钟",

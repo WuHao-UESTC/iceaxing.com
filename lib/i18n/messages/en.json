@@ -95,7 +95,8 @@
     "privacyDescription": "These tools run in your browser. Preferences and sessions are stored locally and are not uploaded to the site server.",
     "categories": {
       "focus": "Focus",
-      "time": "Time"
+      "time": "Time",
+      "engineering": "RF Engineering"
     },
     "statuses": {
       "stable": "Stable",
@@ -110,8 +111,75 @@
           "local": "Local storage",
           "precise": "Background sync"
         }
+      },
+      "smithChart": {
+        "title": "Smith Chart",
+        "description": "A precision vector Smith chart for impedance transformation, transmission-line analysis, matching synthesis, and export.",
+        "features": {
+          "custom": "Precision scale",
+          "local": "Interactive markers",
+          "precise": "Matching synthesis"
+        }
       }
     }
+  },
+  "smithChart": {
+    "title": "Smith Chart",
+    "description": "Plot terminal impedance on a professional vector scale, inspect every RF quantity, move along a transmission line, and synthesize practical stub or L-network matches.",
+    "metaTitle": "Online Smith Chart",
+    "metaDescription": "Interactive professional Smith chart for impedance and admittance, reflection coefficient, VSWR, return loss, transmission-line transforms, stub matching, L networks, markers, and SVG or CSV export.",
+    "chartAriaLabel": "Interactive impedance and admittance Smith chart",
+    "chartTitle": "Normalized impedance plane",
+    "reset": "Reset",
+    "saveMarker": "Save point",
+    "dragHint": "Click or drag inside the chart to set the terminal impedance",
+    "fineGrid": "Fine grid",
+    "scaleLabels": "Scale labels",
+    "admittanceOverlay": "Admittance overlay",
+    "inputTitle": "Port parameters",
+    "resistance": "Resistance R",
+    "reactance": "Reactance X",
+    "conductance": "Conductance G",
+    "susceptance": "Susceptance B",
+    "lineImpedance": "Line impedance Z₀",
+    "frequency": "Frequency",
+    "lineTitle": "Transmission line",
+    "towardGenerator": "Toward generator",
+    "towardLoad": "Toward load",
+    "electricalLength": "Electrical length",
+    "wavelengths": "Line length",
+    "velocityFactor": "Velocity factor",
+    "physicalLength": "Physical length",
+    "resultsTitle": "Calculated quantities",
+    "normalizedImpedance": "Normalized z",
+    "impedance": "Impedance Z",
+    "admittance": "Admittance Y",
+    "returnLoss": "Return loss",
+    "mismatchLoss": "Mismatch loss",
+    "qualityFactor": "Quality factor Q",
+    "reflectedPower": "Reflected power",
+    "voltageMaximum": "To next voltage maximum",
+    "voltageMinimum": "To next voltage minimum",
+    "matchingTitle": "Matching assistant",
+    "stubMatching": "Single shunt-stub solutions",
+    "solution": "Solution {number}",
+    "distanceFromLoad": "Distance from load",
+    "shortStub": "Short-circuit stub",
+    "openStub": "Open-circuit stub",
+    "lNetwork": "L-network solutions",
+    "noPassiveMatch": "No finite passive solution is available for this point.",
+    "topology": {
+      "seriesFirst": "Series, then shunt",
+      "shuntFirst": "Shunt, then series"
+    },
+    "components": {
+      "L": "L",
+      "C": "C"
+    },
+    "markersTitle": "Saved markers",
+    "clear": "Clear",
+    "recallMarker": "Recall marker {marker}",
+    "deleteMarker": "Delete marker {marker}"
   },
   "pomodoro": {
     "title": "Pomodoro Timer",

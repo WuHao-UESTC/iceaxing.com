@@ -95,7 +95,8 @@
     "privacyDescription": "Diese Werkzeuge laufen im Browser. Einstellungen und Sitzungen werden lokal gespeichert und nicht an den Website-Server übertragen.",
     "categories": {
       "focus": "Fokus",
-      "time": "Zeit"
+      "time": "Zeit",
+      "engineering": "HF-Technik"
     },
     "statuses": {
       "stable": "Stabil",
@@ -110,8 +111,75 @@
           "local": "Lokal gespeichert",
           "precise": "Hintergrundabgleich"
         }
+      },
+      "smithChart": {
+        "title": "Smith-Diagramm",
+        "description": "Ein präzises Vektor-Smith-Diagramm für Impedanztransformation, Leitungsanalyse, Anpassungssynthese und Export.",
+        "features": {
+          "custom": "Präzise Skala",
+          "local": "Interaktive Marker",
+          "precise": "Anpassungssynthese"
+        }
       }
     }
+  },
+  "smithChart": {
+    "title": "Smith-Diagramm",
+    "description": "Trage Abschlussimpedanzen auf einer professionellen Vektorskala ein, untersuche HF-Kenngrößen, bewege dich entlang der Leitung und synthetisiere Stub- oder L-Anpassungen.",
+    "metaTitle": "Online-Smith-Diagramm",
+    "metaDescription": "Interaktives Smith-Diagramm für Impedanz, Admittanz, Reflexionsfaktor, VSWR, Rückflussdämpfung, Leitungstransformation, Stub- und L-Anpassung sowie SVG- und CSV-Export.",
+    "chartAriaLabel": "Interaktives Smith-Diagramm für Impedanz und Admittanz",
+    "chartTitle": "Normierte Impedanzebene",
+    "reset": "Zurücksetzen",
+    "saveMarker": "Punkt speichern",
+    "dragHint": "Klicken oder ziehen, um die Abschlussimpedanz festzulegen",
+    "fineGrid": "Feines Raster",
+    "scaleLabels": "Skalenwerte",
+    "admittanceOverlay": "Admittanz-Raster",
+    "inputTitle": "Portparameter",
+    "resistance": "Widerstand R",
+    "reactance": "Reaktanz X",
+    "conductance": "Leitwert G",
+    "susceptance": "Suszeptanz B",
+    "lineImpedance": "Leitungsimpedanz Z₀",
+    "frequency": "Frequenz",
+    "lineTitle": "Übertragungsleitung",
+    "towardGenerator": "Zum Generator",
+    "towardLoad": "Zur Last",
+    "electricalLength": "Elektrische Länge",
+    "wavelengths": "Leitungslänge",
+    "velocityFactor": "Verkürzungsfaktor",
+    "physicalLength": "Physikalische Länge",
+    "resultsTitle": "Berechnete Größen",
+    "normalizedImpedance": "Normierte Impedanz z",
+    "impedance": "Impedanz Z",
+    "admittance": "Admittanz Y",
+    "returnLoss": "Rückflussdämpfung",
+    "mismatchLoss": "Fehlanpassungsverlust",
+    "qualityFactor": "Gütefaktor Q",
+    "reflectedPower": "Reflektierte Leistung",
+    "voltageMaximum": "Zum nächsten Spannungsmaximum",
+    "voltageMinimum": "Zum nächsten Spannungsminimum",
+    "matchingTitle": "Anpassungsassistent",
+    "stubMatching": "Parallele Einzelstub-Lösungen",
+    "solution": "Lösung {number}",
+    "distanceFromLoad": "Abstand von der Last",
+    "shortStub": "Kurzschlussstub",
+    "openStub": "Leerlaufstub",
+    "lNetwork": "L-Netzwerk-Lösungen",
+    "noPassiveMatch": "Für diesen Punkt ist keine endliche passive Lösung verfügbar.",
+    "topology": {
+      "seriesFirst": "Serie, dann parallel",
+      "shuntFirst": "Parallel, dann Serie"
+    },
+    "components": {
+      "L": "L",
+      "C": "C"
+    },
+    "markersTitle": "Gespeicherte Marker",
+    "clear": "Leeren",
+    "recallMarker": "Marker {marker} wiederherstellen",
+    "deleteMarker": "Marker {marker} löschen"
   },
   "pomodoro": {
     "title": "Pomodoro-Timer",

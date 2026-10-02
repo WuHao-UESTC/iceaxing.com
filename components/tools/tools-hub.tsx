@@ -35,6 +35,31 @@ function PomodoroPreview() {
   );
 }
 
+function SmithChartPreview() {
+  return (
+    <div className="tool-card-preview tool-card-preview-smith" aria-hidden="true">
+      <svg viewBox="0 0 240 240" role="presentation">
+        <defs>
+          <clipPath id="tool-smith-preview-clip">
+            <circle cx="120" cy="120" r="88" />
+          </clipPath>
+        </defs>
+        <circle className="tool-smith-boundary" cx="120" cy="120" r="88" />
+        <g clipPath="url(#tool-smith-preview-clip)">
+          <path className="tool-smith-grid" d="M32 120h176M120 32a88 88 0 0 0 0 176M164 44a88 88 0 0 0 0 152M76 44a88 88 0 0 1 0 152" />
+          <circle className="tool-smith-grid" cx="164" cy="120" r="44" />
+          <circle className="tool-smith-grid" cx="178.7" cy="120" r="29.3" />
+          <circle className="tool-smith-grid" cx="149.3" cy="120" r="58.7" />
+        </g>
+        <circle className="tool-smith-vswr" cx="120" cy="120" r="39" />
+        <path className="tool-smith-trace" d="M151 97a39 39 0 0 1 7 46" />
+        <circle className="tool-smith-marker" cx="151" cy="97" r="5" />
+      </svg>
+      <div className="tool-card-preview-caption">Z / Γ / VSWR</div>
+    </div>
+  );
+}
+
 export function ToolsHub({
   tools,
   availableLabel,
@@ -79,6 +104,7 @@ export function ToolsHub({
               </div>
 
               {tool.slug === "pomodoro" ? <PomodoroPreview /> : null}
+              {tool.slug === "smithChart" ? <SmithChartPreview /> : null}
             </article>
           ))}
         </div>
